@@ -305,27 +305,11 @@
             text-align: center;
         }
 
-        .card-body h3 {
-            font-size: .9rem;
-        }
+        .card-body h3 { font-size: .9rem; }
+        .card-body p, .muted { font-size: .75rem; color: var(--muted); }
 
-        .card-body p, .muted {
-            font-size: .75rem;
-            color: var(--muted);
-        }
-
-        .stars {
-            color: var(--dorado);
-            font-size: .8rem;
-        }
-
-        .views {
-            background: #eef5f0;
-            padding: 4px 6px;
-            border-radius: 16px;
-            font-size: .7rem;
-            color: var(--verde);
-        }
+        .stars { color: var(--dorado); font-size: .8rem; }
+        .views { background: #eef5f0; padding: 4px 6px; border-radius: 16px; font-size: .7rem; color: var(--verde); }
 
         .btn {
             display: inline-block;
@@ -696,11 +680,11 @@
         <div class="section-ajustes hidden" id="panelComercialAutogestion" style="border: 2px solid var(--dorado);">
             <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid var(--borde); padding-bottom:8px; margin-bottom:12px;">
                 <h3 style="color:var(--dorado); margin:0;">🏪 Mi Panel Comerciante V.E.A.</h3>
-                <span id="badgePlanActualPanel" style="background:var(--verde); color:var(--dorado); font-size:0.7rem; font-weight:800; padding:3px 6px; border-radius:6px; border:1px solid var(--dorado)">PLAN: PENDIENTE DE PAGO</span>
+                <span id="badgePlanActualPanel" style="background:var(--verde); color:var(--dorado); font-size:0.7rem; font-weight:800; padding:3px 6px; border-radius:6px; border:1px solid var(--dorado)">PLAN: ACTIVO</span>
             </div>
 
-            <div id="avisoEstadoPagoComercio" class="status-box" style="margin-bottom:12px;">
-                ⚠️ <strong>Tu comercio aún no está visible en el mapa.</strong> Para aparecer públicamente y que los vecinos te vean, debés abonar un plan de suscripción abajo.
+            <div id="avisoEstadoPagoComercio" class="status-box status-ok" style="margin-bottom:12px;">
+                ✅ <strong>¡Tu plan está activo y pagado!</strong> Tu comercio es visible en el mapa para todo el público.
             </div>
 
             <div class="form-group">
@@ -729,14 +713,11 @@
                 <input type="text" id="inputComercioLocal" placeholder="Ej: Local 12">
             </div>
 
-            <!-- Carga de Video Promocional con Validación de Segundos Corregida -->
             <div style="background:#182333; color:white; padding:10px; border-radius:8px; margin-bottom:10px; border:1px solid var(--dorado);" id="seccionCargaVideoPanel">
                 <label style="font-weight:700; color:var(--dorado); margin-bottom:3px; display:block;" id="labelVideoPlan">🎬 Video Promocional (Según tu plan)</label>
-                <p style="font-size:0.72rem; color:#cbd5e1; margin-bottom:6px;">El sistema validará que la duración cumpla con el límite de tu plan.</p>
                 <input type="file" id="archivoVideoPromo" accept="video/*" style="background:white; color:#000; padding:5px; width:100%; border-radius:6px;" onchange="validarDuracionVideo(this)">
             </div>
 
-            <!-- Gestión de Cupones -->
             <div style="background:#f4f7f5; padding:10px; border-radius:8px; margin-bottom:10px; border:1px solid var(--borde);">
                 <label style="font-weight:700; margin-bottom:5px; display:block;">🎟️ Gestión de Cupones de Descuento</label>
                 <div id="listaCuponesPanel" style="margin-bottom:6px;"></div>
@@ -747,7 +728,6 @@
                 </div>
             </div>
 
-            <!-- Gestión de Publicaciones (Fotos) con Límites por Plan -->
             <div style="background:#f4f7f5; padding:10px; border-radius:8px; margin-bottom:10px; border:1px solid var(--borde);">
                 <label style="font-weight:700; margin-bottom:5px; display:block;" id="labelPublicacionesPlan">🖼️ Subir Publicaciones / Fotos</label>
                 <div id="listaPublicacionesPanel" style="margin-bottom:6px;"></div>
@@ -756,20 +736,19 @@
                     <input type="file" id="archivoFotoPub" accept="image/*" style="background:white; padding:6px;">
                 </div>
                 <div style="display:flex; gap:6px; margin-bottom:6px;">
-                    <input type="text" id="nuevaPubTitulo" placeholder="Título (Ej: Hamburguesa Doble)" style="flex:2">
-                    <input type="text" id="nuevaPubPromo" placeholder="Promo (Ej: 20% OFF)" style="flex:1">
+                    <input type="text" id="nuevaPubTitulo" placeholder="Título" style="flex:2">
+                    <input type="text" id="nuevaPubPromo" placeholder="Promo" style="flex:1">
                 </div>
                 <div class="form-group">
                     <label for="nuevaPubDescDetallada">Descripción Ampliada</label>
-                    <textarea id="nuevaPubDescDetallada" rows="2" placeholder="Detalles, ingredientes..."></textarea>
+                    <textarea id="nuevaPubDescDetallada" rows="2" placeholder="Detalles..."></textarea>
                 </div>
-                <button class="btn btn-primary btn-block" onclick="agregarPublicacionConFoto()">+ Subir Publicación a mi Vidriera</button>
+                <button class="btn btn-primary btn-block" onclick="agregarPublicacionConFoto()">+ Subir Publicación</button>
             </div>
 
             <button class="btn btn-primary btn-block" onclick="guardarDatosPanelComercio()">💾 Guardar y Actualizar Vidriera</button>
         </div>
 
-        <!-- Sección de Planes y Bypass Exclusivo para el Admin/Martín -->
         <div class="section-ajustes">
             <h3>💳 Planes de suscripción V.E.A.</h3>
             <p class="muted" style="margin-bottom:10px">Elegí tu plan comercial para activar el acceso completo y la prioridad en el mapa.</p>
@@ -806,17 +785,6 @@
                     <a href="https://mpago.la/2uckMU3" target="_blank" rel="noopener" class="btn btn-primary btn-block" style="margin-top:8px; text-decoration:none;">Suscribirse</a>
                 </div>
             </div>
-
-            <!-- Panel de Control Maestro (Exclusivo para Martín / Admin de muestras) -->
-            <div id="panelAdminMaestro" class="hidden" style="margin-top:16px; padding:12px; background:#182333; border-radius:8px; border:2px dashed var(--dorado); color:white;">
-                <h4 style="color:var(--dorado); font-size:0.85rem; margin-bottom:6px;">🛠️ Panel de Muestras Maestro (Acceso Exclusivo Martín)</h4>
-                <p style="font-size:0.72rem; color:#cbd5e1; margin-bottom:8px;">Forzá o probá cualquier plan de forma gratuita para preparar las muestras oficiales de la app:</p>
-                <div style="display:flex; gap:6px; flex-wrap:wrap;">
-                    <button class="btn btn-primary" style="flex:1; font-size:0.7rem;" onclick="activarPlanMaestro('basico')">Activar Básico</button>
-                    <button class="btn btn-primary" style="flex:1; font-size:0.7rem;" onclick="activarPlanMaestro('intermedio')">Activar Intermedio</button>
-                    <button class="btn btn-primary" style="flex:1; font-size:0.7rem;" onclick="activarPlanMaestro('premium')">Activar Premium</button>
-                </div>
-            </div>
         </div>
     </section>
 
@@ -842,7 +810,7 @@
     <div id="modalRegistro" class="modal-overlay hidden">
         <div class="modal-content" style="max-height: 90vh;">
             <div class="modal-header-body">
-                <h3>📝 Registro de Nueva Cuenta Comerciante</h3>
+                <h3>📝 Registro de Cuenta Comerciante</h3>
                 <div class="form-group">
                     <label for="regNombre">Nombre del Comercio / Alias</label>
                     <input type="text" id="regNombre" placeholder="Ej: Cervecería El Tordo">
@@ -871,7 +839,7 @@
                 <h3>🔑 Iniciar Sesión en V.E.A.</h3>
                 <div class="form-group">
                     <label for="loginEmail">Correo electrónico</label>
-                    <input type="email" id="loginEmail" placeholder="comercio@vea.com">
+                    <input type="email" id="loginEmail" placeholder="tordo@vea.com">
                 </div>
                 <div class="form-group">
                     <label for="loginPassword">Contraseña</label>
@@ -931,18 +899,19 @@ let videoPromoPanelBase64 = null;
 const cacheUbicaciones = new Map();
 
 const LIMITES_PLANES = {
-    'pendiente': { maxPubs: 0, maxVideoSec: 0, pagoConfirmado: false },
     'basico': { maxPubs: 10, maxVideoSec: 10, pagoConfirmado: true },
     'intermedio': { maxPubs: 20, maxVideoSec: 20, pagoConfirmado: true },
     'premium': { maxPubs: 40, maxVideoSec: 60, pagoConfirmado: true }
 };
 
+// --- TRES CUENTAS DE MUESTRA EXCLUSIVAS CON PAGO YA CONFIRMADO ---
 function obtenerUsuariosDB() {
     let base = JSON.parse(localStorage.getItem("vea_usuarios_db") || "null");
     if (!base) {
         base = [
             { nombre: "Cervecería Artesanal El Tordo", email: "tordo@vea.com", password: "123456", tipo: "comercio", suscripcionActiva: "premium", pagoConfirmado: true },
-            { nombre: "Café & Bar Flores", email: "flores@vea.com", password: "123456", tipo: "comercio", suscripcionActiva: "intermedio", pagoConfirmado: true }
+            { nombre: "Los Romualdito", email: "romualdito@vea.com", password: "123456", tipo: "comercio", suscripcionActiva: "intermedio", pagoConfirmado: true },
+            { nombre: "Pizzería Musa Varela", email: "musa@vea.com", password: "123456", tipo: "comercio", suscripcionActiva: "basico", pagoConfirmado: true }
         ];
         localStorage.setItem("vea_usuarios_db", JSON.stringify(base));
     }
@@ -970,8 +939,9 @@ let usuariosRegistrados = obtenerUsuariosDB();
 usuarioActual = obtenerSesionActiva();
 
 let cuponesPanelTemp = [{ titulo: "2x1 en Pintas IPA", codigo: "VEA-TORDO-IPA2X1" }];
-let publicacionesPanelTemp = [{ titulo: "Pinta IPA El Tordo", promo: "2x1", desc: "Happy Hour de 18 a 20 hs. Cerveza artesanal elaborada con malta Pale Ale, lúpulo Cascade y Nugget, con notas cítricas y espuma persistente.", imagen: null, icono: "🍺" }];
+let publicacionesPanelTemp = [{ titulo: "Pinta IPA El Tordo", promo: "2x1", desc: "Happy Hour de 18 a 20 hs. Cerveza artesanal elaborada con malta Pale Ale y lúpulo Cascade.", imagen: null, icono: "🍺" }];
 
+// --- TRES TIENDAS DE MUESTRA PRECARGADAS EN EL MAPA CON PAGO CONFIRMADO ---
 const comerciosVEA = [
     {
         id: 1,
@@ -995,28 +965,48 @@ const comerciosVEA = [
     },
     {
         id: 2,
-        nombre: "Café & Bar Flores",
+        nombre: "Los Romualdito",
         rubro: "gastronomia",
         plan: "INTERMEDIO",
         pagoConfirmado: true,
         limitePublicaciones: 20,
-        direccion: "Av. Rivadavia 7000, Flores, Ciudad Autónoma de Buenos Aires, Argentina",
-        galeria: "Galería Rivadavia Center",
-        nroLocal: "Local 14",
-        lat: -34.6273, lng: -58.4623, ubicacionVerificada: true,
-        oferta: "15% OFF Desayunos", icono: "utensils", esPremium: false,
-        videoPromo: null, rating: 4.6, opiniones: 89,
-        codigoCupon: "VEA-FLORES-15OFF",
-        mensajeWA: "Hola, quiero consultar por el cupón VEA-FLORES-15OFF en Café & Bar Flores.",
+        direccion: "Av. Gaona 4200, Ramos Mejía, Buenos Aires, Argentina",
+        galeria: "Centro Comercial Gaona",
+        nroLocal: "Local 5",
+        lat: -34.6380, lng: -58.5600, ubicacionVerificada: true,
+        oferta: "20% OFF en Empanadas", icono: "utensils", esPremium: false,
+        videoPromo: null, rating: 4.7, opiniones: 95,
+        codigoCupon: "VEA-ROMUALDITO-20",
+        mensajeWA: "Hola, quiero consultar por la promo de Los Romualdito.",
         productos: [
-            {titulo:"Café con Medialunas",desc:"Café de especialidad y dos medialunas de manteca recién horneadas.",icono:"🥐",promo:"15% OFF",imagen:null}
+            {titulo:"Docena de Empanadas",desc:"Variedad a elección: carne cortada a cuchillo, jamón y queso, humita o verdura.",icono:"🥟",promo:"20% OFF",imagen:null}
+        ]
+    },
+    {
+        id: 3,
+        nombre: "Pizzería Musa Varela",
+        rubro: "gastronomia",
+        plan: "BÁSICO",
+        pagoConfirmado: true,
+        limitePublicaciones: 10,
+        direccion: "Av. Juan Manuel de Rosas 12000, González Catán, Buenos Aires, Argentina",
+        galeria: "",
+        nroLocal: "",
+        lat: -34.7500, lng: -58.7500, ubicacionVerificada: true,
+        oferta: "Fugazetta Rellena con 10% OFF", icono: "utensils", esPremium: false,
+        videoPromo: null, rating: 4.5, opiniones: 62,
+        codigoCupon: "VEA-MUSA-10",
+        mensajeWA: "Hola, quiero pedir la Fugazetta Rellena con descuento en Musa Varela.",
+        productos: [
+            {titulo:"Fugazetta Rellena de Jamón y Queso",desc:"Masa crocante al molde, abundante mozzarella y jamón cocido de primera calidad.",icono:"🍕",promo:"10% OFF",imagen:null}
         ]
     }
 ];
 
 const notificaciones = [
     {titulo:"🔥 Happy Hour en Cervecería El Tordo", texto:"Consultá las condiciones de la promoción 2x1 en pintas."},
-    {titulo:"☕ Descuento en Café & Bar Flores", texto:"Promoción de desayunos. Consultá la disponibilidad."}
+    {titulo:"🥟 Nuevas promos en Los Romualdito", texto:"Descuentos especiales en empanadas y picadas."},
+    {titulo:"🍕 Pizzería Musa Varela en V.E.A.", texto:"Disfrutá de las mejores pizzas al molde en González Catán."}
 ];
 
 const map = L.map("map").setView([-34.65, -58.58], 12);
@@ -1040,9 +1030,8 @@ const rubroIconosMap = {
 function obtenerIconoPorRubro(rubro, nombre = "") {
     const texto = (nombre + " " + rubro).toLowerCase();
     if (texto.includes('cervez') || texto.includes('tordo') || texto.includes('bar') || texto.includes('birra')) return 'fa-beer-mug-empty';
-    if (texto.includes('banco') || texto.includes('finanz')) return 'fa-building-columns';
-    if (texto.includes('estacion') || texto.includes('ypf') || texto.includes('shell') || texto.includes('combustible')) return 'fa-gas-pump';
-    if (texto.includes('peluquer') || texto.includes('barber')) return 'fa-scissors';
+    if (texto.includes('pizz') || texto.includes('musa')) return 'fa-utensils';
+    if (texto.includes('romualdito') || texto.includes('empanada')) return 'fa-utensils';
     return rubroIconosMap[rubro] || rubroIconosMap['default'];
 }
 
@@ -1099,12 +1088,11 @@ function inicializarBannerRotativoPremium() {
     setInterval(actualizarBanner, 4500);
 }
 
-// --- VALIDADOR DE VIDEO CORREGIDO (Permite holgura por milisegundos) ---
 function validarDuracionVideo(input) {
     const file = input.files[0];
     if (!file) return;
 
-    const planClave = usuarioActual && usuarioActual.suscripcionActiva ? usuarioActual.suscripcionActiva : 'pendiente';
+    const planClave = usuarioActual && usuarioActual.suscripcionActiva ? usuarioActual.suscripcionActiva : 'basico';
     const limiteSegundos = LIMITES_PLANES[planClave] ? LIMITES_PLANES[planClave].maxVideoSec : 10;
 
     const videoElement = document.createElement('video');
@@ -1114,7 +1102,6 @@ function validarDuracionVideo(input) {
     videoElement.onloadedmetadata = function() {
         window.URL.revokeObjectURL(videoElement.src);
         const duracion = videoElement.duration;
-        // Damos una pequeña tolerancia de 0.5 segundos para evitar rechazos por redondeo de metadatos
         if (limiteSegundos > 0 && duracion > (limiteSegundos + 0.5)) {
             alert(`⚠️ El video dura ${Math.round(duracion)} segundos. Tu plan actual (${planClave.toUpperCase()}) permite un límite máximo de ${limiteSegundos} segundos.`);
             input.value = "";
@@ -1149,13 +1136,8 @@ function eliminarCuponPanel(index) {
 }
 
 function agregarPublicacionConFoto() {
-    const planClave = usuarioActual && usuarioActual.suscripcionActiva ? usuarioActual.suscripcionActiva : 'pendiente';
+    const planClave = usuarioActual && usuarioActual.suscripcionActiva ? usuarioActual.suscripcionActiva : 'basico';
     const maxPubsPermitidas = LIMITES_PLANES[planClave].maxPubs;
-
-    if (!usuarioActual || !usuarioActual.pagoConfirmado) {
-        alert("⚠️ Tu comercio no tiene un plan activo pago. Aboná tu suscripción para poder publicar contenido visible.");
-        return;
-    }
 
     if (publicacionesPanelTemp.length >= maxPubsPermitidas) {
         alert(`⚠️ Alcanzaste el límite de publicaciones de tu plan (${maxPubsPermitidas} publicaciones/fotos máximo).`);
@@ -1212,7 +1194,7 @@ function eliminarPublicacionPanel(index) {
 function renderizarListasPanelComercial() {
     const divCupones = document.getElementById("listaCuponesPanel");
     const divPubs = document.getElementById("listaPublicacionesPanel");
-    const planClave = usuarioActual && usuarioActual.suscripcionActiva ? usuarioActual.suscripcionActiva : 'pendiente';
+    const planClave = usuarioActual && usuarioActual.suscripcionActiva ? usuarioActual.suscripcionActiva : 'basico';
     const maxPubs = LIMITES_PLANES[planClave].maxPubs;
 
     document.getElementById("labelPublicacionesPlan").textContent = `🖼️ Subir Publicaciones / Fotos (${publicacionesPanelTemp.length} / ${maxPubs} máx)`;
@@ -1264,13 +1246,12 @@ function guardarNuevoRegistro() {
 
     errorBox.style.display = "none";
 
-    // NUEVO: Cada usuario nuevo arranca con plan pendiente y pago NO confirmado (invisible al público)
     const nuevoUsuario = { 
         nombre: nombre, 
         email: email, 
         password: password, 
         tipo: "comercio", 
-        suscripcionActiva: "pendiente",
+        suscripcionActiva: "basico",
         pagoConfirmado: false
     };
 
@@ -1321,7 +1302,7 @@ function procesarLogin() {
 
 function actualizarInterfazPanelComercial() {
     if (!usuarioActual) return;
-    const plan = usuarioActual.suscripcionActiva || 'pendiente';
+    const plan = usuarioActual.suscripcionActiva || 'basico';
     const pagado = usuarioActual.pagoConfirmado;
     const limites = LIMITES_PLANES[plan];
     
@@ -1330,41 +1311,14 @@ function actualizarInterfazPanelComercial() {
     const avisoPago = document.getElementById("avisoEstadoPagoComercio");
     if (pagado) {
         avisoPago.className = "status-box status-ok";
-        avisoPago.innerHTML = `✅ <strong>¡Tu plan ${plan.toUpperCase()} está activo!</strong> Tu comercio ya es visible en el mapa para todo el público.`;
+        avisoPago.innerHTML = `✅ <strong>¡Tu plan ${plan.toUpperCase()} está activo y pagado!</strong> Tu comercio ya es visible en el mapa para todo el público.`;
     } else {
         avisoPago.className = "status-box";
-        avisoPago.innerHTML = `⚠️ <strong>Tu comercio aún no es visible en el mapa.</strong> Para aparecer públicamente y que los vecinos te vean, debés abonar un plan de suscripción abajo o utilizar tu panel maestro de muestras.`;
+        avisoPago.innerHTML = `⚠️ <strong>Tu comercio aún no es visible en el mapa.</strong> Aboná tu suscripción para aparecer públicamente.`;
     }
 
     document.getElementById("panelComercialAutogestion").classList.remove("hidden");
-
-    // Habilitar panel maestro solo si es el administrador / Martín (p.ej. tordo@vea.com o admin)
-    const panelAdmin = document.getElementById("panelAdminMaestro");
-    if (usuarioActual.email === "tordo@vea.com" || usuarioActual.email.includes("admin")) {
-        panelAdmin.classList.remove("hidden");
-    } else {
-        panelAdmin.classList.add("hidden");
-    }
-
     renderizarListasPanelComercial();
-}
-
-// --- FUNCIÓN DE BYPASS MAESTRO PARA MARTÍN ---
-function activarPlanMaestro(planElegido) {
-    if (!usuarioActual) return;
-    usuarioActual.suscripcionActiva = planElegido;
-    usuarioActual.pagoConfirmado = true; // Forzamos pago confirmado para pruebas de muestra
-
-    // Actualizar en la base de usuarios guardada
-    const index = usuariosRegistrados.findIndex(u => u.email === usuarioActual.email);
-    if (index !== -1) {
-        usuariosRegistrados[index] = usuarioActual;
-        guardarUsuariosDB(usuariosRegistrados);
-    }
-    guardarSesionActiva(usuarioActual);
-
-    alert(`⭐ ¡Plan ${planElegido.toUpperCase()} activado con éxito mediante el Panel Maestro! Ya podés cargar fotos y videos de muestra.`);
-    actualizarInterfazPanelComercial();
 }
 
 function guardarDatosPanelComercio() {
@@ -1379,7 +1333,7 @@ function guardarDatosPanelComercio() {
         return;
     }
 
-    const planActual = usuarioActual && usuarioActual.suscripcionActiva ? usuarioActual.suscripcionActiva.toUpperCase() : "PENDIENTE";
+    const planActual = usuarioActual && usuarioActual.suscripcionActiva ? usuarioActual.suscripcionActiva.toUpperCase() : "BÁSICO";
     const pagoOk = usuarioActual ? usuarioActual.pagoConfirmado : false;
     const esPrem = planActual === "PREMIUM";
 
@@ -1397,8 +1351,8 @@ function guardarDatosPanelComercio() {
         nombre: nombre,
         rubro: rubro,
         plan: planActual,
-        pagoConfirmado: pagoOk, // REGLA CLAVE: Si no está pagado, no se muestra al público
-        limitePublicaciones: LIMITES_PLANES[usuarioActual.suscripcionActiva || 'pendiente'].maxPubs,
+        pagoConfirmado: pagoOk,
+        limitePublicaciones: LIMITES_PLANES[usuarioActual.suscripcionActiva || 'basico'].maxPubs,
         direccion: direccion,
         galeria: galeria,
         nroLocal: nroLocal,
@@ -1415,13 +1369,7 @@ function guardarDatosPanelComercio() {
     };
 
     comerciosVEA.unshift(nuevoComercio);
-    
-    if (pagoOk) {
-        alert("¡Vidriera guardada y publicada con éxito en el mapa V.E.A.!");
-    } else {
-        alert("⚠️ ¡Vidriera guardada! Pero recordá que NO aparecerá en el mapa hasta que se confirme el pago de tu suscripción.");
-    }
-    
+    alert("¡Vidriera guardada y actualizada con éxito!");
     cargarUbicacionesComercios();
     irAlInicio();
 }
@@ -1437,7 +1385,7 @@ function cerrarSesion() {
 function actualizarEstadoSesionUI() {
     const info = document.getElementById("infoSesionActual");
     if (usuarioActual) {
-        const planTexto = (usuarioActual.suscripcionActiva || "pendiente").toUpperCase();
+        const planTexto = (usuarioActual.suscripcionActiva || "basico").toUpperCase();
         const estadoPago = usuarioActual.pagoConfirmado ? "ACTIVO" : "PAGO PENDIENTE";
         info.innerHTML = "Sesión activa: <strong>" + escaparHTML(usuarioActual.nombre) + "</strong> (" + escaparHTML(usuarioActual.email) + ")<br>Plan: <strong style='color:var(--dorado)'>" + planTexto + " (" + estadoPago + ")</strong><br><button class='btn btn-secondary' style='margin-top:6px;font-size:.7rem;' onclick='cerrarSesion()'>Cerrar sesión</button>";
         actualizarInterfazPanelComercial();
@@ -1572,7 +1520,6 @@ function actualizarVista(filtro) {
     const contenedor = document.getElementById("contenedorVidrieras");
     contenedor.innerHTML = "";
 
-    // REGLA CLAVE DE SEGURIDAD: Solo se muestran los comercios cuyo pago estuviere confirmado (pagoConfirmado === true)
     const comerciosPublicos = comerciosVEA.filter(c => c.pagoConfirmado === true);
 
     const listaFiltrada = comerciosPublicos.filter(c => {
