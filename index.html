@@ -70,7 +70,7 @@
             color: #c2dcd1;
         }
 
-        /* Barra de Búsqueda Optimizada para Palabras Clave */
+        /* Barra de Búsqueda Avanzada por Palabras Clave */
         .search-bar-container {
             margin: 8px 12px 4px;
             display: flex;
@@ -230,7 +230,7 @@
         }
 
         .card-vidriera, .section-ajustes, .card-notificacion,
-        .card-cupon-exclusivo, .item-lista-directorio, .card-comentario {
+        .card-cupon-exclusivo, .item-lista-directorio {
             background: white;
             border: 1px solid var(--borde);
             border-radius: 12px;
@@ -338,37 +338,12 @@
             font-weight: 750;
         }
 
-        .btn-wa {
-            background: var(--whatsapp);
-            color: white;
-        }
-
-        .btn-maps {
-            background: white;
-            color: var(--verde);
-            border: 1px solid var(--borde);
-            font-weight: 800;
-        }
-
-        .btn-primary {
-            background: var(--verde);
-            color: var(--dorado);
-            border: 1px solid var(--dorado);
-        }
-
-        .btn-secondary {
-            background: #e2e8f0;
-            color: var(--texto);
-        }
-
-        .btn-danger {
-            background: var(--rojo);
-            color: white;
-        }
-
-        .btn-block {
-            width: 100%;
-        }
+        .btn-wa { background: var(--whatsapp); color: white; }
+        .btn-maps { background: white; color: var(--verde); border: 1px solid var(--borde); font-weight: 800; }
+        .btn-primary { background: var(--verde); color: var(--dorado); border: 1px solid var(--dorado); }
+        .btn-secondary { background: #e2e8f0; color: var(--texto); }
+        .btn-danger { background: var(--rojo); color: white; }
+        .btn-block { width: 100%; }
 
         .vista-secundaria {
             display: none;
@@ -388,16 +363,8 @@
             gap: 10px;
         }
 
-        .cupon-info h4 {
-            font-size: .9rem;
-            margin-bottom: 4px;
-        }
-
-        .cupon-info p {
-            font-size: .78rem;
-            color: var(--muted);
-            margin-bottom: 6px;
-        }
+        .cupon-info h4 { font-size: .9rem; margin-bottom: 4px; }
+        .cupon-info p { font-size: .78rem; color: var(--muted); margin-bottom: 6px; }
 
         .codigo-tag {
             font-family: monospace;
@@ -417,15 +384,8 @@
             cursor: pointer;
         }
 
-        .item-lista-info h4 {
-            font-size: .85rem;
-        }
-
-        .item-lista-info p {
-            font-size: .75rem;
-            color: var(--muted);
-            margin-top: 2px;
-        }
+        .item-lista-info h4 { font-size: .85rem; }
+        .item-lista-info p { font-size: .75rem; color: var(--muted); margin-top: 2px; }
 
         .card-notificacion {
             padding: 12px;
@@ -433,19 +393,15 @@
             border-left: 4px solid var(--dorado);
         }
 
-        .card-notificacion h4 {
-            font-size: .85rem;
-            margin-bottom: 4px;
-        }
-
-        .card-notificacion p {
-            font-size: .78rem;
-            color: var(--muted);
-        }
+        .card-notificacion h4 { font-size: .85rem; margin-bottom: 4px; }
+        .card-notificacion p { font-size: .78rem; color: var(--muted); }
 
         .section-ajustes {
             padding: 14px;
             margin-bottom: 12px;
+            background: white;
+            border: 1px solid var(--borde);
+            border-radius: 12px;
         }
 
         .section-ajustes h3 {
@@ -455,17 +411,8 @@
             margin-bottom: 12px;
         }
 
-        .form-group {
-            margin-bottom: 10px;
-        }
-
-        .form-group label {
-            display: block;
-            font-size: .78rem;
-            font-weight: 700;
-            margin-bottom: 4px;
-        }
-
+        .form-group { margin-bottom: 10px; }
+        .form-group label { display: block; font-size: .78rem; font-weight: 700; margin-bottom: 4px; }
         .form-group input, .form-group select, .form-group textarea {
             width: 100%;
             padding: 8px 10px;
@@ -482,13 +429,7 @@
             flex-wrap: wrap;
         }
 
-        .btn-back {
-            background: var(--verde);
-            color: white;
-            border: 0;
-            padding: 8px 12px;
-            border-radius: 6px;
-        }
+        .btn-back { background: var(--verde); color: white; border: 0; padding: 8px 12px; border-radius: 6px; }
 
         .banner-destacado, .banner-upgrade {
             background: linear-gradient(135deg,var(--verde),var(--verde2));
@@ -518,25 +459,12 @@
             justify-content: space-between;
         }
 
-        .plan-card h4 {
-            font-size: .85rem;
-            color: var(--verde);
-            margin-bottom: 2px;
-        }
-
-        .plan-precio {
-            font-size: 1.25rem;
-            font-weight: 900;
-            color: var(--dorado);
-            margin: 2px 0;
-        }
+        .plan-card h4 { font-size: .85rem; color: var(--verde); margin-bottom: 2px; }
+        .plan-precio { font-size: 1.25rem; font-weight: 900; color: var(--dorado); margin: 2px 0; }
 
         .modal-overlay {
             position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
+            top: 0; left: 0; right: 0; bottom: 0;
             background: rgba(6, 46, 34, 0.85);
             display: flex;
             align-items: center;
@@ -560,26 +488,12 @@
             margin: auto;
         }
 
-        .modal-header-body {
-            padding: 16px;
-            overflow-y: auto;
-            flex: 1;
-            -webkit-overflow-scrolling: touch;
-        }
-
-        .modal-footer {
-            padding: 8px 16px;
-            background: #f8fafc;
-            border-top: 1px solid var(--borde);
-            display: flex;
-            gap: 8px;
-        }
+        .modal-header-body { padding: 16px; overflow-y: auto; flex: 1; -webkit-overflow-scrolling: touch; }
+        .modal-footer { padding: 8px 16px; background: #f8fafc; border-top: 1px solid var(--borde); display: flex; gap: 8px; }
 
         .bottom-nav {
             position: fixed;
-            bottom: 0;
-            left: 0;
-            right: 0;
+            bottom: 0; left: 0; right: 0;
             height: 58px;
             display: flex;
             justify-content: space-around;
@@ -591,195 +505,74 @@
         }
 
         .nav-item {
-            background: none;
-            border: 0;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            font-size: .65rem;
-            color: var(--muted);
-            position: relative;
+            background: none; border: 0;
+            display: flex; flex-direction: column; align-items: center;
+            font-size: .65rem; color: var(--muted); position: relative;
         }
-
-        .nav-item.active {
-            color: var(--verde);
-            font-weight: 800;
-        }
-
-        .nav-item .icon {
-            font-size: 1.1rem;
-        }
+        .nav-item.active { color: var(--verde); font-weight: 800; }
+        .nav-item .icon { font-size: 1.1rem; }
 
         .nav-floating-btn {
             border: 3px solid #ffffff;
             background: linear-gradient(135deg, #cda12f, #bf9324);
-            width: 48px;
-            height: 48px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
+            width: 48px; height: 48px; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
             box-shadow: 0 4px 10px rgba(0, 0, 0, 0.18);
-            margin-top: -16px;
-            transition: transform 0.2s ease;
+            margin-top: -16px; transition: transform 0.2s ease;
         }
+        .nav-floating-btn:hover { transform: scale(1.05); }
+        .nav-floating-btn svg { width: 22px; height: 22px; }
 
-        .nav-floating-btn:hover {
-            transform: scale(1.05);
-        }
-
-        .nav-floating-btn svg {
-            width: 22px;
-            height: 22px;
-        }
-
-        /* Menú Flotante de Pagos */
         .pay-btn-float {
-            position: absolute;
-            bottom: 16px;
-            right: 16px;
-            z-index: 1000;
+            position: absolute; bottom: 16px; right: 16px; z-index: 1000;
             background: linear-gradient(135deg, var(--dorado), #b8860b);
-            border: 2px solid #fff;
-            border-radius: 50%;
-            width: 46px;
-            height: 46px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: var(--verde);
-            font-size: 1.2rem;
-            cursor: pointer;
+            border: 2px solid #fff; border-radius: 50%; width: 46px; height: 46px;
+            display: flex; align-items: center; justify-content: center;
+            color: var(--verde); font-size: 1.2rem; cursor: pointer;
             box-shadow: 0 4px 10px rgba(0,0,0,0.4);
         }
 
         .payment-menu {
-            position: absolute;
-            bottom: 72px;
-            right: 16px;
-            z-index: 1001;
-            background: white;
-            border: 2px solid var(--dorado);
-            border-radius: 10px;
-            padding: 10px;
-            width: 250px;
-            display: none;
-            flex-direction: column;
-            gap: 6px;
+            position: absolute; bottom: 72px; right: 16px; z-index: 1001;
+            background: white; border: 2px solid var(--dorado); border-radius: 10px;
+            padding: 10px; width: 250px; display: none; flex-direction: column; gap: 6px;
             box-shadow: 0 6px 18px rgba(0,0,0,0.25);
         }
 
         .payment-option {
-            padding: 8px 10px;
-            border-radius: 6px;
-            color: white;
-            font-weight: bold;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            cursor: pointer;
-            font-size: 0.78rem;
-            text-decoration: none;
+            padding: 8px 10px; border-radius: 6px; color: white; font-weight: bold;
+            display: flex; align-items: center; gap: 8px; cursor: pointer; font-size: 0.78rem; text-decoration: none;
         }
-
         .opt-provincia { background: #166534; }
         .opt-nacion { background: #1e3a8a; }
         .opt-galicia { background: #c2410c; }
 
-        /* Estilo para Marcadores Estilizados */
         .custom-marker {
-            background: var(--verde);
-            border: 2px solid var(--dorado);
-            border-radius: 50% 50% 50% 0;
-            transform: rotate(-45deg);
-            width: 34px;
-            height: 34px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
+            background: var(--verde); border: 2px solid var(--dorado);
+            border-radius: 50% 50% 50% 0; transform: rotate(-45deg);
+            width: 34px; height: 34px; display: flex; align-items: center; justify-content: center;
             box-shadow: 0 3px 6px rgba(0,0,0,0.4);
         }
-
-        .custom-marker i {
-            transform: rotate(45deg);
-            color: var(--dorado);
-            font-size: 0.95rem;
-        }
+        .custom-marker i { transform: rotate(45deg); color: var(--dorado); font-size: 0.95rem; }
 
         .badge-notif-count {
-            position: absolute;
-            top: -3px;
-            right: 1px;
-            background: #ef4444;
-            color: white;
-            padding: 1px 4px;
-            border-radius: 10px;
-            font-size: .6rem;
+            position: absolute; top: -3px; right: 1px; background: #ef4444; color: white;
+            padding: 1px 4px; border-radius: 10px; font-size: .6rem;
         }
 
-        .hidden {
-            display: none !important;
-        }
+        .hidden { display: none !important; }
 
-        .status-box {
-            padding: 8px 10px;
-            margin-bottom: 10px;
-            border-radius: 6px;
-            background: #fff7ed;
-            color: #9a3412;
-            font-size: .78rem;
-        }
-
-        .status-ok {
-            background: #ecfdf5;
-            color: #166534;
-        }
-
-        .empty {
-            padding: 16px;
-            text-align: center;
-            color: var(--muted);
-            font-size: .82rem;
-        }
-
-        .popup-title {
-            font-weight: 800;
-            color: var(--verde);
-        }
+        .status-box { padding: 8px 10px; margin-bottom: 10px; border-radius: 6px; background: #fff7ed; color: #9a3412; font-size: .78rem; }
+        .status-ok { background: #ecfdf5; color: #166534; }
+        .empty { padding: 16px; text-align: center; color: var(--muted); font-size: .82rem; }
+        .popup-title { font-weight: 800; color: var(--verde); }
 
         @media(max-width:768px) {
-            .main-container {
-                height: auto;
-                min-height: 0;
-                display: flex;
-                flex-direction: column;
-                padding-bottom: 65px;
-            }
-
-            .map-column {
-                width: 100%;
-                height: 360px;
-                min-height: 360px;
-                border-right: 0;
-                border-bottom: 2px solid var(--dorado);
-            }
-
-            #map {
-                width: 100%;
-                height: 360px;
-                min-height: 360px;
-            }
-
-            .showcase-column {
-                width: 100%;
-                overflow: visible;
-                padding: 12px;
-            }
-
-            .grid-vidrieras {
-                grid-template-columns: repeat(auto-fill,minmax(150px,1fr));
-                gap: 10px;
-            }
+            .main-container { height: auto; min-height: 0; display: flex; flex-direction: column; padding-bottom: 65px; }
+            .map-column { width: 100%; height: 360px; min-height: 360px; border-right: 0; border-bottom: 2px solid var(--dorado); }
+            #map { width: 100%; height: 360px; min-height: 360px; }
+            .showcase-column { width: 100%; overflow: visible; padding: 12px; }
+            .grid-vidrieras { grid-template-columns: repeat(auto-fill,minmax(150px,1fr)); gap: 10px; }
         }
     </style>
 </head>
@@ -790,7 +583,6 @@
         <p>VIDRIERAS ELECTRÓNICAS ARGENTINAS</p>
     </header>
 
-    <!-- Barra de Búsqueda Avanzada por Palabras Clave -->
     <div class="search-bar-container">
         <input type="text" id="inputBusquedaGlobal" placeholder="🔍 Buscá por producto (ej: ropa, cerveza, ferretería)..." oninput="filtrarPorBusqueda()">
         <button onclick="filtrarPorBusqueda()">🔍</button>
@@ -800,7 +592,6 @@
         ✨ Red Comercial Geolocalizada — Sumate a la red V.E.A. desde <strong>USD 5</strong> mensuales.
     </div>
 
-    <!-- Banner Rotativo Premium -->
     <div class="banner-premium-rotativo" id="bannerRotativoPremium">
         <div class="banner-premium-info">
             <span style="background:var(--dorado);color:var(--verde);font-size:.6rem;font-weight:800;padding:2px 5px;border-radius:4px">⭐ DESTACADO PREMIUM V.E.A.</span>
@@ -833,7 +624,6 @@
     <main class="main-container" id="vistaPrincipal">
         <section class="map-column">
             <div id="map"></div>
-            <!-- Botón flotante de pagos sobre el mapa -->
             <div class="pay-btn-float" onclick="togglePaymentMenu()" title="Medios de pago">
                 <i class="fa-solid fa-credit-card"></i>
             </div>
@@ -893,7 +683,6 @@
             <h2 class="section-title" style="margin:0">⚙️ Ajustes y Mi Cuenta</h2>
         </div>
 
-        <!-- Estado de Sesión -->
         <div class="section-ajustes" id="seccionEstadoSesion">
             <h3>👤 Mi Cuenta</h3>
             <p id="infoSesionActual" class="muted" style="margin-bottom:8px">No hay una sesión iniciada.</p>
@@ -907,7 +696,11 @@
         <div class="section-ajustes hidden" id="panelComercialAutogestion" style="border: 2px solid var(--dorado);">
             <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid var(--borde); padding-bottom:8px; margin-bottom:12px;">
                 <h3 style="color:var(--dorado); margin:0;">🏪 Mi Panel Comerciante V.E.A.</h3>
-                <span id="badgePlanActualPanel" style="background:var(--verde); color:var(--dorado); font-size:0.7rem; font-weight:800; padding:3px 6px; border-radius:6px; border:1px solid var(--dorado)">PLAN: BÁSICO</span>
+                <span id="badgePlanActualPanel" style="background:var(--verde); color:var(--dorado); font-size:0.7rem; font-weight:800; padding:3px 6px; border-radius:6px; border:1px solid var(--dorado)">PLAN: PENDIENTE DE PAGO</span>
+            </div>
+
+            <div id="avisoEstadoPagoComercio" class="status-box" style="margin-bottom:12px;">
+                ⚠️ <strong>Tu comercio aún no está visible en el mapa.</strong> Para aparecer públicamente y que los vecinos te vean, debés abonar un plan de suscripción abajo.
             </div>
 
             <div class="form-group">
@@ -936,10 +729,10 @@
                 <input type="text" id="inputComercioLocal" placeholder="Ej: Local 12">
             </div>
 
-            <!-- Carga de Video Promocional con Validación de Segundos -->
+            <!-- Carga de Video Promocional con Validación de Segundos Corregida -->
             <div style="background:#182333; color:white; padding:10px; border-radius:8px; margin-bottom:10px; border:1px solid var(--dorado);" id="seccionCargaVideoPanel">
                 <label style="font-weight:700; color:var(--dorado); margin-bottom:3px; display:block;" id="labelVideoPlan">🎬 Video Promocional (Según tu plan)</label>
-                <p style="font-size:0.72rem; color:#cbd5e1; margin-bottom:6px;">El sistema validará automáticamente que la duración no supere el límite de tu plan.</p>
+                <p style="font-size:0.72rem; color:#cbd5e1; margin-bottom:6px;">El sistema validará que la duración cumpla con el límite de tu plan.</p>
                 <input type="file" id="archivoVideoPromo" accept="video/*" style="background:white; color:#000; padding:5px; width:100%; border-radius:6px;" onchange="validarDuracionVideo(this)">
             </div>
 
@@ -976,7 +769,7 @@
             <button class="btn btn-primary btn-block" onclick="guardarDatosPanelComercio()">💾 Guardar y Actualizar Vidriera</button>
         </div>
 
-        <!-- Sección de Planes con Links Directos de Mercado Pago -->
+        <!-- Sección de Planes y Bypass Exclusivo para el Admin/Martín -->
         <div class="section-ajustes">
             <h3>💳 Planes de suscripción V.E.A.</h3>
             <p class="muted" style="margin-bottom:10px">Elegí tu plan comercial para activar el acceso completo y la prioridad en el mapa.</p>
@@ -1011,6 +804,17 @@
                         <p class="muted" style="font-size:.72rem; margin-top:4px;">Hasta <strong>40 publicaciones</strong>.<br>Video de hasta <strong>1 minuto</strong>.</p>
                     </div>
                     <a href="https://mpago.la/2uckMU3" target="_blank" rel="noopener" class="btn btn-primary btn-block" style="margin-top:8px; text-decoration:none;">Suscribirse</a>
+                </div>
+            </div>
+
+            <!-- Panel de Control Maestro (Exclusivo para Martín / Admin de muestras) -->
+            <div id="panelAdminMaestro" class="hidden" style="margin-top:16px; padding:12px; background:#182333; border-radius:8px; border:2px dashed var(--dorado); color:white;">
+                <h4 style="color:var(--dorado); font-size:0.85rem; margin-bottom:6px;">🛠️ Panel de Muestras Maestro (Acceso Exclusivo Martín)</h4>
+                <p style="font-size:0.72rem; color:#cbd5e1; margin-bottom:8px;">Forzá o probá cualquier plan de forma gratuita para preparar las muestras oficiales de la app:</p>
+                <div style="display:flex; gap:6px; flex-wrap:wrap;">
+                    <button class="btn btn-primary" style="flex:1; font-size:0.7rem;" onclick="activarPlanMaestro('basico')">Activar Básico</button>
+                    <button class="btn btn-primary" style="flex:1; font-size:0.7rem;" onclick="activarPlanMaestro('intermedio')">Activar Intermedio</button>
+                    <button class="btn btn-primary" style="flex:1; font-size:0.7rem;" onclick="activarPlanMaestro('premium')">Activar Premium</button>
                 </div>
             </div>
         </div>
@@ -1127,17 +931,18 @@ let videoPromoPanelBase64 = null;
 const cacheUbicaciones = new Map();
 
 const LIMITES_PLANES = {
-    'basico': { maxPubs: 10, maxVideoSec: 10 },
-    'intermedio': { maxPubs: 20, maxVideoSec: 20 },
-    'premium': { maxPubs: 40, maxVideoSec: 60 }
+    'pendiente': { maxPubs: 0, maxVideoSec: 0, pagoConfirmado: false },
+    'basico': { maxPubs: 10, maxVideoSec: 10, pagoConfirmado: true },
+    'intermedio': { maxPubs: 20, maxVideoSec: 20, pagoConfirmado: true },
+    'premium': { maxPubs: 40, maxVideoSec: 60, pagoConfirmado: true }
 };
 
 function obtenerUsuariosDB() {
     let base = JSON.parse(localStorage.getItem("vea_usuarios_db") || "null");
     if (!base) {
         base = [
-            { nombre: "Cervecería Artesanal El Tordo", email: "tordo@vea.com", password: "123456", tipo: "comercio", suscripcionActiva: "premium" },
-            { nombre: "Café & Bar Flores", email: "flores@vea.com", password: "123456", tipo: "comercio", suscripcionActiva: "intermedio" }
+            { nombre: "Cervecería Artesanal El Tordo", email: "tordo@vea.com", password: "123456", tipo: "comercio", suscripcionActiva: "premium", pagoConfirmado: true },
+            { nombre: "Café & Bar Flores", email: "flores@vea.com", password: "123456", tipo: "comercio", suscripcionActiva: "intermedio", pagoConfirmado: true }
         ];
         localStorage.setItem("vea_usuarios_db", JSON.stringify(base));
     }
@@ -1173,6 +978,7 @@ const comerciosVEA = [
         nombre: "Cervecería Artesanal El Tordo",
         rubro: "gastronomia",
         plan: "PREMIUM",
+        pagoConfirmado: true,
         limitePublicaciones: 40,
         direccion: "Av. Rivadavia 18200, Morón, Buenos Aires, Argentina",
         galeria: "",
@@ -1192,6 +998,7 @@ const comerciosVEA = [
         nombre: "Café & Bar Flores",
         rubro: "gastronomia",
         plan: "INTERMEDIO",
+        pagoConfirmado: true,
         limitePublicaciones: 20,
         direccion: "Av. Rivadavia 7000, Flores, Ciudad Autónoma de Buenos Aires, Argentina",
         galeria: "Galería Rivadavia Center",
@@ -1269,7 +1076,7 @@ function formatearUbicacionComercio(comercio) {
 
 let indiceBannerPremium = 0;
 function inicializarBannerRotativoPremium() {
-    const comerciosPremium = comerciosVEA.filter(c => c.esPremium);
+    const comerciosPremium = comerciosVEA.filter(c => c.esPremium && c.pagoConfirmado);
     if (comerciosPremium.length === 0) return;
 
     function actualizarBanner() {
@@ -1292,11 +1099,12 @@ function inicializarBannerRotativoPremium() {
     setInterval(actualizarBanner, 4500);
 }
 
+// --- VALIDADOR DE VIDEO CORREGIDO (Permite holgura por milisegundos) ---
 function validarDuracionVideo(input) {
     const file = input.files[0];
     if (!file) return;
 
-    const planClave = usuarioActual && usuarioActual.suscripcionActiva ? usuarioActual.suscripcionActiva : 'basico';
+    const planClave = usuarioActual && usuarioActual.suscripcionActiva ? usuarioActual.suscripcionActiva : 'pendiente';
     const limiteSegundos = LIMITES_PLANES[planClave] ? LIMITES_PLANES[planClave].maxVideoSec : 10;
 
     const videoElement = document.createElement('video');
@@ -1306,7 +1114,8 @@ function validarDuracionVideo(input) {
     videoElement.onloadedmetadata = function() {
         window.URL.revokeObjectURL(videoElement.src);
         const duracion = videoElement.duration;
-        if (duracion > limiteSegundos) {
+        // Damos una pequeña tolerancia de 0.5 segundos para evitar rechazos por redondeo de metadatos
+        if (limiteSegundos > 0 && duracion > (limiteSegundos + 0.5)) {
             alert(`⚠️ El video dura ${Math.round(duracion)} segundos. Tu plan actual (${planClave.toUpperCase()}) permite un límite máximo de ${limiteSegundos} segundos.`);
             input.value = "";
             videoPromoPanelBase64 = null;
@@ -1340,11 +1149,16 @@ function eliminarCuponPanel(index) {
 }
 
 function agregarPublicacionConFoto() {
-    const planClave = usuarioActual && usuarioActual.suscripcionActiva ? usuarioActual.suscripcionActiva : 'basico';
+    const planClave = usuarioActual && usuarioActual.suscripcionActiva ? usuarioActual.suscripcionActiva : 'pendiente';
     const maxPubsPermitidas = LIMITES_PLANES[planClave].maxPubs;
 
+    if (!usuarioActual || !usuarioActual.pagoConfirmado) {
+        alert("⚠️ Tu comercio no tiene un plan activo pago. Aboná tu suscripción para poder publicar contenido visible.");
+        return;
+    }
+
     if (publicacionesPanelTemp.length >= maxPubsPermitidas) {
-        alert(`⚠️ Alcanzaste el límite de publicaciones de tu ${planClave.toUpperCase()} (${maxPubsPermitidas} publicaciones/fotos máximo).`);
+        alert(`⚠️ Alcanzaste el límite de publicaciones de tu plan (${maxPubsPermitidas} publicaciones/fotos máximo).`);
         return;
     }
 
@@ -1398,7 +1212,7 @@ function eliminarPublicacionPanel(index) {
 function renderizarListasPanelComercial() {
     const divCupones = document.getElementById("listaCuponesPanel");
     const divPubs = document.getElementById("listaPublicacionesPanel");
-    const planClave = usuarioActual && usuarioActual.suscripcionActiva ? usuarioActual.suscripcionActiva : 'basico';
+    const planClave = usuarioActual && usuarioActual.suscripcionActiva ? usuarioActual.suscripcionActiva : 'pendiente';
     const maxPubs = LIMITES_PLANES[planClave].maxPubs;
 
     document.getElementById("labelPublicacionesPlan").textContent = `🖼️ Subir Publicaciones / Fotos (${publicacionesPanelTemp.length} / ${maxPubs} máx)`;
@@ -1450,12 +1264,14 @@ function guardarNuevoRegistro() {
 
     errorBox.style.display = "none";
 
+    // NUEVO: Cada usuario nuevo arranca con plan pendiente y pago NO confirmado (invisible al público)
     const nuevoUsuario = { 
         nombre: nombre, 
         email: email, 
         password: password, 
         tipo: "comercio", 
-        suscripcionActiva: "basico"
+        suscripcionActiva: "pendiente",
+        pagoConfirmado: false
     };
 
     usuariosRegistrados.push(nuevoUsuario);
@@ -1468,7 +1284,7 @@ function guardarNuevoRegistro() {
     cerrarModalRegistro();
     actualizarInterfazPanelComercial();
     
-    alert("¡Cuenta registrada e iniciada con éxito, " + nombre + "!");
+    alert("¡Cuenta registrada con éxito, " + nombre + "! Recordá que para aparecer en el mapa debés abonar tu suscripción.");
 }
 
 function abrirModalLogin() {
@@ -1505,11 +1321,50 @@ function procesarLogin() {
 
 function actualizarInterfazPanelComercial() {
     if (!usuarioActual) return;
-    const plan = usuarioActual.suscripcionActiva || 'basico';
+    const plan = usuarioActual.suscripcionActiva || 'pendiente';
+    const pagado = usuarioActual.pagoConfirmado;
     const limites = LIMITES_PLANES[plan];
-    document.getElementById("badgePlanActualPanel").textContent = `PLAN: ${plan.toUpperCase()} (Máx. ${limites.maxPubs} pubs, Video ${limites.maxVideoSec}s)`;
+    
+    document.getElementById("badgePlanActualPanel").textContent = `PLAN: ${plan.toUpperCase()} (${pagado ? 'ACTIVO' : 'PAGO PENDIENTE'})`;
+    
+    const avisoPago = document.getElementById("avisoEstadoPagoComercio");
+    if (pagado) {
+        avisoPago.className = "status-box status-ok";
+        avisoPago.innerHTML = `✅ <strong>¡Tu plan ${plan.toUpperCase()} está activo!</strong> Tu comercio ya es visible en el mapa para todo el público.`;
+    } else {
+        avisoPago.className = "status-box";
+        avisoPago.innerHTML = `⚠️ <strong>Tu comercio aún no es visible en el mapa.</strong> Para aparecer públicamente y que los vecinos te vean, debés abonar un plan de suscripción abajo o utilizar tu panel maestro de muestras.`;
+    }
+
     document.getElementById("panelComercialAutogestion").classList.remove("hidden");
+
+    // Habilitar panel maestro solo si es el administrador / Martín (p.ej. tordo@vea.com o admin)
+    const panelAdmin = document.getElementById("panelAdminMaestro");
+    if (usuarioActual.email === "tordo@vea.com" || usuarioActual.email.includes("admin")) {
+        panelAdmin.classList.remove("hidden");
+    } else {
+        panelAdmin.classList.add("hidden");
+    }
+
     renderizarListasPanelComercial();
+}
+
+// --- FUNCIÓN DE BYPASS MAESTRO PARA MARTÍN ---
+function activarPlanMaestro(planElegido) {
+    if (!usuarioActual) return;
+    usuarioActual.suscripcionActiva = planElegido;
+    usuarioActual.pagoConfirmado = true; // Forzamos pago confirmado para pruebas de muestra
+
+    // Actualizar en la base de usuarios guardada
+    const index = usuariosRegistrados.findIndex(u => u.email === usuarioActual.email);
+    if (index !== -1) {
+        usuariosRegistrados[index] = usuarioActual;
+        guardarUsuariosDB(usuariosRegistrados);
+    }
+    guardarSesionActiva(usuarioActual);
+
+    alert(`⭐ ¡Plan ${planElegido.toUpperCase()} activado con éxito mediante el Panel Maestro! Ya podés cargar fotos y videos de muestra.`);
+    actualizarInterfazPanelComercial();
 }
 
 function guardarDatosPanelComercio() {
@@ -1524,7 +1379,8 @@ function guardarDatosPanelComercio() {
         return;
     }
 
-    const planActual = usuarioActual && usuarioActual.suscripcionActiva ? usuarioActual.suscripcionActiva.toUpperCase() : "BÁSICO";
+    const planActual = usuarioActual && usuarioActual.suscripcionActiva ? usuarioActual.suscripcionActiva.toUpperCase() : "PENDIENTE";
+    const pagoOk = usuarioActual ? usuarioActual.pagoConfirmado : false;
     const esPrem = planActual === "PREMIUM";
 
     const primerCupone = cuponesPanelTemp.length ? cuponesPanelTemp[0] : { titulo: "Cupón Especial", codigo: "VEA-OFF" };
@@ -1541,7 +1397,8 @@ function guardarDatosPanelComercio() {
         nombre: nombre,
         rubro: rubro,
         plan: planActual,
-        limitePublicaciones: LIMITES_PLANES[usuarioActual.suscripcionActiva || 'basico'].maxPubs,
+        pagoConfirmado: pagoOk, // REGLA CLAVE: Si no está pagado, no se muestra al público
+        limitePublicaciones: LIMITES_PLANES[usuarioActual.suscripcionActiva || 'pendiente'].maxPubs,
         direccion: direccion,
         galeria: galeria,
         nroLocal: nroLocal,
@@ -1558,7 +1415,13 @@ function guardarDatosPanelComercio() {
     };
 
     comerciosVEA.unshift(nuevoComercio);
-    alert("¡Vidriera y publicaciones actualizadas con éxito en el mapa V.E.A.!");
+    
+    if (pagoOk) {
+        alert("¡Vidriera guardada y publicada con éxito en el mapa V.E.A.!");
+    } else {
+        alert("⚠️ ¡Vidriera guardada! Pero recordá que NO aparecerá en el mapa hasta que se confirme el pago de tu suscripción.");
+    }
+    
     cargarUbicacionesComercios();
     irAlInicio();
 }
@@ -1574,8 +1437,9 @@ function cerrarSesion() {
 function actualizarEstadoSesionUI() {
     const info = document.getElementById("infoSesionActual");
     if (usuarioActual) {
-        const planTexto = (usuarioActual.suscripcionActiva || "básico").toUpperCase();
-        info.innerHTML = "Sesión activa: <strong>" + escaparHTML(usuarioActual.nombre) + "</strong> (" + escaparHTML(usuarioActual.email) + ")<br>Plan Actual: <strong style='color:var(--dorado)'>" + planTexto + "</strong><br><button class='btn btn-secondary' style='margin-top:6px;font-size:.7rem;' onclick='cerrarSesion()'>Cerrar sesión</button>";
+        const planTexto = (usuarioActual.suscripcionActiva || "pendiente").toUpperCase();
+        const estadoPago = usuarioActual.pagoConfirmado ? "ACTIVO" : "PAGO PENDIENTE";
+        info.innerHTML = "Sesión activa: <strong>" + escaparHTML(usuarioActual.nombre) + "</strong> (" + escaparHTML(usuarioActual.email) + ")<br>Plan: <strong style='color:var(--dorado)'>" + planTexto + " (" + estadoPago + ")</strong><br><button class='btn btn-secondary' style='margin-top:6px;font-size:.7rem;' onclick='cerrarSesion()'>Cerrar sesión</button>";
         actualizarInterfazPanelComercial();
     } else {
         info.textContent = "No hay una sesión iniciada.";
@@ -1677,7 +1541,7 @@ async function cargarUbicacionesComercios() {
         }
         actualizarVista(filtroActual);
         if (localizados > 0) {
-            const puntos = comerciosVEA.filter(c => Number.isFinite(c.lat) && Number.isFinite(c.lng)).map(c => [c.lat, c.lng]);
+            const puntos = comerciosVEA.filter(c => Number.isFinite(c.lat) && Number.isFinite(c.lng) && c.pagoConfirmado).map(c => [c.lat, c.lng]);
             if (puntos.length) map.fitBounds(L.latLngBounds(puntos), { padding: [20, 20], maxZoom: 15 });
         }
         aviso.className = "status-box status-ok";
@@ -1693,12 +1557,11 @@ function filtrarPorBusqueda() {
     actualizarVista(filtroActual);
 }
 
-// --- FUNCIÓN DE ORDENAMIENTO ESTRICTO POR PLAN (Premium -> Intermedio -> Básico) ---
 function obtenerPesoPlan(planStr) {
     const p = String(planStr || "").toUpperCase();
     if (p.includes("PREMIUM")) return 3;
     if (p.includes("INTERMEDIO") || p.includes("STANDARD")) return 2;
-    return 1; // Básico
+    return 1;
 }
 
 function actualizarVista(filtro) {
@@ -1709,11 +1572,12 @@ function actualizarVista(filtro) {
     const contenedor = document.getElementById("contenedorVidrieras");
     contenedor.innerHTML = "";
 
-    // Filtrado exhaustivo por palabras clave (nombre, rubro, dirección, oferta, productos y descripciones)
-    const listaFiltrada = comerciosVEA.filter(c => {
+    // REGLA CLAVE DE SEGURIDAD: Solo se muestran los comercios cuyo pago estuviere confirmado (pagoConfirmado === true)
+    const comerciosPublicos = comerciosVEA.filter(c => c.pagoConfirmado === true);
+
+    const listaFiltrada = comerciosPublicos.filter(c => {
         const cumpleRubro = (filtro === "todos" || c.rubro === filtro);
         
-        // Recopilamos todo el texto posible del comercio para buscar coincidencias de palabras clave
         let textoProductos = "";
         if (c.productos && c.productos.length > 0) {
             textoProductos = c.productos.map(p => p.titulo + " " + p.desc + " " + p.promo).join(" ");
@@ -1732,18 +1596,17 @@ function actualizarVista(filtro) {
         return cumpleRubro && cumpleBusqueda;
     });
 
-    // Ordenamiento estricto por jerarquía de planes: Premium (3) arriba, luego Intermedio (2) y Básico (1)
     const listaOrdenada = listaFiltrada.sort((a, b) => {
         const pesoA = obtenerPesoPlan(a.plan);
         const pesoB = obtenerPesoPlan(b.plan);
         if (pesoB !== pesoA) {
-            return pesoB - pesoA; // Mayor peso (Premium) primero
+            return pesoB - pesoA;
         }
-        return b.id - a.id; // Si tienen el mismo plan, orden predeterminado
+        return b.id - a.id;
     });
 
     if (!listaOrdenada.length) {
-        contenedor.innerHTML = '<div class="empty">No se encontraron comercios o productos con esa búsqueda.</div>';
+        contenedor.innerHTML = '<div class="empty">No se encontraron comercios activos con esa búsqueda.</div>';
     }
 
     listaOrdenada.forEach(comercio => {
@@ -1804,7 +1667,9 @@ function renderizarCuponesYDirectorio() {
     cupones.innerHTML = "";
     directorio.innerHTML = "";
 
-    comerciosVEA.forEach(c => {
+    const comerciosPublicos = comerciosVEA.filter(c => c.pagoConfirmado === true);
+
+    comerciosPublicos.forEach(c => {
         const ubicacionFormateada = formatearUbicacionComercio(c);
         const filaCupon = document.createElement("div");
         filaCupon.className = "card-cupon-exclusivo";
@@ -1836,7 +1701,7 @@ function buscarComercio(id) {
 
 function abrirDetalleComercio(id) {
     const comercio = buscarComercio(id);
-    if (!comercio) return;
+    if (!comercio || !comercio.pagoConfirmado) return;
     comercioActualId = comercio.id;
 
     document.getElementById("tituloComercioDetalle").textContent = comercio.nombre;
@@ -1953,7 +1818,7 @@ function irAlInicio() {
 
 function centrarMapaAccion() {
     mostrarVista("vistaPrincipal");
-    const puntos = comerciosVEA.filter(c => Number.isFinite(c.lat) && Number.isFinite(c.lng)).map(c => [c.lat, c.lng]);
+    const puntos = comerciosVEA.filter(c => Number.isFinite(c.lat) && Number.isFinite(c.lng) && c.pagoConfirmado).map(c => [c.lat, c.lng]);
     if (puntos.length) map.fitBounds(L.latLngBounds(puntos), { padding: [20, 20], maxZoom: 15 });
     setTimeout(() => map.invalidateSize(), 180);
 }
