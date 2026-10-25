@@ -1,0 +1,1954 @@
+﻿<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>V.E.A. | Vidrieras Electrónicas Argentinas</title>
+
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+    <!-- FontAwesome para íconos dinámicos de rubro -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+
+    <style>
+        :root {
+            --verde: #062e22;
+            --verde2: #0b4533;
+            --dorado: #d4af37;
+            --fondo: #f4f7f5;
+            --texto: #173c30;
+            --muted: #62776e;
+            --borde: #d1ded7;
+            --blanco: #fff;
+            --azul: #2563eb;
+            --whatsapp: #16a34a;
+            --rojo: #dc2626;
+        }
+
+        *, *::before, *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: system-ui,-apple-system,"Segoe UI",sans-serif;
+            color: var(--texto);
+            background: var(--fondo);
+            min-height: 100vh;
+            padding-bottom: 75px;
+        }
+
+        button, input, select, textarea {
+            font: inherit;
+        }
+
+        button, a {
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        button {
+            cursor: pointer;
+        }
+
+        .app-header {
+            background: linear-gradient(135deg,var(--verde),var(--verde2));
+            color: white;
+            text-align: center;
+            padding: 10px;
+            border-bottom: 2px solid var(--dorado);
+        }
+
+        .app-header h1 {
+            color: var(--dorado);
+            letter-spacing: 3px;
+            font-size: 1.4rem;
+        }
+
+        .app-header p {
+            font-size: .65rem;
+            letter-spacing: 1px;
+            color: #c2dcd1;
+        }
+
+        /* Barra de Búsqueda Compacta */
+        .search-bar-container {
+            margin: 8px 12px 4px;
+            display: flex;
+            background: white;
+            border: 2px solid var(--dorado);
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(6, 46, 34, 0.08);
+        }
+
+        .search-bar-container input {
+            flex: 1;
+            border: 0;
+            padding: 9px 12px;
+            font-size: 0.85rem;
+            outline: none;
+            background: transparent;
+            color: var(--texto);
+        }
+
+        .search-bar-container button {
+            background: var(--verde);
+            color: var(--dorado);
+            border: 0;
+            padding: 0 14px;
+            font-weight: 800;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1rem;
+        }
+
+        .banner {
+            margin: 4px 12px;
+            padding: 6px 10px;
+            text-align: center;
+            border-radius: 8px;
+            background: var(--verde);
+            color: #fef08a;
+            border: 1px solid var(--dorado);
+            font-size: .75rem;
+        }
+
+        .banner-premium-rotativo {
+            margin: 4px 12px;
+            padding: 8px 12px;
+            background: linear-gradient(135deg, #182333, #0b131d);
+            border: 1px solid var(--dorado);
+            border-radius: 10px;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: 0 2px 8px rgba(212, 175, 55, 0.15);
+            transition: opacity 0.5s ease;
+        }
+
+        .banner-premium-info h4 {
+            color: var(--dorado);
+            font-size: .85rem;
+            margin-bottom: 1px;
+        }
+
+        .banner-premium-info p {
+            font-size: .72rem;
+            color: #cbd5e1;
+        }
+
+        .cupones-top {
+            display: block;
+            margin: 4px 12px;
+            padding: 8px;
+            background: linear-gradient(135deg, var(--verde), var(--verde2)) !important;
+            color: var(--dorado) !important;
+            border: 1px solid var(--dorado) !important;
+            border-radius: 10px;
+            font-weight: 800;
+            width: calc(100% - 24px);
+            font-size: .78rem;
+            box-shadow: 0 2px 8px rgba(6, 46, 34, 0.15);
+            text-align: center;
+            cursor: pointer;
+        }
+
+        .banner-suscripcion-home {
+            margin: 0 12px 4px;
+            padding: 8px 12px;
+            background: linear-gradient(135deg, var(--verde), var(--verde2));
+            border: 1px solid var(--dorado);
+            border-radius: 10px;
+            text-align: center;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 8px;
+        }
+
+        .categories {
+            display: flex;
+            gap: 6px;
+            overflow-x: auto;
+            padding: 6px 12px 8px;
+        }
+
+        .cat-pill {
+            flex: none;
+            border: 1px solid var(--borde);
+            border-radius: 20px;
+            padding: 5px 12px;
+            background: white;
+            color: var(--verde);
+            font-size: .75rem;
+            font-weight: 650;
+        }
+
+        .cat-pill.active, .cat-pill:hover {
+            background: var(--verde);
+            color: var(--dorado);
+            border-color: var(--dorado);
+        }
+
+        /* Contenedor Principal Optimizado para dar más espacio al mapa */
+        .main-container {
+            display: flex;
+            height: calc(100vh - 240px);
+            min-height: 420px;
+        }
+
+        .map-column {
+            width: 50%;
+            height: 100%;
+            position: relative;
+            border-right: 1px solid var(--borde);
+        }
+
+        #map {
+            width: 100%;
+            height: 100%;
+        }
+
+        .showcase-column {
+            width: 50%;
+            overflow: auto;
+            padding: 12px;
+        }
+
+        .section-title {
+            font-size: 0.95rem;
+            font-weight: 800;
+            margin-bottom: 10px;
+        }
+
+        .grid-vidrieras {
+            display: grid;
+            grid-template-columns: repeat(auto-fill,minmax(190px,1fr));
+            gap: 12px;
+        }
+
+        .card-vidriera, .section-ajustes, .card-notificacion,
+        .card-cupon-exclusivo, .item-lista-directorio, .card-comentario {
+            background: white;
+            border: 1px solid var(--borde);
+            border-radius: 12px;
+            overflow: hidden;
+        }
+
+        .card-vidriera {
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 2px 6px #062e220c;
+            transition: transform 0.15s ease;
+        }
+
+        .card-vidriera:hover {
+            border-color: var(--dorado);
+            transform: translateY(-2px);
+        }
+
+        .card-img-container {
+            min-height: 110px;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg,var(--verde2),var(--verde));
+            color: var(--dorado);
+            font-size: 2.2rem;
+            overflow: hidden;
+        }
+
+        .card-img-container img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            position: absolute;
+            top: 0;
+            left: 0;
+        }
+
+        .badge-plan, .badge-discount {
+            position: absolute;
+            top: 6px;
+            font-size: .6rem;
+            font-weight: 800;
+            padding: 3px 6px;
+            border-radius: 4px;
+            z-index: 2;
+        }
+
+        .badge-plan {
+            left: 6px;
+            background: var(--verde);
+            color: var(--dorado);
+            border: 1px solid var(--dorado);
+        }
+
+        .badge-discount {
+            right: 6px;
+            background: #b91c1c;
+            color: white;
+            max-width: 65%;
+            text-align: center;
+        }
+
+        .card-body {
+            padding: 10px;
+            display: flex;
+            flex: 1;
+            flex-direction: column;
+            gap: 6px;
+            text-align: center;
+        }
+
+        .card-body h3 {
+            font-size: .9rem;
+        }
+
+        .card-body p, .muted {
+            font-size: .75rem;
+            color: var(--muted);
+        }
+
+        .stars {
+            color: var(--dorado);
+            font-size: .8rem;
+        }
+
+        .views {
+            background: #eef5f0;
+            padding: 4px 6px;
+            border-radius: 16px;
+            font-size: .7rem;
+            color: var(--verde);
+        }
+
+        .btn {
+            display: inline-block;
+            border: 0;
+            border-radius: 6px;
+            padding: 7px 10px;
+            text-align: center;
+            text-decoration: none;
+            font-size: .75rem;
+            font-weight: 750;
+        }
+
+        .btn-wa {
+            background: var(--whatsapp);
+            color: white;
+        }
+
+        .btn-maps {
+            background: white;
+            color: var(--verde);
+            border: 1px solid var(--borde);
+            font-weight: 800;
+        }
+
+        .btn-primary {
+            background: var(--verde);
+            color: var(--dorado);
+            border: 1px solid var(--dorado);
+        }
+
+        .btn-secondary {
+            background: #e2e8f0;
+            color: var(--texto);
+        }
+
+        .btn-danger {
+            background: var(--rojo);
+            color: white;
+        }
+
+        .btn-block {
+            width: 100%;
+        }
+
+        .vista-secundaria {
+            display: none;
+            padding: 16px;
+            min-height: 55vh;
+            padding-bottom: 85px;
+        }
+
+        .card-cupon-exclusivo {
+            padding: 12px;
+            margin-bottom: 10px;
+            border-style: dashed;
+            border-color: var(--dorado);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+        }
+
+        .cupon-info h4 {
+            font-size: .9rem;
+            margin-bottom: 4px;
+        }
+
+        .cupon-info p {
+            font-size: .78rem;
+            color: var(--muted);
+            margin-bottom: 6px;
+        }
+
+        .codigo-tag {
+            font-family: monospace;
+            background: #eef2f0;
+            padding: 4px 6px;
+            border-radius: 4px;
+            font-size: .78rem;
+        }
+
+        .item-lista-directorio {
+            padding: 12px;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 8px;
+            cursor: pointer;
+        }
+
+        .item-lista-info h4 {
+            font-size: .85rem;
+        }
+
+        .item-lista-info p {
+            font-size: .75rem;
+            color: var(--muted);
+            margin-top: 2px;
+        }
+
+        .card-notificacion {
+            padding: 12px;
+            margin-bottom: 10px;
+            border-left: 4px solid var(--dorado);
+        }
+
+        .card-notificacion h4 {
+            font-size: .85rem;
+            margin-bottom: 4px;
+        }
+
+        .card-notificacion p {
+            font-size: .78rem;
+            color: var(--muted);
+        }
+
+        .section-ajustes {
+            padding: 14px;
+            margin-bottom: 12px;
+        }
+
+        .section-ajustes h3 {
+            font-size: .9rem;
+            border-bottom: 1px solid var(--borde);
+            padding-bottom: 8px;
+            margin-bottom: 12px;
+        }
+
+        .form-group {
+            margin-bottom: 10px;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: .78rem;
+            font-weight: 700;
+            margin-bottom: 4px;
+        }
+
+        .form-group input, .form-group select, .form-group textarea {
+            width: 100%;
+            padding: 8px 10px;
+            border: 1px solid var(--borde);
+            border-radius: 6px;
+            background: #fafafa;
+        }
+
+        .detalle-topbar {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 14px;
+            flex-wrap: wrap;
+        }
+
+        .btn-back {
+            background: var(--verde);
+            color: white;
+            border: 0;
+            padding: 8px 12px;
+            border-radius: 6px;
+        }
+
+        .banner-destacado, .banner-upgrade {
+            background: linear-gradient(135deg,var(--verde),var(--verde2));
+            color: white;
+            border: 1px solid var(--dorado);
+            border-radius: 12px;
+            padding: 14px;
+            text-align: center;
+            margin-bottom: 14px;
+        }
+
+        .planes-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .plan-card {
+            background: #fafcfb;
+            border: 1px solid var(--borde);
+            border-radius: 8px;
+            padding: 12px;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .plan-card h4 {
+            font-size: .85rem;
+            color: var(--verde);
+            margin-bottom: 2px;
+        }
+
+        .plan-precio {
+            font-size: 1.25rem;
+            font-weight: 900;
+            color: var(--dorado);
+            margin: 2px 0;
+        }
+
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(6, 46, 34, 0.85);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 3000;
+            padding: 10px;
+            overflow-y: auto;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 12px;
+            max-width: 500px;
+            width: 100%;
+            max-height: 85vh;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 10px 28px rgba(0,0,0,0.4);
+            border-top: 4px solid var(--dorado);
+            overflow: hidden;
+            margin: auto;
+        }
+
+        .modal-header-body {
+            padding: 16px;
+            overflow-y: auto;
+            flex: 1;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        .modal-footer {
+            padding: 8px 16px;
+            background: #f8fafc;
+            border-top: 1px solid var(--borde);
+            display: flex;
+            gap: 8px;
+        }
+
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 58px;
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            background: white;
+            border-top: 1px solid var(--borde);
+            box-shadow: 0 -2px 8px #062e2210;
+            z-index: 2000;
+        }
+
+        .nav-item {
+            background: none;
+            border: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            font-size: .65rem;
+            color: var(--muted);
+            position: relative;
+        }
+
+        .nav-item.active {
+            color: var(--verde);
+            font-weight: 800;
+        }
+
+        .nav-item .icon {
+            font-size: 1.1rem;
+        }
+
+        .nav-floating-btn {
+            border: 3px solid #ffffff;
+            background: linear-gradient(135deg, #cda12f, #bf9324);
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.18);
+            margin-top: -16px;
+            transition: transform 0.2s ease;
+        }
+
+        .nav-floating-btn:hover {
+            transform: scale(1.05);
+        }
+
+        .nav-floating-btn svg {
+            width: 22px;
+            height: 22px;
+        }
+
+        /* Menú Flotante de Pagos y Botón Tarjeta */
+        .pay-btn-float {
+            position: absolute;
+            bottom: 16px;
+            right: 16px;
+            z-index: 1000;
+            background: linear-gradient(135deg, var(--dorado), #b8860b);
+            border: 2px solid #fff;
+            border-radius: 50%;
+            width: 46px;
+            height: 46px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--verde);
+            font-size: 1.2rem;
+            cursor: pointer;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.4);
+        }
+
+        .payment-menu {
+            position: absolute;
+            bottom: 72px;
+            right: 16px;
+            z-index: 1001;
+            background: white;
+            border: 2px solid var(--dorado);
+            border-radius: 10px;
+            padding: 10px;
+            width: 250px;
+            display: none;
+            flex-direction: column;
+            gap: 6px;
+            box-shadow: 0 6px 18px rgba(0,0,0,0.25);
+        }
+
+        .payment-option {
+            padding: 8px 10px;
+            border-radius: 6px;
+            color: white;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+            font-size: 0.78rem;
+            text-decoration: none;
+        }
+
+        .opt-provincia { background: #166534; }
+        .opt-nacion { background: #1e3a8a; }
+        .opt-galicia { background: #c2410c; }
+
+        /* Estilo para Marcadores Estilizados */
+        .custom-marker {
+            background: var(--verde);
+            border: 2px solid var(--dorado);
+            border-radius: 50% 50% 50% 0;
+            transform: rotate(-45deg);
+            width: 34px;
+            height: 34px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 3px 6px rgba(0,0,0,0.4);
+        }
+
+        .custom-marker i {
+            transform: rotate(45deg);
+            color: var(--dorado);
+            font-size: 0.95rem;
+        }
+
+        .badge-notif-count {
+            position: absolute;
+            top: -3px;
+            right: 1px;
+            background: #ef4444;
+            color: white;
+            padding: 1px 4px;
+            border-radius: 10px;
+            font-size: .6rem;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        .status-box {
+            padding: 8px 10px;
+            margin-bottom: 10px;
+            border-radius: 6px;
+            background: #fff7ed;
+            color: #9a3412;
+            font-size: .78rem;
+        }
+
+        .status-ok {
+            background: #ecfdf5;
+            color: #166534;
+        }
+
+        .empty {
+            padding: 16px;
+            text-align: center;
+            color: var(--muted);
+            font-size: .82rem;
+        }
+
+        .popup-title {
+            font-weight: 800;
+            color: var(--verde);
+        }
+
+        /* En celulares: Mapa arriba con excelente altura y scroll abajo */
+        @media(max-width:768px) {
+            .main-container {
+                height: auto;
+                min-height: 0;
+                display: flex;
+                flex-direction: column;
+                padding-bottom: 65px;
+            }
+
+            .map-column {
+                width: 100%;
+                height: 360px; /* ¡Mapa mucho más grande y cómodo en celu! */
+                min-height: 360px;
+                border-right: 0;
+                border-bottom: 2px solid var(--dorado);
+            }
+
+            #map {
+                width: 100%;
+                height: 360px;
+                min-height: 360px;
+            }
+
+            .showcase-column {
+                width: 100%;
+                overflow: visible;
+                padding: 12px;
+            }
+
+            .grid-vidrieras {
+                grid-template-columns: repeat(auto-fill,minmax(150px,1fr));
+                gap: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <header class="app-header">
+        <h1>V.E.A.</h1>
+        <p>VIDRIERAS ELECTRÓNICAS ARGENTINAS</p>
+    </header>
+
+    <!-- Barra de Búsqueda Compacta -->
+    <div class="search-bar-container">
+        <input type="text" id="inputBusquedaGlobal" placeholder="🔍 Buscar comercio, producto o servicio..." oninput="filtrarPorBusqueda()">
+        <button onclick="filtrarPorBusqueda()">🔍</button>
+    </div>
+
+    <div class="banner" id="bannerSloganMain">
+        ✨ Red Comercial Geolocalizada — Sumate a la red V.E.A. desde <strong>USD 5</strong> mensuales.
+    </div>
+
+    <!-- Banner Rotativo Premium -->
+    <div class="banner-premium-rotativo" id="bannerRotativoPremium">
+        <div class="banner-premium-info">
+            <span style="background:var(--dorado);color:var(--verde);font-size:.6rem;font-weight:800;padding:2px 5px;border-radius:4px">⭐ DESTACADO PREMIUM V.E.A.</span>
+            <h4 id="premRotativoNombre">Cargando comercio destacado...</h4>
+            <p id="premRotativoOferta">Oferta exclusiva</p>
+        </div>
+        <button class="btn" style="background:var(--dorado);color:var(--verde);font-size:.72rem;padding:6px 10px;font-weight:800;" id="premRotativoBtn">Ver vidriera</button>
+    </div>
+
+    <div class="banner-suscripcion-home">
+        <div style="text-align: left;">
+            <strong style="color:var(--dorado); font-size:.82rem;">¿Tenés un comercio o emprendimiento?</strong>
+            <p style="font-size: .72rem; color: #c2dcd1;">Elegí tu plan y potenciá tus ventas online.</p>
+        </div>
+        <button class="btn" style="background:var(--dorado); color:var(--verde); font-weight:800; white-space:nowrap;" onclick="mostrarVista('vistaAjustes')">⭐ Ver Planes</button>
+    </div>
+
+    <button class="cupones-top" id="btnCuponesMain" onclick="mostrarVista('vistaCupones')">
+        🎟️ EXPLORAR CUPONES Y OFERTAS EXCLUSIVAS
+    </button>
+
+    <div class="categories" id="gridPildorasMain">
+        <button class="cat-pill active" data-rubro="todos" onclick="filtrarRubro('todos',this)">🌐 Todos</button>
+        <button class="cat-pill" data-rubro="gastronomia" onclick="filtrarRubro('gastronomia',this)">🍕 Gastronomía</button>
+        <button class="cat-pill" data-rubro="comercio" onclick="filtrarRubro('comercio',this)">🛍️ Comercio</button>
+        <button class="cat-pill" data-rubro="servicios" onclick="filtrarRubro('servicios',this)">🧰 Servicios</button>
+        <button class="cat-pill" data-rubro="emprendedores" onclick="filtrarRubro('emprendedores',this)">⭐ Emprendedores</button>
+    </div>
+
+    <main class="main-container" id="vistaPrincipal">
+        <section class="map-column">
+            <div id="map"></div>
+            <!-- Botón flotante de pagos sobre el mapa -->
+            <div class="pay-btn-float" onclick="togglePaymentMenu()" title="Medios de pago">
+                <i class="fa-solid fa-credit-card"></i>
+            </div>
+            <div class="payment-menu" id="paymentMenu">
+                <div style="font-size:0.78rem; font-weight:800; color:var(--verde); margin-bottom:4px; text-align:center;">Medios de Pago Locales</div>
+                <div class="payment-option opt-provincia">
+                    <i class="fa-solid fa-qrcode"></i> Banco Provincia (Cuenta DNI)
+                </div>
+                <div class="payment-option opt-nacion">
+                    <i class="fa-solid fa-wallet"></i> Banco Nación (MODO)
+                </div>
+                <div class="payment-option opt-galicia">
+                    <i class="fa-solid fa-money-check-dollar"></i> Banco Galicia (Nave)
+                </div>
+            </div>
+        </section>
+        <section class="showcase-column">
+            <h2 class="section-title">📍 Vidrieras Cerca Tuyo</h2>
+            <div id="avisoUbicaciones" class="status-box">
+                Preparando el mapa. Las direcciones se comprobarán antes de mostrar sus marcadores.
+            </div>
+            <div class="grid-vidrieras" id="contenedorVidrieras"></div>
+        </section>
+    </main>
+
+    <!-- VISTA CUPONES -->
+    <section class="vista-secundaria" id="vistaCupones">
+        <div class="detalle-topbar">
+            <button class="btn-back" onclick="irAlInicio()">← Volver al inicio</button>
+            <h2 class="section-title" style="margin:0">🎟️ Cupones y descuentos</h2>
+        </div>
+        <div id="contenedorCupones"></div>
+    </section>
+
+    <!-- VISTA LISTAS -->
+    <section class="vista-secundaria" id="vistaListas">
+        <div class="detalle-topbar">
+            <button class="btn-back" onclick="irAlInicio()">← Volver al inicio</button>
+            <h2 class="section-title" style="margin:0">📋 Directorio de comercios</h2>
+        </div>
+        <div id="contenedorDirectorio"></div>
+    </section>
+
+    <!-- VISTA NOTIFICACIONES -->
+    <section class="vista-secundaria" id="vistaNotificaciones">
+        <div class="detalle-topbar">
+            <button class="btn-back" onclick="irAlInicio()">← Volver al inicio</button>
+            <h2 class="section-title" style="margin:0">🔔 Notificaciones y promociones</h2>
+        </div>
+        <div id="contenedorNotificaciones"></div>
+    </section>
+
+    <!-- VISTA AJUSTES Y PANEL COMERCIAL -->
+    <section class="vista-secundaria" id="vistaAjustes">
+        <div class="detalle-topbar">
+            <button class="btn-back" onclick="irAlInicio()">← Volver al inicio</button>
+            <h2 class="section-title" style="margin:0">⚙️ Ajustes y Mi Cuenta</h2>
+        </div>
+
+        <!-- Estado de Sesión -->
+        <div class="section-ajustes" id="seccionEstadoSesion">
+            <h3>👤 Mi Cuenta</h3>
+            <p id="infoSesionActual" class="muted" style="margin-bottom:8px">No hay una sesión iniciada.</p>
+            <div style="display:flex; gap:8px;">
+                <button class="btn btn-secondary" style="flex:1" onclick="abrirModalLogin()">Iniciar Sesión</button>
+                <button class="btn btn-primary" style="flex:1" onclick="abrirModalRegistro()">Registrarse</button>
+            </div>
+        </div>
+
+        <!-- Panel de Autogestión del Comerciante -->
+        <div class="section-ajustes hidden" id="panelComercialAutogestion" style="border: 2px solid var(--dorado);">
+            <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid var(--borde); padding-bottom:8px; margin-bottom:12px;">
+                <h3 style="color:var(--dorado); margin:0;">🏪 Mi Panel Comerciante V.E.A.</h3>
+                <span id="badgePlanActualPanel" style="background:var(--verde); color:var(--dorado); font-size:0.7rem; font-weight:800; padding:3px 6px; border-radius:6px; border:1px solid var(--dorado)">PLAN: BÁSICO</span>
+            </div>
+
+            <div class="form-group">
+                <label for="inputComercioNombre">Nombre del Comercio</label>
+                <input type="text" id="inputComercioNombre" placeholder="Ej: Cervecería El Tordo">
+            </div>
+            <div class="form-group">
+                <label for="inputComercioRubro">Rubro</label>
+                <select id="inputComercioRubro">
+                    <option value="gastronomia">Gastronomía</option>
+                    <option value="comercio">Comercio</option>
+                    <option value="servicios">Servicios</option>
+                    <option value="emprendedores">Emprendedores</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="inputComercioDireccion">Dirección Calle y Altura</label>
+                <input type="text" id="inputComercioDireccion" placeholder="Ej: Av. Rivadavia 18200, Morón">
+            </div>
+            <div class="form-group">
+                <label for="inputComercioGaleria">Nombre de la Galería (Opcional)</label>
+                <input type="text" id="inputComercioGaleria" placeholder="Ej: Galería Avellaneda Center">
+            </div>
+            <div class="form-group">
+                <label for="inputComercioLocal">Número de Local (Opcional)</label>
+                <input type="text" id="inputComercioLocal" placeholder="Ej: Local 12">
+            </div>
+
+            <!-- Carga de Video Promocional con Validación de Segundos -->
+            <div style="background:#182333; color:white; padding:10px; border-radius:8px; margin-bottom:10px; border:1px solid var(--dorado);" id="seccionCargaVideoPanel">
+                <label style="font-weight:700; color:var(--dorado); margin-bottom:3px; display:block;" id="labelVideoPlan">🎬 Video Promocional (Según tu plan)</label>
+                <p style="font-size:0.72rem; color:#cbd5e1; margin-bottom:6px;">El sistema validará automáticamente que la duración no supere el límite de tu plan.</p>
+                <input type="file" id="archivoVideoPromo" accept="video/*" style="background:white; color:#000; padding:5px; width:100%; border-radius:6px;" onchange="validarDuracionVideo(this)">
+            </div>
+
+            <!-- Gestión de Cupones -->
+            <div style="background:#f4f7f5; padding:10px; border-radius:8px; margin-bottom:10px; border:1px solid var(--borde);">
+                <label style="font-weight:700; margin-bottom:5px; display:block;">🎟️ Gestión de Cupones de Descuento</label>
+                <div id="listaCuponesPanel" style="margin-bottom:6px;"></div>
+                <div style="display:flex; gap:6px;">
+                    <input type="text" id="nuevoCuponTitulo" placeholder="Ej: 2x1 en Pintas IPA" style="flex:2">
+                    <input type="text" id="nuevoCuponCodigo" placeholder="Código (Ej: VEA-IPA)" style="flex:1">
+                    <button class="btn btn-primary" onclick="agregarCuponPanel()">+ Agregar</button>
+                </div>
+            </div>
+
+            <!-- Gestión de Publicaciones (Fotos) con Límites por Plan -->
+            <div style="background:#f4f7f5; padding:10px; border-radius:8px; margin-bottom:10px; border:1px solid var(--borde);">
+                <label style="font-weight:700; margin-bottom:5px; display:block;" id="labelPublicacionesPlan">🖼️ Subir Publicaciones / Fotos</label>
+                <div id="listaPublicacionesPanel" style="margin-bottom:6px;"></div>
+                <div class="form-group">
+                    <label for="archivoFotoPub">Seleccionar foto de galería:</label>
+                    <input type="file" id="archivoFotoPub" accept="image/*" style="background:white; padding:6px;">
+                </div>
+                <div style="display:flex; gap:6px; margin-bottom:6px;">
+                    <input type="text" id="nuevaPubTitulo" placeholder="Título (Ej: Hamburguesa Doble)" style="flex:2">
+                    <input type="text" id="nuevaPubPromo" placeholder="Promo (Ej: 20% OFF)" style="flex:1">
+                </div>
+                <div class="form-group">
+                    <label for="nuevaPubDescDetallada">Descripción Ampliada</label>
+                    <textarea id="nuevaPubDescDetallada" rows="2" placeholder="Detalles, ingredientes..."></textarea>
+                </div>
+                <button class="btn btn-primary btn-block" onclick="agregarPublicacionConFoto()">+ Subir Publicación a mi Vidriera</button>
+            </div>
+
+            <button class="btn btn-primary btn-block" onclick="guardarDatosPanelComercio()">💾 Guardar y Actualizar Vidriera</button>
+        </div>
+
+        <!-- Sección de Planes con Links Directos de Mercado Pago -->
+        <div class="section-ajustes">
+            <h3>💳 Planes de suscripción V.E.A.</h3>
+            <p class="muted" style="margin-bottom:10px">Elegí tu plan comercial para activar el acceso completo y la prioridad en el mapa.</p>
+
+            <div class="planes-grid">
+                <div class="plan-card">
+                    <div>
+                        <h4>Plan Básico</h4>
+                        <div class="plan-precio">USD 5</div>
+                        <p class="muted" style="font-size:.7rem">Acceso Directo</p>
+                        <p class="muted" style="font-size:.72rem; margin-top:4px;">Hasta <strong>10 publicaciones</strong>.<br>Video de hasta <strong>10 segundos</strong>.</p>
+                    </div>
+                    <a href="https://mpago.la/2S79kb4" target="_blank" rel="noopener" class="btn btn-primary btn-block" style="margin-top:8px; text-decoration:none;">Suscribirse</a>
+                </div>
+
+                <div class="plan-card" style="border-color: var(--dorado)">
+                    <div>
+                        <span style="background:var(--dorado);color:var(--verde);font-size:.58rem;font-weight:800;padding:2px 5px;border-radius:4px">POPULAR</span>
+                        <h4>Plan Intermedio</h4>
+                        <div class="plan-precio">USD 10</div>
+                        <p class="muted" style="font-size:.7rem">Acceso Directo</p>
+                        <p class="muted" style="font-size:.72rem; margin-top:4px;">Hasta <strong>20 publicaciones</strong>.<br>Video de hasta <strong>20 segundos</strong>.</p>
+                    </div>
+                    <a href="https://mpago.la/1qQYKhJ" target="_blank" rel="noopener" class="btn btn-primary btn-block" style="margin-top:8px; text-decoration:none;">Suscribirse</a>
+                </div>
+
+                <div class="plan-card">
+                    <div>
+                        <h4>Plan Premium</h4>
+                        <div class="plan-precio">USD 15</div>
+                        <p class="muted" style="font-size:.7rem">Acceso Directo</p>
+                        <p class="muted" style="font-size:.72rem; margin-top:4px;">Hasta <strong>40 publicaciones</strong>.<br>Video de hasta <strong>1 minuto</strong>.</p>
+                    </div>
+                    <a href="https://mpago.la/2uckMU3" target="_blank" rel="noopener" class="btn btn-primary btn-block" style="margin-top:8px; text-decoration:none;">Suscribirse</a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Modal de Ampliación de Publicación -->
+    <div id="modalPublicacionDetalle" class="modal-overlay hidden">
+        <div class="modal-content">
+            <div class="modal-header-body" style="text-align: center;">
+                <h3 id="modalPubTitulo" style="color:var(--verde); margin-bottom:8px;"></h3>
+                <div id="modalPubImagenContainer" style="width: 100%; max-height: 280px; overflow: hidden; border-radius: 8px; background: #000; display: flex; align-items: center; justify-content: center; margin-bottom: 10px;"></div>
+                <div style="text-align: left; background: #f8fafc; padding: 10px; border-radius: 6px; border: 1px solid var(--borde);">
+                    <p style="font-weight: 700; color: var(--dorado); margin-bottom: 3px;" id="modalPubPromo"></p>
+                    <p style="font-size: 0.85rem; color: var(--texto); line-height: 1.3;" id="modalPubDescAmpliada"></p>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <a id="modalPubBtnWa" class="btn btn-wa" style="flex:1; text-align:center;" target="_blank" rel="noopener">💬 Consultar por WhatsApp</a>
+                <button class="btn btn-secondary" onclick="cerrarModalPublicacion()">Cerrar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de Registro -->
+    <div id="modalRegistro" class="modal-overlay hidden">
+        <div class="modal-content" style="max-height: 90vh;">
+            <div class="modal-header-body">
+                <h3>📝 Registro de Nueva Cuenta Comerciante</h3>
+                <div class="form-group">
+                    <label for="regNombre">Nombre del Comercio / Alias</label>
+                    <input type="text" id="regNombre" placeholder="Ej: Cervecería El Tordo">
+                </div>
+                <div class="form-group">
+                    <label for="regEmail">Correo electrónico (Email)</label>
+                    <input type="email" id="regEmail" placeholder="comercio@ejemplo.com">
+                </div>
+                <div class="form-group">
+                    <label for="regPassword">Contraseña</label>
+                    <input type="password" id="regPassword" placeholder="Mínimo 6 caracteres">
+                </div>
+                <p id="errorRegistro" style="color:#b91c1c;font-size:.75rem;margin-bottom:6px;display:none;"></p>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" style="flex:1" onclick="cerrarModalRegistro()">Cancelar</button>
+                <button class="btn btn-primary" style="flex:1" onclick="guardarNuevoRegistro()">Registrarse</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de Inicio de Sesión -->
+    <div id="modalLogin" class="modal-overlay hidden">
+        <div class="modal-content" style="max-height: 90vh;">
+            <div class="modal-header-body">
+                <h3>🔑 Iniciar Sesión en V.E.A.</h3>
+                <div class="form-group">
+                    <label for="loginEmail">Correo electrónico</label>
+                    <input type="email" id="loginEmail" placeholder="comercio@vea.com">
+                </div>
+                <div class="form-group">
+                    <label for="loginPassword">Contraseña</label>
+                    <input type="password" id="loginPassword" placeholder="123456">
+                </div>
+                <p id="errorLogin" style="color:#b91c1c;font-size:.75rem;margin-bottom:6px;display:none;"></p>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" style="flex:1" onclick="cerrarModalLogin()">Cancelar</button>
+                <button class="btn btn-primary" style="flex:1" onclick="procesarLogin()">Ingresar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- VISTA DETALLE -->
+    <section class="vista-secundaria" id="vistaDetalle">
+        <div class="detalle-topbar">
+            <button class="btn-back" onclick="irAlInicio()">← Volver al inicio</button>
+            <h2 id="tituloComercioDetalle"></h2>
+        </div>
+        <div id="contenedorBannerDetalle"></div>
+        <div class="section-ajustes" id="direccionDetalle"></div>
+
+        <h3 class="section-title" id="subtituloVentanas"></h3>
+        <p id="tagVisitasDetalle" class="views" style="display:inline-block;margin-bottom:10px"></p>
+        <div class="grid-vidrieras" id="contenedorVentanasComercio"></div>
+    </section>
+
+    <!-- NAVEGACIÓN INFERIOR -->
+    <nav class="bottom-nav">
+        <button class="nav-item active" id="btnNavHome" onclick="irAlInicio()"><span class="icon">🏠</span><span>Inicio</span></button>
+        <button class="nav-item" id="btnNavListas" onclick="mostrarVista('vistaListas')"><span class="icon">📋</span><span>Listas</span></button>
+
+        <button class="nav-floating-btn" onclick="centrarMapaAccion()" title="Centrar mapa" aria-label="Centrar mapa">
+            <svg viewBox="0 0 100 100">
+                <path d="M50 15 C33 15 20 28 20 45 C20 68 50 88 50 88 C50 88 80 68 80 45 C80 28 67 15 50 15 Z" fill="#182333" />
+                <circle cx="50" cy="42" r="11" fill="#cda12f" />
+            </svg>
+        </button>
+
+        <button class="nav-item" id="btnNavNotif" onclick="abrirNotificaciones()"><span class="icon">🔔</span><span>Notif.</span><span class="badge-notif-count" id="badgeNotif">3</span></button>
+        <button class="nav-item" id="btnNavAjustes" onclick="mostrarVista('vistaAjustes')"><span class="icon">⚙️</span><span>Ajustes</span></button>
+    </nav>
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script>
+"use strict";
+
+const telefonoWhatsAppBase = "5491100000000";
+let comercioActualId = null;
+let filtroActual = "todos";
+let terminoBusqueda = "";
+let marcadoresMapa = [];
+let geocodificacionEnCurso = false;
+let usuarioActual = null;
+let videoPromoPanelBase64 = null;
+const cacheUbicaciones = new Map();
+
+const LIMITES_PLANES = {
+    'basico': { maxPubs: 10, maxVideoSec: 10 },
+    'intermedio': { maxPubs: 20, maxVideoSec: 20 },
+    'premium': { maxPubs: 40, maxVideoSec: 60 }
+};
+
+function obtenerUsuariosDB() {
+    let base = JSON.parse(localStorage.getItem("vea_usuarios_db") || "null");
+    if (!base) {
+        base = [
+            { nombre: "Cervecería Artesanal El Tordo", email: "tordo@vea.com", password: "123456", tipo: "comercio", suscripcionActiva: "premium" },
+            { nombre: "Café & Bar Flores", email: "flores@vea.com", password: "123456", tipo: "comercio", suscripcionActiva: "intermedio" }
+        ];
+        localStorage.setItem("vea_usuarios_db", JSON.stringify(base));
+    }
+    return base;
+}
+
+function guardarUsuariosDB(base) {
+    localStorage.setItem("vea_usuarios_db", JSON.stringify(base));
+}
+
+function obtenerSesionActiva() {
+    const sesion = localStorage.getItem("vea_sesion_activa");
+    return sesion ? JSON.parse(sesion) : null;
+}
+
+function guardarSesionActiva(usuario) {
+    if (usuario) {
+        localStorage.setItem("vea_sesion_activa", JSON.stringify(usuario));
+    } else {
+        localStorage.removeItem("vea_sesion_activa");
+    }
+}
+
+let usuariosRegistrados = obtenerUsuariosDB();
+usuarioActual = obtenerSesionActiva();
+
+let cuponesPanelTemp = [{ titulo: "2x1 en Pintas IPA", codigo: "VEA-TORDO-IPA2X1" }];
+let publicacionesPanelTemp = [{ titulo: "Pinta IPA El Tordo", promo: "2x1", desc: "Happy Hour de 18 a 20 hs. Cerveza artesanal elaborada con malta Pale Ale, lúpulo Cascade y Nugget, con notas cítricas y espuma persistente.", imagen: null, icono: "🍺" }];
+
+const comerciosVEA = [
+    {
+        id: 1,
+        nombre: "Cervecería Artesanal El Tordo",
+        rubro: "gastronomia",
+        plan: "PREMIUM",
+        limitePublicaciones: 40,
+        direccion: "Av. Rivadavia 18200, Morón, Buenos Aires, Argentina",
+        galeria: "",
+        nroLocal: "",
+        lat: -34.6434, lng: -58.6231, ubicacionVerificada: true,
+        oferta: "2x1 en Pintas IPA", icono: "beer-mug-empty", esPremium: true,
+        videoPromo: null, rating: 4.8, opiniones: 124,
+        codigoCupon: "VEA-TORDO-IPA2X1",
+        mensajeWA: "Hola! Quiero consultar por el cupón VEA-TORDO-IPA2X1 en Cervecería El Tordo.",
+        productos: [
+            {titulo:"Pinta IPA El Tordo",desc:"2x1 en Happy Hour (18 a 20 hs). Cerveza artesanal elaborada con lúpulos seleccionados, notas cítricas intensas y amargor equilibrado.",icono:"🍺",promo:"2x1",imagen:null},
+            {titulo:"Pinta American Pale Ale",desc:"Cerveza dorada con lúpulo fresco y cuerpo medio.",icono:"🍺",promo:"15% OFF",imagen:null}
+        ]
+    },
+    {
+        id: 2,
+        nombre: "Café & Bar Flores",
+        rubro: "gastronomia",
+        plan: "INTERMEDIO",
+        limitePublicaciones: 20,
+        direccion: "Av. Rivadavia 7000, Flores, Ciudad Autónoma de Buenos Aires, Argentina",
+        galeria: "Galería Rivadavia Center",
+        nroLocal: "Local 14",
+        lat: -34.6273, lng: -58.4623, ubicacionVerificada: true,
+        oferta: "15% OFF Desayunos", icono: "utensils", esPremium: false,
+        videoPromo: null, rating: 4.6, opiniones: 89,
+        codigoCupon: "VEA-FLORES-15OFF",
+        mensajeWA: "Hola, quiero consultar por el cupón VEA-FLORES-15OFF en Café & Bar Flores.",
+        productos: [
+            {titulo:"Café con Medialunas",desc:"Café de especialidad y dos medialunas de manteca recién horneadas.",icono:"🥐",promo:"15% OFF",imagen:null}
+        ]
+    }
+];
+
+const notificaciones = [
+    {titulo:"🔥 Happy Hour en Cervecería El Tordo", texto:"Consultá las condiciones de la promoción 2x1 en pintas."},
+    {titulo:"☕ Descuento en Café & Bar Flores", texto:"Promoción de desayunos. Consultá la disponibilidad."}
+];
+
+const map = L.map("map").setView([-34.65, -58.58], 12);
+
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '&copy; OpenStreetMap contributors'
+}).addTo(map);
+
+const rubroIconosMap = {
+    'gastronomia': 'fa-utensils',
+    'comercio': 'fa-store',
+    'servicios': 'fa-wrench',
+    'emprendedores': 'fa-star',
+    'cerveceria': 'fa-beer-mug-empty',
+    'banco': 'fa-building-columns',
+    'estacion': 'fa-gas-pump',
+    'peluqueria': 'fa-scissors',
+    'default': 'fa-shop'
+};
+
+function obtenerIconoPorRubro(rubro, nombre = "") {
+    const texto = (nombre + " " + rubro).toLowerCase();
+    if (texto.includes('cervez') || texto.includes('tordo') || texto.includes('bar') || texto.includes('birra')) return 'fa-beer-mug-empty';
+    if (texto.includes('banco') || texto.includes('finanz')) return 'fa-building-columns';
+    if (texto.includes('estacion') || texto.includes('ypf') || texto.includes('shell') || texto.includes('combustible')) return 'fa-gas-pump';
+    if (texto.includes('peluquer') || texto.includes('barber')) return 'fa-scissors';
+    return rubroIconosMap[rubro] || rubroIconosMap['default'];
+}
+
+function crearMarcadorPersonalizado(comercio) {
+    const claseIcono = obtenerIconoPorRubro(comercio.rubro, comercio.nombre);
+    return L.divIcon({
+        className: 'custom-pin',
+        html: `<div class="custom-marker"><i class="fa-solid ${claseIcono}"></i></div>`,
+        iconSize: [34, 34],
+        iconAnchor: [17, 34],
+        popupAnchor: [0, -34]
+    });
+}
+
+function togglePaymentMenu() {
+    const menu = document.getElementById('paymentMenu');
+    menu.style.display = (menu.style.display === 'flex') ? 'none' : 'flex';
+}
+
+function formatearUbicacionComercio(comercio) {
+    let texto = comercio.direccion;
+    if (comercio.galeria) {
+        texto += ` (${comercio.galeria}`;
+        if (comercio.nroLocal) {
+            texto += ` - ${comercio.nroLocal}`;
+        }
+        texto += `)`;
+    }
+    return texto;
+}
+
+let indiceBannerPremium = 0;
+function inicializarBannerRotativoPremium() {
+    const comerciosPremium = comerciosVEA.filter(c => c.esPremium);
+    if (comerciosPremium.length === 0) return;
+
+    function actualizarBanner() {
+        const comercio = comerciosPremium[indiceBannerPremium];
+        const bannerEl = document.getElementById("bannerRotativoPremium");
+
+        bannerEl.style.opacity = "0";
+        setTimeout(() => {
+            const iconoStr = comercio.icono ? `<i class="fa-solid ${obtenerIconoPorRubro(comercio.rubro, comercio.nombre)}"></i>` : '⭐';
+            document.getElementById("premRotativoNombre").innerHTML = iconoStr + " " + comercio.nombre;
+            document.getElementById("premRotativoOferta").textContent = "🔥 " + comercio.oferta + " · Prioridad Premium V.E.A.";
+            document.getElementById("premRotativoBtn").setAttribute("onclick", "abrirDetalleComercio(" + comercio.id + ")");
+            bannerEl.style.opacity = "1";
+        }, 250);
+
+        indiceBannerPremium = (indiceBannerPremium + 1) % comerciosPremium.length;
+    }
+
+    actualizarBanner();
+    setInterval(actualizarBanner, 4500);
+}
+
+function validarDuracionVideo(input) {
+    const file = input.files[0];
+    if (!file) return;
+
+    const planClave = usuarioActual && usuarioActual.suscripcionActiva ? usuarioActual.suscripcionActiva : 'basico';
+    const limiteSegundos = LIMITES_PLANES[planClave] ? LIMITES_PLANES[planClave].maxVideoSec : 10;
+
+    const videoElement = document.createElement('video');
+    videoElement.preload = 'metadata';
+    videoElement.src = URL.createObjectURL(file);
+
+    videoElement.onloadedmetadata = function() {
+        window.URL.revokeObjectURL(videoElement.src);
+        const duracion = videoElement.duration;
+        if (duracion > limiteSegundos) {
+            alert(`⚠️ El video dura ${Math.round(duracion)} segundos. Tu plan actual (${planClave.toUpperCase()}) permite un límite máximo de ${limiteSegundos} segundos.`);
+            input.value = "";
+            videoPromoPanelBase64 = null;
+        } else {
+            const lector = new FileReader();
+            lector.onload = function(e) {
+                videoPromoPanelBase64 = e.target.result;
+                alert(`✅ Video validado correctamente (${Math.round(duracion)}s).`);
+            };
+            lector.readAsDataURL(file);
+        }
+    };
+}
+
+function agregarCuponPanel() {
+    const titulo = document.getElementById("nuevoCuponTitulo").value.trim();
+    const codigo = document.getElementById("nuevoCuponCodigo").value.trim();
+    if (!titulo || !codigo) {
+        alert("Completá el título y el código del cupón.");
+        return;
+    }
+    cuponesPanelTemp.push({ titulo, codigo });
+    document.getElementById("nuevoCuponTitulo").value = "";
+    document.getElementById("nuevoCuponCodigo").value = "";
+    renderizarListasPanelComercial();
+}
+
+function eliminarCuponPanel(index) {
+    cuponesPanelTemp.splice(index, 1);
+    renderizarListasPanelComercial();
+}
+
+function agregarPublicacionConFoto() {
+    const planClave = usuarioActual && usuarioActual.suscripcionActiva ? usuarioActual.suscripcionActiva : 'basico';
+    const maxPubsPermitidas = LIMITES_PLANES[planClave].maxPubs;
+
+    if (publicacionesPanelTemp.length >= maxPubsPermitidas) {
+        alert(`⚠️ Alcanzaste el límite de publicaciones de tu ${planClave.toUpperCase()} (${maxPubsPermitidas} publicaciones/fotos máximo).`);
+        return;
+    }
+
+    const titulo = document.getElementById("nuevaPubTitulo").value.trim();
+    const promo = document.getElementById("nuevaPubPromo").value.trim();
+    const desc = document.getElementById("nuevaPubDescDetallada").value.trim();
+    const inputArchivo = document.getElementById("archivoFotoPub");
+
+    if (!titulo) {
+        alert("Ingresá un título para la publicación.");
+        return;
+    }
+
+    if (inputArchivo.files && inputArchivo.files[0]) {
+        const lector = new FileReader();
+        lector.onload = function(e) {
+            publicacionesPanelTemp.push({
+                titulo: titulo,
+                promo: promo || "Promo",
+                desc: desc || "Detalle completo del producto.",
+                imagen: e.target.result,
+                icono: "🛍️"
+            });
+            inputArchivo.value = "";
+            document.getElementById("nuevaPubTitulo").value = "";
+            document.getElementById("nuevaPubPromo").value = "";
+            document.getElementById("nuevaPubDescDetallada").value = "";
+            renderizarListasPanelComercial();
+        };
+        lector.readAsDataURL(inputArchivo.files[0]);
+    } else {
+        publicacionesPanelTemp.push({
+            titulo: titulo,
+            promo: promo || "Promo",
+            desc: desc || "Detalle completo del producto.",
+            imagen: null,
+            icono: "🛍️"
+        });
+        document.getElementById("nuevaPubTitulo").value = "";
+        document.getElementById("nuevaPubPromo").value = "";
+        document.getElementById("nuevaPubDescDetallada").value = "";
+        renderizarListasPanelComercial();
+    }
+}
+
+function eliminarPublicacionPanel(index) {
+    publicacionesPanelTemp.splice(index, 1);
+    renderizarListasPanelComercial();
+}
+
+function renderizarListasPanelComercial() {
+    const divCupones = document.getElementById("listaCuponesPanel");
+    const divPubs = document.getElementById("listaPublicacionesPanel");
+    const planClave = usuarioActual && usuarioActual.suscripcionActiva ? usuarioActual.suscripcionActiva : 'basico';
+    const maxPubs = LIMITES_PLANES[planClave].maxPubs;
+
+    document.getElementById("labelPublicacionesPlan").textContent = `🖼️ Subir Publicaciones / Fotos (${publicacionesPanelTemp.length} / ${maxPubs} máx)`;
+
+    divCupones.innerHTML = cuponesPanelTemp.length ? "" : '<p class="muted" style="font-size:0.72rem;">No hay cupones cargados aún.</p>';
+    cuponesPanelTemp.forEach((c, i) => {
+        divCupones.innerHTML += `<div style="display:flex; justify-content:space-between; align-items:center; background:#fff; padding:5px 8px; border-radius:5px; margin-bottom:3px; font-size:0.78rem; border:1px solid var(--borde)">
+            <span>🎟️ <strong>${escaparHTML(c.titulo)}</strong> (${escaparHTML(c.codigo)})</span>
+            <button class="btn btn-danger" style="padding:2px 5px; font-size:0.68rem;" onclick="eliminarCuponPanel(${i})">Eliminar</button>
+        </div>`;
+    });
+
+    divPubs.innerHTML = publicacionesPanelTemp.length ? "" : '<p class="muted" style="font-size:0.72rem;">No hay publicaciones cargadas aún.</p>';
+    publicacionesPanelTemp.forEach((p, i) => {
+        const miniatura = p.imagen ? `<img src="${p.imagen}" style="width:26px;height:26px;object-fit:cover;border-radius:4px;vertical-align:middle;margin-right:4px;">` : '🛍️ ';
+        divPubs.innerHTML += `<div style="display:flex; justify-content:space-between; align-items:center; background:#fff; padding:5px 8px; border-radius:5px; margin-bottom:3px; font-size:0.78rem; border:1px solid var(--borde)">
+            <span>${miniatura}<strong>${escaparHTML(p.titulo)}</strong> [${escaparHTML(p.promo)}]</span>
+            <button class="btn btn-danger" style="padding:2px 5px; font-size:0.68rem;" onclick="eliminarPublicacionPanel(${i})">Eliminar</button>
+        </div>`;
+    });
+}
+
+function abrirModalRegistro() {
+    document.getElementById("modalRegistro").classList.remove("hidden");
+}
+
+function cerrarModalRegistro() {
+    document.getElementById("modalRegistro").classList.add("hidden");
+}
+
+function guardarNuevoRegistro() {
+    const nombre = document.getElementById("regNombre").value.trim();
+    const email = document.getElementById("regEmail").value.trim().toLowerCase();
+    const password = document.getElementById("regPassword").value;
+    const errorBox = document.getElementById("errorRegistro");
+
+    if (!nombre || !email || !password) {
+        errorBox.textContent = "Por favor, completá todos los campos.";
+        errorBox.style.display = "block";
+        return;
+    }
+
+    const emailYaExiste = usuariosRegistrados.some(u => u.email.toLowerCase() === email);
+    if (emailYaExiste) {
+        errorBox.textContent = "Este correo electrónico ya se encuentra registrado. Iniciá sesión.";
+        errorBox.style.display = "block";
+        return;
+    }
+
+    errorBox.style.display = "none";
+
+    const nuevoUsuario = { 
+        nombre: nombre, 
+        email: email, 
+        password: password, 
+        tipo: "comercio", 
+        suscripcionActiva: "basico"
+    };
+
+    usuariosRegistrados.push(nuevoUsuario);
+    guardarUsuariosDB(usuariosRegistrados);
+    
+    usuarioActual = nuevoUsuario;
+    guardarSesionActiva(usuarioActual);
+
+    actualizarEstadoSesionUI();
+    cerrarModalRegistro();
+    actualizarInterfazPanelComercial();
+    
+    alert("¡Cuenta registrada e iniciada con éxito, " + nombre + "!");
+}
+
+function abrirModalLogin() {
+    document.getElementById("modalLogin").classList.remove("hidden");
+}
+
+function cerrarModalLogin() {
+    document.getElementById("modalLogin").classList.add("hidden");
+}
+
+function procesarLogin() {
+    const email = document.getElementById("loginEmail").value.trim().toLowerCase();
+    const password = document.getElementById("loginPassword").value;
+    const errorBox = document.getElementById("errorLogin");
+
+    const encontrado = usuariosRegistrados.find(u => u.email.toLowerCase() === email && u.password === password);
+
+    if (!encontrado) {
+        errorBox.textContent = "Usuario no existe o contraseña incorrecta.";
+        errorBox.style.display = "block";
+        return;
+    }
+
+    errorBox.style.display = "none";
+    usuarioActual = encontrado;
+    guardarSesionActiva(usuarioActual);
+
+    actualizarEstadoSesionUI();
+    cerrarModalLogin();
+    actualizarInterfazPanelComercial();
+
+    alert("¡Bienvenido nuevamente, " + encontrado.nombre + "!");
+}
+
+function actualizarInterfazPanelComercial() {
+    if (!usuarioActual) return;
+    const plan = usuarioActual.suscripcionActiva || 'basico';
+    const limites = LIMITES_PLANES[plan];
+    document.getElementById("badgePlanActualPanel").textContent = `PLAN: ${plan.toUpperCase()} (Máx. ${limites.maxPubs} pubs, Video ${limites.maxVideoSec}s)`;
+    document.getElementById("panelComercialAutogestion").classList.remove("hidden");
+    renderizarListasPanelComercial();
+}
+
+function guardarDatosPanelComercio() {
+    const nombre = document.getElementById("inputComercioNombre").value.trim();
+    const rubro = document.getElementById("inputComercioRubro").value;
+    const direccion = document.getElementById("inputComercioDireccion").value.trim();
+    const galeria = document.getElementById("inputComercioGaleria").value.trim();
+    const nroLocal = document.getElementById("inputComercioLocal").value.trim();
+
+    if (!nombre || !direccion) {
+        alert("Por favor, completá el nombre del comercio y la dirección.");
+        return;
+    }
+
+    const planActual = usuarioActual && usuarioActual.suscripcionActiva ? usuarioActual.suscripcionActiva.toUpperCase() : "BÁSICO";
+    const esPrem = planActual === "PREMIUM";
+
+    const primerCupone = cuponesPanelTemp.length ? cuponesPanelTemp[0] : { titulo: "Cupón Especial", codigo: "VEA-OFF" };
+    const listaProductos = publicacionesPanelTemp.length ? publicacionesPanelTemp.map(p => ({
+        titulo: p.titulo,
+        desc: p.desc,
+        icono: p.icono || "🛍️",
+        promo: p.promo,
+        imagen: p.imagen || null
+    })) : [{titulo: "Promoción Principal", desc: "Consultá nuestros productos", icono: "🛍️", promo: "Destacado", imagen: null}];
+
+    const nuevoComercio = {
+        id: comerciosVEA.length + 1,
+        nombre: nombre,
+        rubro: rubro,
+        plan: planActual,
+        limitePublicaciones: LIMITES_PLANES[usuarioActual.suscripcionActiva || 'basico'].maxPubs,
+        direccion: direccion,
+        galeria: galeria,
+        nroLocal: nroLocal,
+        lat: -34.65, lng: -58.58, ubicacionVerificada: true,
+        oferta: primerCupone.titulo,
+        icono: obtenerIconoPorRubro(rubro, nombre),
+        esPremium: esPrem,
+        videoPromo: videoPromoPanelBase64,
+        rating: 5.0,
+        opiniones: 1,
+        codigoCupon: primerCupone.codigo,
+        mensajeWA: "Hola, quiero consultar por las promociones en " + nombre,
+        productos: listaProductos
+    };
+
+    comerciosVEA.unshift(nuevoComercio);
+    alert("¡Vidriera y publicaciones actualizadas con éxito en el mapa V.E.A.!");
+    cargarUbicacionesComercios();
+    irAlInicio();
+}
+
+function cerrarSesion() {
+    usuarioActual = null;
+    guardarSesionActiva(null);
+    document.getElementById("panelComercialAutogestion").classList.add("hidden");
+    actualizarEstadoSesionUI();
+    alert("Sesión cerrada correctamente.");
+}
+
+function actualizarEstadoSesionUI() {
+    const info = document.getElementById("infoSesionActual");
+    if (usuarioActual) {
+        const planTexto = (usuarioActual.suscripcionActiva || "básico").toUpperCase();
+        info.innerHTML = "Sesión activa: <strong>" + escaparHTML(usuarioActual.nombre) + "</strong> (" + escaparHTML(usuarioActual.email) + ")<br>Plan Actual: <strong style='color:var(--dorado)'>" + planTexto + "</strong><br><button class='btn btn-secondary' style='margin-top:6px;font-size:.7rem;' onclick='cerrarSesion()'>Cerrar sesión</button>";
+        actualizarInterfazPanelComercial();
+    } else {
+        info.textContent = "No hay una sesión iniciada.";
+        document.getElementById("panelComercialAutogestion").classList.add("hidden");
+    }
+}
+
+function normalizarTexto(texto) {
+    return String(texto || "").toLowerCase()
+        .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
+        .replace(/[.,]/g, " ").replace(/\s+/g, " ").trim();
+}
+
+function enlaceMaps(comercio) {
+    return "https://www.google.com/maps/search/?api=1&query=" + encodeURIComponent(comercio.direccion + (comercio.galeria ? " " + comercio.galeria : ""));
+}
+
+function enlaceWhatsApp(comercio, mensaje) {
+    return "https://wa.me/" + telefonoWhatsAppBase + "?text=" + encodeURIComponent(mensaje || comercio.mensajeWA);
+}
+
+function obtenerVisitasReales(id) {
+    return 22 + id * 7 + (new Date().getMinutes() % 15);
+}
+
+function generarEstrellasHTML(rating, opiniones) {
+    const completas = Math.round(rating);
+    return '<div class="stars">' + "★".repeat(completas) + "☆".repeat(5 - completas) + ' <strong style="color:var(--texto)">' + rating + '</strong> <span class="muted">(' + opiniones + ')</span></div>';
+}
+
+function direccionPareceCoincidir(comercio, resultado) {
+    const direccion = normalizarTexto(comercio.direccion);
+    const display = normalizarTexto(resultado.display_name || "");
+    const nombre = normalizarTexto(resultado.name || "");
+    const combinado = display + " " + nombre;
+
+    const numero = (direccion.match(/\b\d{2,5}\b/) || [])[0];
+    const palabras = direccion.split(" ").filter(p => p.length > 3);
+    const calleCoincide = palabras.some(p => combinado.includes(p));
+    const numeroCoincide = numero && combinado.includes(numero);
+
+    return Boolean(calleCoincide && numeroCoincide);
+}
+
+async function geocodificarDireccion(comercio) {
+    if (Number.isFinite(comercio.lat) && Number.isFinite(comercio.lng) && comercio.ubicacionVerificada) {
+        return { lat: comercio.lat, lng: comercio.lng };
+    }
+
+    const clave = normalizarTexto(comercio.direccion);
+    if (cacheUbicaciones.has(clave)) return cacheUbicaciones.get(clave);
+
+    try {
+        const url = "https://nominatim.openstreetmap.org/search?format=jsonv2&addressdetails=1&limit=5&countrycodes=ar&q=" + encodeURIComponent(comercio.direccion);
+        const respuesta = await fetch(url, { headers: { Accept: "application/json" } });
+        if (!respuesta.ok) throw new Error("No se pudo consultar el servicio de mapas.");
+
+        const resultados = await respuesta.json();
+        const coincidencia = resultados.find(r => direccionPareceCoincidir(comercio, r)) || resultados[0];
+
+        if (!coincidencia) {
+            const fallback = { lat: -34.65, lng: -58.58 };
+            cacheUbicaciones.set(clave, fallback);
+            return fallback;
+        }
+
+        const ubicacion = {
+            lat: Number(coincidencia.lat),
+            lng: Number(coincidencia.lon),
+            direccionEncontrada: coincidencia.display_name || ""
+        };
+
+        cacheUbicaciones.set(clave, ubicacion);
+        return ubicacion;
+    } catch (error) {
+        return { lat: -34.65, lng: -58.58 };
+    }
+}
+
+async function cargarUbicacionesComercios() {
+    if (geocodificacionEnCurso) return;
+    geocodificacionEnCurso = true;
+    const aviso = document.getElementById("avisoUbicaciones");
+
+    try {
+        let localizados = 0;
+        for (let i = 0; i < comerciosVEA.length; i++) {
+            const comercio = comerciosVEA[i];
+            const ubicacion = await geocodificarDireccion(comercio);
+            if (ubicacion) {
+                comercio.lat = ubicacion.lat;
+                comercio.lng = ubicacion.lng;
+                comercio.ubicacionVerificada = true;
+                localizados++;
+            }
+            if (i < comerciosVEA.length - 1) {
+                await new Promise(resolve => setTimeout(resolve, 500));
+            }
+        }
+        actualizarVista(filtroActual);
+        if (localizados > 0) {
+            const puntos = comerciosVEA.filter(c => Number.isFinite(c.lat) && Number.isFinite(c.lng)).map(c => [c.lat, c.lng]);
+            if (puntos.length) map.fitBounds(L.latLngBounds(puntos), { padding: [20, 20], maxZoom: 15 });
+        }
+        aviso.className = "status-box status-ok";
+        aviso.textContent = "Mapa geolocalizado con éxito.";
+    } finally {
+        geocodificacionEnCurso = false;
+    }
+}
+
+function filtrarPorBusqueda() {
+    const input = document.getElementById("inputBusquedaGlobal");
+    terminoBusqueda = normalizarTexto(input.value);
+    actualizarVista(filtroActual);
+}
+
+function actualizarVista(filtro) {
+    filtroActual = filtro;
+    marcadoresMapa.forEach(m => map.removeLayer(m));
+    marcadoresMapa = [];
+
+    const contenedor = document.getElementById("contenedorVidrieras");
+    contenedor.innerHTML = "";
+
+    const listaOrdenada = [...comerciosVEA].sort((a, b) => (b.esPremium ? 1 : 0) - (a.esPremium ? 1 : 0));
+    
+    const lista = listaOrdenada.filter(c => {
+        const cumpleRubro = (filtro === "todos" || c.rubro === filtro);
+        const textoComercio = normalizarTexto(c.nombre + " " + c.direccion + " " + c.oferta + " " + (c.galeria || ""));
+        const cumpleBusqueda = !terminoBusqueda || textoComercio.includes(terminoBusqueda);
+        return cumpleRubro && cumpleBusqueda;
+    });
+
+    if (!lista.length) {
+        contenedor.innerHTML = '<div class="empty">No se encontraron comercios con esa búsqueda.</div>';
+    }
+
+    lista.forEach(comercio => {
+        const ubicacionFormateada = formatearUbicacionComercio(comercio);
+
+        if (!Number.isFinite(comercio.lat) || !Number.isFinite(comercio.lng)) {
+            comercio.lat = -34.65;
+            comercio.lng = -58.58;
+        }
+
+        const pin = L.marker([comercio.lat, comercio.lng], { icon: crearMarcadorPersonalizado(comercio) }).addTo(map);
+        pin.bindPopup(`
+            <div style="min-width:180px;text-align:center">
+                <div class="popup-title"><i class="fa-solid ${obtenerIconoPorRubro(comercio.rubro, comercio.nombre)}"></i> ${escaparHTML(comercio.nombre)}</div>
+                <p style="margin:5px 0;color:#b91c1c;font-weight:700">${escaparHTML(comercio.oferta)}</p>
+                <p style="font-size:11px;margin-bottom:6px">📍 ${escaparHTML(ubicacionFormateada)}</p>
+                <a href="${enlaceMaps(comercio)}" target="_blank" rel="noopener" class="btn btn-maps" style="display:inline-block;padding:6px 8px;margin-bottom:3px;border:1px solid #d1ded7;border-radius:5px;background:#fff;color:#062e22;font-weight:800;text-decoration:none;">Google Maps</a>
+                <button class="btn btn-primary" style="margin-top:2px;padding:6px;" onclick="abrirDetalleComercio(${comercio.id})">Ver vidriera</button>
+            </div>`);
+        marcadoresMapa.push(pin);
+
+        const iconoClase = obtenerIconoPorRubro(comercio.rubro, comercio.nombre);
+        const tarjeta = document.createElement("article");
+        tarjeta.className = "card-vidriera";
+        tarjeta.innerHTML = `
+            <div class="card-img-container">
+                <span class="badge-plan">${escaparHTML(comercio.plan)}</span>
+                <span class="badge-discount">${escaparHTML(comercio.oferta)}</span>
+                <span><i class="fa-solid ${iconoClase}"></i></span>
+            </div>
+            <div class="card-body">
+                <h3>${escaparHTML(comercio.nombre)}</h3>
+                <p>📍 ${escaparHTML(ubicacionFormateada)}</p>
+                ${generarEstrellasHTML(comercio.rating, comercio.opiniones)}
+                <span class="views">🔥 ${obtenerVisitasReales(comercio.id)} consultas hoy</span>
+                <a href="${enlaceWhatsApp(comercio)}" target="_blank" rel="noopener" class="btn btn-wa">💬 WhatsApp</a>
+                <a href="${enlaceMaps(comercio)}" target="_blank" rel="noopener" class="btn btn-maps">🧭 Maps</a>
+                <button class="btn btn-primary" onclick="abrirDetalleComercio(${comercio.id})">Ver vidriera completa</button>
+            </div>`;
+        tarjeta.addEventListener("click", function(event) {
+            if (!event.target.closest("a,button")) abrirDetalleComercio(comercio.id);
+        });
+        contenedor.appendChild(tarjeta);
+    });
+
+    renderizarCuponesYDirectorio();
+}
+
+function escaparHTML(texto) {
+    return String(texto ?? "").replace(/[&<>"']/g, function(caracter) {
+        return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[caracter];
+    });
+}
+
+function renderizarCuponesYDirectorio() {
+    const cupones = document.getElementById("contenedorCupones");
+    const directorio = document.getElementById("contenedorDirectorio");
+    cupones.innerHTML = "";
+    directorio.innerHTML = "";
+
+    comerciosVEA.forEach(c => {
+        const ubicacionFormateada = formatearUbicacionComercio(c);
+        const filaCupon = document.createElement("div");
+        filaCupon.className = "card-cupon-exclusivo";
+        filaCupon.innerHTML = `
+            <div class="cupon-info">
+                <h4>${escaparHTML(c.nombre)}</h4>
+                <p>${escaparHTML(c.oferta)} · ${escaparHTML(ubicacionFormateada)}</p>
+                <span class="codigo-tag">${escaparHTML(c.codigoCupon)}</span>
+            </div>
+            <a class="btn btn-wa" target="_blank" rel="noopener" href="${enlaceWhatsApp(c)}">Consultar</a>`;
+        cupones.appendChild(filaCupon);
+
+        const iconoClase = obtenerIconoPorRubro(c.rubro, c.nombre);
+        const fila = document.createElement("div");
+        fila.className = "item-lista-directorio";
+        fila.innerHTML = `
+            <div class="item-lista-info">
+                <h4><i class="fa-solid ${iconoClase}"></i> ${escaparHTML(c.nombre)}</h4>
+                <p>${escaparHTML(ubicacionFormateada)} · Plan ${escaparHTML(c.plan)}</p>
+            </div><strong style="color:var(--dorado)">Ver →</strong>`;
+        fila.addEventListener("click", () => abrirDetalleComercio(c.id));
+        directorio.appendChild(fila);
+    });
+}
+
+function buscarComercio(id) {
+    return comerciosVEA.find(c => c.id === Number(id)) || null;
+}
+
+function abrirDetalleComercio(id) {
+    const comercio = buscarComercio(id);
+    if (!comercio) return;
+    comercioActualId = comercio.id;
+
+    document.getElementById("tituloComercioDetalle").textContent = comercio.nombre;
+    document.getElementById("subtituloVentanas").textContent = "🪟 Vidriera comercial (" + comercio.productos.length + " publicaciones)";
+    document.getElementById("tagVisitasDetalle").textContent = "🔥 " + obtenerVisitasReales(comercio.id) + " visualizaciones hoy";
+
+    const ubicacionFormateada = formatearUbicacionComercio(comercio);
+    document.getElementById("direccionDetalle").innerHTML = `
+        <h3 style="margin-bottom:6px">📍 Ubicación del Local</h3>
+        <p><strong>${escaparHTML(ubicacionFormateada)}</strong></p>
+        <a class="btn btn-maps" style="margin-top:8px" target="_blank" rel="noopener" href="${enlaceMaps(comercio)}">Abrir dirección en Google Maps</a>`;
+
+    const banner = document.getElementById("contenedorBannerDetalle");
+    if (comercio.esPremium && comercio.videoPromo) {
+        banner.className = "banner-destacado";
+        banner.innerHTML = `
+            <h3 style="margin-bottom:8px">🎬 Video promocional</h3>
+            <video controls playsinline preload="metadata" style="width:100%;max-height:260px;background:#000;border-radius:6px">
+                <source src="${comercio.videoPromo}" type="video/mp4">
+            </video>`;
+    } else {
+        banner.className = "banner-upgrade";
+        banner.innerHTML = `
+            <div style="font-size:1.8rem">🎬</div>
+            <h3 style="color:var(--dorado);margin:4px 0">¿Querés destacar tu negocio con video?</h3>
+            <button class="btn" style="background:var(--dorado);color:var(--verde)" onclick="mostrarVista('vistaAjustes')">⭐ Ver Planes</button>`;
+    }
+
+    const productos = document.getElementById("contenedorVentanasComercio");
+    productos.innerHTML = "";
+    comercio.productos.forEach((prod) => {
+        const tarjeta = document.createElement("article");
+        tarjeta.className = "card-vidriera";
+
+        const contenidoImagen = prod.imagen
+            ? `<img src="${prod.imagen}" alt="${escaparHTML(prod.titulo)}">`
+            : `<span><i class="fa-solid ${obtenerIconoPorRubro(comercio.rubro, comercio.nombre)}"></i></span>`;
+
+        tarjeta.innerHTML = `
+            <div class="card-img-container" style="min-height:120px">
+                <span class="badge-discount">${escaparHTML(prod.promo)}</span>
+                ${contenidoImagen}
+            </div>
+            <div class="card-body">
+                <h3>${escaparHTML(prod.titulo)}</h3>
+                <p>${escaparHTML(prod.desc.substring(0, 45))}...</p>
+                <button class="btn btn-primary btn-block">🔍 Ver detalle ampliado</button>
+            </div>`;
+
+        tarjeta.addEventListener("click", () => abrirModalPublicacionGrande(prod, comercio));
+        productos.appendChild(tarjeta);
+    });
+
+    mostrarVista("vistaDetalle");
+}
+
+function abrirModalPublicacionGrande(prod, comercio) {
+    document.getElementById("modalPubTitulo").textContent = prod.titulo;
+
+    const contenedorImg = document.getElementById("modalPubImagenContainer");
+    if (prod.imagen) {
+        contenedorImg.innerHTML = `<img src="${prod.imagen}" style="width:100%; max-height:260px; object-fit:contain;" alt="${escaparHTML(prod.titulo)}">`;
+    } else {
+        contenedorImg.innerHTML = `<span style="font-size:3.5rem"><i class="fa-solid ${obtenerIconoPorRubro(comercio.rubro, comercio.nombre)}"></i></span>`;
+    }
+
+    document.getElementById("modalPubPromo").textContent = "🔥 Promoción: " + prod.promo;
+    document.getElementById("modalPubDescAmpliada").textContent = prod.desc;
+
+    const mensajeWA = "Hola, me interesa " + prod.titulo + " de " + comercio.nombre;
+    document.getElementById("modalPubBtnWa").setAttribute("href", enlaceWhatsApp(comercio, mensajeWA));
+
+    document.getElementById("modalPublicacionDetalle").classList.remove("hidden");
+}
+
+function cerrarModalPublicacion() {
+    document.getElementById("modalPublicacionDetalle").classList.add("hidden");
+}
+
+function filtrarRubro(rubro, boton) {
+    document.querySelectorAll(".cat-pill").forEach(p => p.classList.remove("active"));
+    if (boton) boton.classList.add("active");
+    actualizarVista(rubro);
+}
+
+function mostrarVista(idVista) {
+    const vistas = ["vistaPrincipal", "vistaCupones", "vistaListas", "vistaNotificaciones", "vistaAjustes", "vistaDetalle"];
+    vistas.forEach(id => {
+        document.getElementById(id).style.display = "none";
+    });
+
+    const principal = idVista === "vistaPrincipal";
+    document.getElementById(idVista).style.display = principal ? "flex" : "block";
+
+    ["bannerSloganMain", "btnCuponesMain", "gridPildorasMain"].forEach(id => {
+        document.getElementById(id).style.display = principal ? "" : "none";
+    });
+
+    document.querySelectorAll(".nav-item").forEach(b => b.classList.remove("active"));
+    if (principal) document.getElementById("btnNavHome").classList.add("active");
+    if (idVista === "vistaListas") document.getElementById("btnNavListas").classList.add("active");
+    if (idVista === "vistaNotificaciones") document.getElementById("btnNavNotif").classList.add("active");
+    if (idVista === "vistaAjustes") document.getElementById("btnNavAjustes").classList.add("active");
+
+    if (principal) setTimeout(() => map.invalidateSize(), 180);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+}
+
+function irAlInicio() {
+    mostrarVista("vistaPrincipal");
+    actualizarVista(filtroActual);
+    centrarMapaAccion();
+}
+
+function centrarMapaAccion() {
+    mostrarVista("vistaPrincipal");
+    const puntos = comerciosVEA.filter(c => Number.isFinite(c.lat) && Number.isFinite(c.lng)).map(c => [c.lat, c.lng]);
+    if (puntos.length) map.fitBounds(L.latLngBounds(puntos), { padding: [20, 20], maxZoom: 15 });
+    setTimeout(() => map.invalidateSize(), 180);
+}
+
+function abrirNotificaciones() {
+    document.getElementById("badgeNotif").classList.add("hidden");
+    mostrarVista("vistaNotificaciones");
+}
+
+function renderizarNotificaciones() {
+    const contenedor = document.getElementById("contenedorNotificaciones");
+    contenedor.innerHTML = "";
+    notificaciones.forEach(n => {
+        const tarjeta = document.createElement("div");
+        tarjeta.className = "card-notificacion";
+        tarjeta.innerHTML = "<h4>" + escaparHTML(n.titulo) + "</h4><p>" + escaparHTML(n.texto) + "</p>";
+        contenedor.appendChild(tarjeta);
+    });
+}
+
+renderizarNotificaciones();
+actualizarVista("todos");
+cargarUbicacionesComercios();
+inicializarBannerRotativoPremium();
+actualizarEstadoSesionUI();
+    </script>
+</body>
+</html>
