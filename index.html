@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
@@ -70,7 +70,7 @@
             color: #c2dcd1;
         }
 
-        /* Barra de Búsqueda Compacta */
+        /* Barra de Búsqueda Optimizada para Palabras Clave */
         .search-bar-container {
             margin: 8px 12px 4px;
             display: flex;
@@ -193,7 +193,6 @@
             border-color: var(--dorado);
         }
 
-        /* Contenedor Principal Optimizado para dar más espacio al mapa */
         .main-container {
             display: flex;
             height: calc(100vh - 240px);
@@ -634,7 +633,7 @@
             height: 22px;
         }
 
-        /* Menú Flotante de Pagos y Botón Tarjeta */
+        /* Menú Flotante de Pagos */
         .pay-btn-float {
             position: absolute;
             bottom: 16px;
@@ -748,7 +747,6 @@
             color: var(--verde);
         }
 
-        /* En celulares: Mapa arriba con excelente altura y scroll abajo */
         @media(max-width:768px) {
             .main-container {
                 height: auto;
@@ -760,7 +758,7 @@
 
             .map-column {
                 width: 100%;
-                height: 360px; /* ¡Mapa mucho más grande y cómodo en celu! */
+                height: 360px;
                 min-height: 360px;
                 border-right: 0;
                 border-bottom: 2px solid var(--dorado);
@@ -792,9 +790,9 @@
         <p>VIDRIERAS ELECTRÓNICAS ARGENTINAS</p>
     </header>
 
-    <!-- Barra de Búsqueda Compacta -->
+    <!-- Barra de Búsqueda Avanzada por Palabras Clave -->
     <div class="search-bar-container">
-        <input type="text" id="inputBusquedaGlobal" placeholder="🔍 Buscar comercio, producto o servicio..." oninput="filtrarPorBusqueda()">
+        <input type="text" id="inputBusquedaGlobal" placeholder="🔍 Buscá por producto (ej: ropa, cerveza, ferretería)..." oninput="filtrarPorBusqueda()">
         <button onclick="filtrarPorBusqueda()">🔍</button>
     </div>
 
@@ -1695,6 +1693,14 @@ function filtrarPorBusqueda() {
     actualizarVista(filtroActual);
 }
 
+// --- FUNCIÓN DE ORDENAMIENTO ESTRICTO POR PLAN (Premium -> Intermedio -> Básico) ---
+function obtenerPesoPlan(planStr) {
+    const p = String(planStr || "").toUpperCase();
+    if (p.includes("PREMIUM")) return 3;
+    if (p.includes("INTERMEDIO") || p.includes("STANDARD")) return 2;
+    return 1; // Básico
+}
+
 function actualizarVista(filtro) {
     filtroActual = filtro;
     marcadoresMapa.forEach(m => map.removeLayer(m));
@@ -1703,20 +1709,44 @@ function actualizarVista(filtro) {
     const contenedor = document.getElementById("contenedorVidrieras");
     contenedor.innerHTML = "";
 
-    const listaOrdenada = [...comerciosVEA].sort((a, b) => (b.esPremium ? 1 : 0) - (a.esPremium ? 1 : 0));
-    
-    const lista = listaOrdenada.filter(c => {
+    // Filtrado exhaustivo por palabras clave (nombre, rubro, dirección, oferta, productos y descripciones)
+    const listaFiltrada = comerciosVEA.filter(c => {
         const cumpleRubro = (filtro === "todos" || c.rubro === filtro);
-        const textoComercio = normalizarTexto(c.nombre + " " + c.direccion + " " + c.oferta + " " + (c.galeria || ""));
-        const cumpleBusqueda = !terminoBusqueda || textoComercio.includes(terminoBusqueda);
+        
+        // Recopilamos todo el texto posible del comercio para buscar coincidencias de palabras clave
+        let textoProductos = "";
+        if (c.productos && c.productos.length > 0) {
+            textoProductos = c.productos.map(p => p.titulo + " " + p.desc + " " + p.promo).join(" ");
+        }
+        
+        const textoComercioCompleto = normalizarTexto(
+            c.nombre + " " + 
+            c.rubro + " " + 
+            c.direccion + " " + 
+            c.oferta + " " + 
+            (c.galeria || "") + " " + 
+            textoProductos
+        );
+
+        const cumpleBusqueda = !terminoBusqueda || textoComercioCompleto.includes(terminoBusqueda);
         return cumpleRubro && cumpleBusqueda;
     });
 
-    if (!lista.length) {
-        contenedor.innerHTML = '<div class="empty">No se encontraron comercios con esa búsqueda.</div>';
+    // Ordenamiento estricto por jerarquía de planes: Premium (3) arriba, luego Intermedio (2) y Básico (1)
+    const listaOrdenada = listaFiltrada.sort((a, b) => {
+        const pesoA = obtenerPesoPlan(a.plan);
+        const pesoB = obtenerPesoPlan(b.plan);
+        if (pesoB !== pesoA) {
+            return pesoB - pesoA; // Mayor peso (Premium) primero
+        }
+        return b.id - a.id; // Si tienen el mismo plan, orden predeterminado
+    });
+
+    if (!listaOrdenada.length) {
+        contenedor.innerHTML = '<div class="empty">No se encontraron comercios o productos con esa búsqueda.</div>';
     }
 
-    lista.forEach(comercio => {
+    listaOrdenada.forEach(comercio => {
         const ubicacionFormateada = formatearUbicacionComercio(comercio);
 
         if (!Number.isFinite(comercio.lat) || !Number.isFinite(comercio.lng)) {
