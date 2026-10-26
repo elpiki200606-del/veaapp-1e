@@ -678,11 +678,11 @@
         <div class="section-ajustes hidden" id="panelComercialAutogestion" style="border: 2px solid var(--dorado);">
             <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid var(--borde); padding-bottom:8px; margin-bottom:12px;">
                 <h3 style="color:var(--dorado); margin:0;">🏪 Mi Panel Comerciante V.E.A.</h3>
-                <span id="badgePlanActualPanel" style="background:var(--verde); color:var(--dorado); font-size:0.7rem; font-weight:800; padding:3px 6px; border-radius:6px; border:1px solid var(--dorado)">PLAN: PREMIUM (PAGO CONFIRMADO)</span>
+                <span id="badgePlanActualPanel" style="background:var(--verde); color:var(--dorado); font-size:0.7rem; font-weight:800; padding:3px 6px; border-radius:6px; border:1px solid var(--dorado)">PLAN: BÁSICO</span>
             </div>
 
-            <div id="avisoEstadoPagoComercio" class="status-box status-ok" style="margin-bottom:12px;">
-                ✅ <strong>¡Tu plan está activo y pagado!</strong> Tu comercio ya es visible en el mapa para todo el público.
+            <div id="avisoEstadoPagoComercio" class="status-box" style="margin-bottom:12px;">
+                ⚠️ <strong>Tu comercio aún no es visible en el mapa.</strong> Aboná tu suscripción para aparecer públicamente.
             </div>
 
             <div class="form-group">
@@ -897,18 +897,23 @@ let videoPromoPanelBase64 = null;
 const cacheUbicaciones = new Map();
 
 const LIMITES_PLANES = {
-    'basico': { maxPubs: 10, maxVideoSec: 10, pagoConfirmado: true },
-    'intermedio': { maxPubs: 20, maxVideoSec: 20, pagoConfirmado: true },
-    'premium': { maxPubs: 40, maxVideoSec: 60, pagoConfirmado: true }
+    'basico': { maxPubs: 10, maxVideoSec: 10 },
+    'intermedio': { maxPubs: 20, maxVideoSec: 20 },
+    'premium': { maxPubs: 40, maxVideoSec: 60 }
 };
 
-// FORZAMOS LAS CUENTAS CON PAGO CONFIRMADO SIEMPRE
+// --- BASE DE DATOS DE USUARIOS (SOLO LAS 3 DE MUESTRA TIENEN PAGO CONFIRMADO DE FÁBRICA) ---
 function obtenerUsuariosDB() {
-    return [
-        { nombre: "Cervecería Artesanal El Tordo", email: "tordo@vea.com", password: "123456", tipo: "comercio", suscripcionActiva: "premium", pagoConfirmado: true },
-        { nombre: "Los Romualdito", email: "romualdito@vea.com", password: "123456", tipo: "comercio", suscripcionActiva: "intermedio", pagoConfirmado: true },
-        { nombre: "Pizzería Musa Varela", email: "musa@vea.com", password: "123456", tipo: "comercio", suscripcionActiva: "basico", pagoConfirmado: true }
-    ];
+    let base = JSON.parse(localStorage.getItem("vea_usuarios_db") || "null");
+    if (!base) {
+        base = [
+            { nombre: "Cervecería Artesanal El Tordo", email: "tordo@vea.com", password: "123456", tipo: "comercio", suscripcionActiva: "premium", pagoConfirmado: true },
+            { nombre: "Los Romualdito", email: "romualdito@vea.com", password: "123456", tipo: "comercio", suscripcionActiva: "intermedio", pagoConfirmado: true },
+            { nombre: "Pizzería Musa Varela", email: "musa@vea.com", password: "123456", tipo: "comercio", suscripcionActiva: "basico", pagoConfirmado: true }
+        ];
+        localStorage.setItem("vea_usuarios_db", JSON.stringify(base));
+    }
+    return base;
 }
 
 function guardarUsuariosDB(base) {
@@ -917,17 +922,11 @@ function guardarUsuariosDB(base) {
 
 function obtenerSesionActiva() {
     const sesion = localStorage.getItem("vea_sesion_activa");
-    if (sesion) {
-        let user = JSON.parse(sesion);
-        user.pagoConfirmado = true; // FORZAMOS PAGO ACTIVO
-        return user;
-    }
-    return null;
+    return sesion ? JSON.parse(sesion) : null;
 }
 
 function guardarSesionActiva(usuario) {
     if (usuario) {
-        usuario.pagoConfirmado = true;
         localStorage.setItem("vea_sesion_activa", JSON.stringify(usuario));
     } else {
         localStorage.removeItem("vea_sesion_activa");
@@ -940,7 +939,8 @@ usuarioActual = obtenerSesionActiva();
 let cuponesPanelTemp = [{ titulo: "2x1 en Pintas IPA", codigo: "VEA-TORDO-IPA2X1" }];
 let publicacionesPanelTemp = [{ titulo: "Pinta IPA El Tordo", promo: "2x1", desc: "Happy Hour de 18 a 20 hs. Cerveza artesanal elaborada con malta Pale Ale y lúpulo Cascade.", imagen: null, icono: "🍺" }];
 
-const comerciosVEA = [
+// --- COMERCIOS INICIALES Y PERSISTENTES EN LOCALSTORAGE ---
+const comerciosBaseIniciales = [
     {
         id: 1,
         nombre: "Cervecería Artesanal El Tordo",
@@ -1000,6 +1000,21 @@ const comerciosVEA = [
         ]
     }
 ];
+
+function obtenerComerciosDB() {
+    let guardados = JSON.parse(localStorage.getItem("vea_comercios_db") || "null");
+    if (!guardados) {
+        guardados = comerciosBaseIniciales;
+        localStorage.setItem("vea_comercios_db", JSON.stringify(guardados));
+    }
+    return guardados;
+}
+
+function guardarComerciosDB(lista) {
+    localStorage.setItem("vea_comercios_db", JSON.stringify(lista));
+}
+
+let comerciosVEA = obtenerComerciosDB();
 
 const notificaciones = [
     {titulo:"🔥 Happy Hour en Cervecería El Tordo", texto:"Consultá las condiciones de la promoción 2x1 en pintas."},
@@ -1091,7 +1106,7 @@ function validarDuracionVideo(input) {
     if (!file) return;
 
     const planClave = usuarioActual && usuarioActual.suscripcionActiva ? usuarioActual.suscripcionActiva : 'basico';
-    const limiteSegundos = LIMITES_PLANES[planClave] ? LIMITES_PLANES[planClave].maxVideoSec : 60;
+    const limiteSegundos = LIMITES_PLANES[planClave] ? LIMITES_PLANES[planClave].maxVideoSec : 10;
 
     const videoElement = document.createElement('video');
     videoElement.preload = 'metadata';
@@ -1235,17 +1250,31 @@ function guardarNuevoRegistro() {
         return;
     }
 
+    const emailYaExiste = usuariosRegistrados.some(u => u.email.toLowerCase() === email);
+    if (emailYaExiste) {
+        errorBox.textContent = "Este correo electrónico ya se encuentra registrado. Iniciá sesión.";
+        errorBox.style.display = "block";
+        return;
+    }
+
     errorBox.style.display = "none";
+
+    // CUENTAS NUEVAS: arrancar en BÁSICO con PAGO PENDIENTE (excepto las 3 de muestra)
+    const esMuestra = (email === "tordo@vea.com" || email === "romualdito@vea.com" || email === "musa@vea.com");
+    const planAsignado = email === "tordo@vea.com" ? "premium" : (email === "romualdito@vea.com" ? "intermedio" : "basico");
 
     const nuevoUsuario = { 
         nombre: nombre, 
         email: email, 
         password: password, 
         tipo: "comercio", 
-        suscripcionActiva: "premium",
-        pagoConfirmado: true
+        suscripcionActiva: planAsignado,
+        pagoConfirmado: esMuestra 
     };
 
+    usuariosRegistrados.push(nuevoUsuario);
+    guardarUsuariosDB(usuariosRegistrados);
+    
     usuarioActual = nuevoUsuario;
     guardarSesionActiva(usuarioActual);
 
@@ -1253,7 +1282,11 @@ function guardarNuevoRegistro() {
     cerrarModalRegistro();
     actualizarInterfazPanelComercial();
     
-    alert("¡Cuenta de muestra creada con éxito para " + nombre + "!");
+    if (esMuestra) {
+        alert("¡Bienvenido, " + nombre + "! Cuenta de muestra con acceso completo.");
+    } else {
+        alert("¡Cuenta registrada con éxito, " + nombre + "! Recordá que para aparecer en el mapa y subir contenidos debés abonar tu suscripción.");
+    }
 }
 
 function abrirModalLogin() {
@@ -1278,7 +1311,6 @@ function procesarLogin() {
     }
 
     errorBox.style.display = "none";
-    encontrado.pagoConfirmado = true; // SIEMPRE ACTIVO
     usuarioActual = encontrado;
     guardarSesionActiva(usuarioActual);
 
@@ -1291,19 +1323,30 @@ function procesarLogin() {
 
 function actualizarInterfazPanelComercial() {
     if (!usuarioActual) return;
-    const plan = usuarioActual.suscripcionActiva || 'premium';
+    const plan = usuarioActual.suscripcionActiva || 'basico';
+    const pagado = usuarioActual.pagoConfirmado;
     
-    document.getElementById("badgePlanActualPanel").textContent = `PLAN: ${plan.toUpperCase()} (PAGO CONFIRMADO)`;
+    document.getElementById("badgePlanActualPanel").textContent = `PLAN: ${plan.toUpperCase()} (${pagado ? 'ACTIVO' : 'PAGO PENDIENTE'})`;
     
     const avisoPago = document.getElementById("avisoEstadoPagoComercio");
-    avisoPago.className = "status-box status-ok";
-    avisoPago.innerHTML = `✅ <strong>¡Tu plan ${plan.toUpperCase()} está activo y pagado!</strong> Tu comercio ya es visible en el mapa para todo el público.`;
+    if (pagado) {
+        avisoPago.className = "status-box status-ok";
+        avisoPago.innerHTML = `✅ <strong>¡Tu plan ${plan.toUpperCase()} está activo y pagado!</strong> Tu comercio ya es visible en el mapa para todo el público.`;
+    } else {
+        avisoPago.className = "status-box";
+        avisoPago.innerHTML = `⚠️ <strong>Tu comercio aún no es visible en el mapa.</strong> Aboná tu suscripción para aparecer públicamente.`;
+    }
 
     document.getElementById("panelComercialAutogestion").classList.remove("hidden");
     renderizarListasPanelComercial();
 }
 
 function guardarDatosPanelComercio() {
+    if (!usuarioActual || !usuarioActual.pagoConfirmado) {
+        alert("⚠️ Tu cuenta tiene el pago pendiente. Debés abonar la suscripción para actualizar o publicar tu vidriera.");
+        return;
+    }
+
     const nombre = document.getElementById("inputComercioNombre").value.trim();
     const rubro = document.getElementById("inputComercioRubro").value;
     const direccion = document.getElementById("inputComercioDireccion").value.trim();
@@ -1315,7 +1358,7 @@ function guardarDatosPanelComercio() {
         return;
     }
 
-    const planActual = usuarioActual && usuarioActual.suscripcionActiva ? usuarioActual.suscripcionActiva.toUpperCase() : "PREMIUM";
+    const planActual = usuarioActual.suscripcionActiva.toUpperCase();
     const esPrem = planActual === "PREMIUM";
 
     const primerCupone = cuponesPanelTemp.length ? cuponesPanelTemp[0] : { titulo: "Cupón Especial", codigo: "VEA-OFF" };
@@ -1328,12 +1371,12 @@ function guardarDatosPanelComercio() {
     })) : [{titulo: "Promoción Principal", desc: "Consultá nuestros productos", icono: "🛍️", promo: "Destacado", imagen: null}];
 
     const nuevoComercio = {
-        id: comerciosVEA.length + 1,
+        id: Date.now(),
         nombre: nombre,
         rubro: rubro,
         plan: planActual,
         pagoConfirmado: true,
-        limitePublicaciones: LIMITES_PLANES[usuarioActual.suscripcionActiva || 'premium'].maxPubs,
+        limitePublicaciones: LIMITES_PLANES[usuarioActual.suscripcionActiva].maxPubs,
         direccion: direccion,
         galeria: galeria,
         nroLocal: nroLocal,
@@ -1350,7 +1393,9 @@ function guardarDatosPanelComercio() {
     };
 
     comerciosVEA.unshift(nuevoComercio);
-    alert("¡Vidriera guardada y actualizada con éxito!");
+    guardarComerciosDB(comerciosVEA);
+
+    alert("¡Vidriera guardada y publicada con éxito para todos los usuarios!");
     cargarUbicacionesComercios();
     irAlInicio();
 }
@@ -1366,8 +1411,9 @@ function cerrarSesion() {
 function actualizarEstadoSesionUI() {
     const info = document.getElementById("infoSesionActual");
     if (usuarioActual) {
-        const planTexto = (usuarioActual.suscripcionActiva || "premium").toUpperCase();
-        info.innerHTML = "Sesión activa: <strong>" + escaparHTML(usuarioActual.nombre) + "</strong> (" + escaparHTML(usuarioActual.email) + ")<br>Plan: <strong style='color:var(--dorado)'>" + planTexto + " (ACTIVO)</strong><br><button class='btn btn-secondary' style='margin-top:6px;font-size:.7rem;' onclick='cerrarSesion()'>Cerrar sesión</button>";
+        const planTexto = (usuarioActual.suscripcionActiva || "basico").toUpperCase();
+        const estadoPago = usuarioActual.pagoConfirmado ? "ACTIVO" : "PAGO PENDIENTE";
+        info.innerHTML = "Sesión activa: <strong>" + escaparHTML(usuarioActual.nombre) + "</strong> (" + escaparHTML(usuarioActual.email) + ")<br>Plan: <strong style='color:var(--dorado)'>" + planTexto + " (" + estadoPago + ")</strong><br><button class='btn btn-secondary' style='margin-top:6px;font-size:.7rem;' onclick='cerrarSesion()'>Cerrar sesión</button>";
         actualizarInterfazPanelComercial();
     } else {
         info.textContent = "No hay una sesión iniciada.";
@@ -1390,7 +1436,7 @@ function enlaceWhatsApp(comercio, mensaje) {
 }
 
 function obtenerVisitasReales(id) {
-    return 22 + id * 7 + (new Date().getMinutes() % 15);
+    return 22 + (id % 50) + (new Date().getMinutes() % 15);
 }
 
 function generarEstrellasHTML(rating, opiniones) {
@@ -1464,7 +1510,7 @@ async function cargarUbicacionesComercios() {
                 localizados++;
             }
             if (i < comerciosVEA.length - 1) {
-                await new Promise(resolve => setTimeout(resolve, 500));
+                await new Promise(resolve => setTimeout(resolve, 300));
             }
         }
         actualizarVista(filtroActual);
