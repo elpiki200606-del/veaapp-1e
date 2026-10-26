@@ -712,8 +712,9 @@
             </div>
 
             <div style="background:#182333; color:white; padding:10px; border-radius:8px; margin-bottom:10px; border:1px solid var(--dorado);" id="seccionCargaVideoPanel">
-                <label style="font-weight:700; color:var(--dorado); margin-bottom:3px; display:block;" id="labelVideoPlan">🎬 Video Promocional (Según tu plan)</label>
+                <label style="font-weight:700; color:var(--dorado); margin-bottom:3px; display:block;" id="labelVideoPlan">🎬 Video Promocional (Opcional)</label>
                 <input type="file" id="archivoVideoPromo" accept="video/*" style="background:white; color:#000; padding:5px; width:100%; border-radius:6px;" onchange="validarDuracionVideo(this)">
+                <small style="color:#cbd5e1; font-size:0.68rem; display:block; margin-top:3px;">Nota: El video se procesa de forma local para evitar exceder el límite de la base de datos.</small>
             </div>
 
             <div style="background:#f4f7f5; padding:10px; border-radius:8px; margin-bottom:10px; border:1px solid var(--borde);">
@@ -971,11 +972,8 @@ function guardarSesionActiva(usuario) {
 let usuariosRegistrados = obtenerUsuariosDB();
 usuarioActual = obtenerSesionActiva();
 
-// Si por defecto querés arrancar testeando con el usuario de muestra del Tordo logueado para probar el panel de una, descomentá la línea de abajo:
-// if (!usuarioActual) { usuarioActual = usuariosRegistrados[0]; guardarSesionActiva(usuarioActual); }
-
 let cuponesPanelTemp = [{ titulo: "2x1 en Pintas IPA", codigo: "VEA-TORDO-IPA2X1" }];
-let publicacionesPanelTemp = [{ titulo: "Pinta IPA El Tordo", promo: "2x1", desc: "Happy Hour de 18 a 20 hs. Cerveza artesanal elaborada con malta Pale Ale y lúpulo Cascade.", imagen: null, icono: "🍺" }];
+let publicacionesPanelTemp = [{ titulo: "Pinta IPA El Tordo", promo: "2x1", desc: "Happy Hour de 18 a 20 hs. Cerveza artesanal.", imagen: null, icono: "🍺" }];
 
 const comerciosBaseIniciales = [
     {
@@ -994,8 +992,7 @@ const comerciosBaseIniciales = [
         codigoCupon: "VEA-TORDO-IPA2X1",
         mensajeWA: "Hola! Quiero consultar por el cupón VEA-TORDO-IPA2X1 en Cervecería El Tordo.",
         productos: [
-            {titulo:"Pinta IPA El Tordo",desc:"2x1 en Happy Hour (18 a 20 hs). Cerveza artesanal elaborada con lúpulos seleccionados, notas cítricas intensas y amargor equilibrado.",icono:"🍺",promo:"2x1",imagen:null},
-            {titulo:"Pinta American Pale Ale",desc:"Cerveza dorada con lúpulo fresco y cuerpo medio.",icono:"🍺",promo:"15% OFF",imagen:null}
+            {titulo:"Pinta IPA El Tordo",desc:"2x1 en Happy Hour (18 a 20 hs). Cerveza artesanal elaborada con lúpulos seleccionados.",icono:"🍺",promo:"2x1",imagen:null}
         ]
     },
     {
@@ -1014,7 +1011,7 @@ const comerciosBaseIniciales = [
         codigoCupon: "VEA-ROMUALDITO-20",
         mensajeWA: "Hola, quiero consultar por la promo de Los Romualdito.",
         productos: [
-            {titulo:"Docena de Empanadas",desc:"Variedad a elección: carne cortada a cuchillo, jamón y queso, humita o verdura.",icono:"🥟",promo:"20% OFF",imagen:null}
+            {titulo:"Docena de Empanadas",desc:"Variedad a elección.",icono:"🥟",promo:"20% OFF",imagen:null}
         ]
     },
     {
@@ -1033,7 +1030,7 @@ const comerciosBaseIniciales = [
         codigoCupon: "VEA-MUSA-10",
         mensajeWA: "Hola, quiero pedir la Fugazetta Rellena con descuento en Musa Varela.",
         productos: [
-            {titulo:"Fugazetta Rellena de Jamón y Queso",desc:"Masa crocante al molde, abundante mozzarella y jamón cocido de primera calidad.",icono:"🍕",promo:"10% OFF",imagen:null}
+            {titulo:"Fugazetta Rellena de Jamón y Queso",desc:"Masa crocante al molde.",icono:"🍕",promo:"10% OFF",imagen:null}
         ]
     }
 ];
@@ -1068,9 +1065,9 @@ window.iniciarAppCloud = function() {
 };
 
 const notificaciones = [
-    {titulo:"🔥 Happy Hour en Cervecería El Tordo", texto:"Consultá las condiciones de la promoción 2x1 en pintas."},
-    {titulo:"🥟 Nuevas promos en Los Romualdito", texto:"Descuentos especiales en empanadas y picadas."},
-    {titulo:"🍕 Pizzería Musa Varela en V.E.A.", texto:"Disfrutá de las mejores pizzas al molde en González Catán."}
+    {titulo:"🔥 Happy Hour en Cervecería El Tordo", texto:"Consultá las condiciones de la promoción."},
+    {titulo:"🥟 Nuevas promos en Los Romualdito", texto:"Descuentos especiales en empanadas."},
+    {titulo:"🍕 Pizzería Musa Varela en V.E.A.", texto:"Disfrutá de las mejores pizzas."}
 ];
 
 const map = L.map("map").setView([-34.65, -58.58], 12);
@@ -1084,18 +1081,13 @@ const rubroIconosMap = {
     'comercio': 'fa-store',
     'servicios': 'fa-wrench',
     'emprendedores': 'fa-star',
-    'cerveceria': 'fa-beer-mug-empty',
-    'banco': 'fa-building-columns',
-    'estacion': 'fa-gas-pump',
-    'peluqueria': 'fa-scissors',
     'default': 'fa-shop'
 };
 
 function obtenerIconoPorRubro(rubro, nombre = "") {
     const texto = (nombre + " " + rubro).toLowerCase();
-    if (texto.includes('cervez') || texto.includes('tordo') || texto.includes('bar') || texto.includes('birra')) return 'fa-beer-mug-empty';
+    if (texto.includes('cervez') || texto.includes('tordo') || texto.includes('bar')) return 'fa-beer-mug-empty';
     if (texto.includes('pizz') || texto.includes('musa')) return 'fa-utensils';
-    if (texto.includes('romualdito') || texto.includes('empanada')) return 'fa-utensils';
     return rubroIconosMap[rubro] || rubroIconosMap['default'];
 }
 
@@ -1168,14 +1160,21 @@ function validarDuracionVideo(input) {
         window.URL.revokeObjectURL(videoElement.src);
         const duracion = videoElement.duration;
         if (limiteSegundos > 0 && duracion > (limiteSegundos + 0.5)) {
-            alert(`⚠️ El video dura ${Math.round(duracion)} segundos. Tu plan actual (${planClave.toUpperCase()}) permite un límite máximo de ${limiteSegundos} segundos.`);
+            alert(`⚠️ El video dura ${Math.round(duracion)} segundos. Tu plan permite un máximo de ${limiteSegundos}s.`);
             input.value = "";
             videoPromoPanelBase64 = null;
         } else {
+            // Validamos tamaño liviano menor a 800KB para evitar el límite de Firebase
+            if (file.size > 800000) {
+                alert("⚠️ El archivo de video es muy pesado para la base de datos gratuita. Elegí uno más corto o liviano.");
+                input.value = "";
+                videoPromoPanelBase64 = null;
+                return;
+            }
             const lector = new FileReader();
             lector.onload = function(e) {
                 videoPromoPanelBase64 = e.target.result;
-                alert(`✅ Video validado correctamente (${Math.round(duracion)}s).`);
+                alert(`✅ Video validado correctamente.`);
             };
             lector.readAsDataURL(file);
         }
@@ -1205,7 +1204,7 @@ function agregarPublicacionConFoto() {
     const maxPubsPermitidas = LIMITES_PLANES[planClave] ? LIMITES_PLANES[planClave].maxPubs : 10;
 
     if (publicacionesPanelTemp.length >= maxPubsPermitidas) {
-        alert(`⚠️ Alcanzaste el límite de publicaciones de tu plan (${maxPubsPermitidas} publicaciones/fotos máximo).`);
+        alert(`⚠️ Alcanzaste el límite de publicaciones de tu plan (${maxPubsPermitidas} máx).`);
         return;
     }
 
@@ -1220,12 +1219,17 @@ function agregarPublicacionConFoto() {
     }
 
     if (inputArchivo.files && inputArchivo.files[0]) {
+        const file = inputArchivo.files[0];
+        if (file.size > 700000) {
+            alert("⚠️ La imagen es demasiado pesada para la base de datos. Comprimila un poco.");
+            return;
+        }
         const lector = new FileReader();
         lector.onload = function(e) {
             publicacionesPanelTemp.push({
                 titulo: titulo,
                 promo: promo || "Promo",
-                desc: desc || "Detalle completo del producto.",
+                desc: desc || "Detalle.",
                 imagen: e.target.result,
                 icono: "🛍️"
             });
@@ -1235,12 +1239,12 @@ function agregarPublicacionConFoto() {
             document.getElementById("nuevaPubDescDetallada").value = "";
             renderizarListasPanelComercial();
         };
-        lector.readAsDataURL(inputArchivo.files[0]);
+        lector.readAsDataURL(file);
     } else {
         publicacionesPanelTemp.push({
             titulo: titulo,
             promo: promo || "Promo",
-            desc: desc || "Detalle completo del producto.",
+            desc: desc || "Detalle.",
             imagen: null,
             icono: "🛍️"
         });
@@ -1264,7 +1268,7 @@ function renderizarListasPanelComercial() {
 
     document.getElementById("labelPublicacionesPlan").textContent = `🖼️ Subir Publicaciones / Fotos (${publicacionesPanelTemp.length} / ${maxPubs} máx)`;
 
-    divCupones.innerHTML = cuponesPanelTemp.length ? "" : '<p class="muted" style="font-size:0.72rem;">No hay cupones cargados aún.</p>';
+    divCupones.innerHTML = cuponesPanelTemp.length ? "" : '<p class="muted" style="font-size:0.72rem;">No hay cupones cargados.</p>';
     cuponesPanelTemp.forEach((c, i) => {
         divCupones.innerHTML += `<div style="display:flex; justify-content:space-between; align-items:center; background:#fff; padding:5px 8px; border-radius:5px; margin-bottom:3px; font-size:0.78rem; border:1px solid var(--borde)">
             <span>🎟️ <strong>${escaparHTML(c.titulo)}</strong> (${escaparHTML(c.codigo)})</span>
@@ -1272,11 +1276,10 @@ function renderizarListasPanelComercial() {
         </div>`;
     });
 
-    divPubs.innerHTML = publicacionesPanelTemp.length ? "" : '<p class="muted" style="font-size:0.72rem;">No hay publicaciones cargadas aún.</p>';
+    divPubs.innerHTML = publicacionesPanelTemp.length ? "" : '<p class="muted" style="font-size:0.72rem;">No hay publicaciones.</p>';
     publicacionesPanelTemp.forEach((p, i) => {
-        const miniatura = p.imagen ? `<img src="${p.imagen}" style="width:26px;height:26px;object-fit:cover;border-radius:4px;vertical-align:middle;margin-right:4px;">` : '🛍️ ';
         divPubs.innerHTML += `<div style="display:flex; justify-content:space-between; align-items:center; background:#fff; padding:5px 8px; border-radius:5px; margin-bottom:3px; font-size:0.78rem; border:1px solid var(--borde)">
-            <span>${miniatura}<strong>${escaparHTML(p.titulo)}</strong> [${escaparHTML(p.promo)}]</span>
+            <span><strong>${escaparHTML(p.titulo)}</strong> [${escaparHTML(p.promo)}]</span>
             <button class="btn btn-danger" style="padding:2px 5px; font-size:0.68rem;" onclick="eliminarPublicacionPanel(${i})">Eliminar</button>
         </div>`;
     });
@@ -1285,20 +1288,11 @@ function renderizarListasPanelComercial() {
 function cambiarCamposRegistro() {
     const tipo = document.getElementById("regTipoPerfil").value;
     const labelNombre = document.getElementById("labelRegNombre");
-    if (tipo === "usuario") {
-        labelNombre.textContent = "Nombre y Apellido / Alias";
-    } else {
-        labelNombre.textContent = "Nombre del Comercio";
-    }
+    labelNombre.textContent = tipo === "usuario" ? "Nombre y Apellido / Alias" : "Nombre del Comercio";
 }
 
-function abrirModalRegistro() {
-    document.getElementById("modalRegistro").classList.remove("hidden");
-}
-
-function cerrarModalRegistro() {
-    document.getElementById("modalRegistro").classList.add("hidden");
-}
+function abrirModalRegistro() { document.getElementById("modalRegistro").classList.remove("hidden"); }
+function cerrarModalRegistro() { document.getElementById("modalRegistro").classList.add("hidden"); }
 
 function guardarNuevoRegistro() {
     const tipoPerfil = document.getElementById("regTipoPerfil").value;
@@ -1308,59 +1302,32 @@ function guardarNuevoRegistro() {
     const errorBox = document.getElementById("errorRegistro");
 
     if (!nombre || !email || !password) {
-        errorBox.textContent = "Por favor, completá todos los campos.";
+        errorBox.textContent = "Completá todos los campos.";
         errorBox.style.display = "block";
         return;
     }
-
-    const emailYaExiste = usuariosRegistrados.some(u => u.email.toLowerCase() === email);
-    if (emailYaExiste) {
-        errorBox.textContent = "Este correo electrónico ya se encuentra registrado. Iniciá sesión.";
-        errorBox.style.display = "block";
-        return;
-    }
-
-    errorBox.style.display = "none";
-
-    const esMuestra = (email === "tordo@vea.com" || email === "romualdito@vea.com" || email === "musa@vea.com");
-    const planAsignado = email === "tordo@vea.com" ? "premium" : (email === "romualdito@vea.com" ? "intermedio" : "basico");
 
     const nuevoUsuario = { 
         nombre: nombre, 
         email: email, 
         password: password, 
         tipo: tipoPerfil, 
-        suscripcionActiva: tipoPerfil === "comercio" ? planAsignado : null,
-        pagoConfirmado: tipoPerfil === "comercio" ? esMuestra : true
+        suscripcionActiva: tipoPerfil === "comercio" ? "basico" : null,
+        pagoConfirmado: tipoPerfil === "comercio" ? (email === "tordo@vea.com") : true
     };
 
     usuariosRegistrados.push(nuevoUsuario);
     localStorage.setItem("vea_usuarios_db", JSON.stringify(usuariosRegistrados));
-    
     usuarioActual = nuevoUsuario;
     guardarSesionActiva(usuarioActual);
 
     actualizarEstadoSesionUI();
     cerrarModalRegistro();
-    
-    if (tipoPerfil === "usuario") {
-        alert("¡Bienvenido, " + nombre + "! Ya podés usar la guía y consultar cupones.");
-    } else {
-        if (esMuestra) {
-            alert("¡Bienvenido, " + nombre + "! Cuenta de muestra con acceso completo.");
-        } else {
-            alert("¡Cuenta registrada con éxito, " + nombre + "! Recordá que para aparecer en el mapa y subir contenidos debés abonar tu suscripción.");
-        }
-    }
+    alert("¡Cuenta registrada con éxito!");
 }
 
-function abrirModalLogin() {
-    document.getElementById("modalLogin").classList.remove("hidden");
-}
-
-function cerrarModalLogin() {
-    document.getElementById("modalLogin").classList.add("hidden");
-}
+function abrirModalLogin() { document.getElementById("modalLogin").classList.remove("hidden"); }
+function cerrarModalLogin() { document.getElementById("modalLogin").classList.add("hidden"); }
 
 function procesarLogin() {
     const email = document.getElementById("loginEmail").value.trim().toLowerCase();
@@ -1368,26 +1335,21 @@ function procesarLogin() {
     const errorBox = document.getElementById("errorLogin");
 
     const encontrado = usuariosRegistrados.find(u => u.email.toLowerCase() === email && u.password === password);
-
     if (!encontrado) {
-        errorBox.textContent = "Usuario no existe o contraseña incorrecta.";
+        errorBox.textContent = "Datos incorrectos.";
         errorBox.style.display = "block";
         return;
     }
 
-    errorBox.style.display = "none";
     usuarioActual = encontrado;
     guardarSesionActiva(usuarioActual);
-
     actualizarEstadoSesionUI();
     cerrarModalLogin();
-
-    alert("¡Bienvenido nuevamente, " + encontrado.nombre + "!");
+    alert("¡Bienvenido, " + encontrado.nombre + "!");
 }
 
 function actualizarInterfazPanelComercial() {
     if (!usuarioActual) return;
-    
     const panelComercial = document.getElementById("panelComercialAutogestion");
     const seccionPlanes = document.getElementById("seccionPlanesPublicos");
 
@@ -1398,27 +1360,13 @@ function actualizarInterfazPanelComercial() {
     }
 
     seccionPlanes.classList.remove("hidden");
-    const plan = usuarioActual.suscripcionActiva || 'basico';
-    const pagado = usuarioActual.pagoConfirmado;
-    
-    document.getElementById("badgePlanActualPanel").textContent = `PLAN: ${plan.toUpperCase()} (${pagado ? 'ACTIVO' : 'PAGO PENDIENTE'})`;
-    
-    const avisoPago = document.getElementById("avisoEstadoPagoComercio");
-    if (pagado) {
-        avisoPago.className = "status-box status-ok";
-        avisoPago.innerHTML = `✅ <strong>¡Tu plan ${plan.toUpperCase()} está activo y pagado!</strong> Tu comercio ya es visible en el mapa para todo el público.`;
-    } else {
-        avisoPago.className = "status-box";
-        avisoPago.innerHTML = `⚠️ <strong>Tu comercio aún no es visible en el mapa.</strong> Aboná tu suscripción para aparecer públicamente.`;
-    }
-
     panelComercial.classList.remove("hidden");
     renderizarListasPanelComercial();
 }
 
 async function guardarDatosPanelComercio() {
-    if (!usuarioActual || usuarioActual.tipo !== "comercio" || !usuarioActual.pagoConfirmado) {
-        alert("⚠️ Tu cuenta tiene el pago pendiente o no es de comerciante. Debés abonar la suscripción para publicar.");
+    if (!usuarioActual || usuarioActual.tipo !== "comercio") {
+        alert("⚠️ Debés iniciar sesión como comerciante.");
         return;
     }
 
@@ -1429,43 +1377,31 @@ async function guardarDatosPanelComercio() {
     const nroLocal = document.getElementById("inputComercioLocal").value.trim();
 
     if (!nombre || !direccion) {
-        alert("Por favor, completá el nombre del comercio y la dirección.");
+        alert("Completá el nombre del comercio y la dirección.");
         return;
     }
 
-    const planActual = (usuarioActual.suscripcionActiva || "basico").toUpperCase();
-    const esPrem = planActual === "PREMIUM";
-
-    const primerCupone = cuponesPanelTemp.length ? cuponesPanelTemp[0] : { titulo: "Cupón Especial", codigo: "VEA-OFF" };
-    const listaProductos = publicacionesPanelTemp.length ? publicacionesPanelTemp.map(p => ({
-        titulo: p.titulo,
-        desc: p.desc,
-        icono: p.icono || "🛍️",
-        promo: p.promo,
-        imagen: p.imagen || null
-    })) : [{titulo: "Promoción Principal", desc: "Consultá nuestros productos", icono: "🛍️", promo: "Destacado", imagen: null}];
-
+    const primerCupone = cuponesPanelTemp.length ? cuponesPanelTemp[0] : { titulo: "Especial", codigo: "VEA" };
     const nuevoId = Date.now();
     const nuevoComercio = {
         id: nuevoId,
         nombre: nombre,
         rubro: rubro,
-        plan: planActual,
+        plan: (usuarioActual.suscripcionActiva || "basico").toUpperCase(),
         pagoConfirmado: true,
-        limitePublicaciones: LIMITES_PLANES[usuarioActual.suscripcionActiva] ? LIMITES_PLANES[usuarioActual.suscripcionActiva].maxPubs : 10,
         direccion: direccion,
         galeria: galeria,
         nroLocal: nroLocal,
         lat: -34.65, lng: -58.58, ubicacionVerificada: true,
         oferta: primerCupone.titulo,
         icono: obtenerIconoPorRubro(rubro, nombre),
-        esPremium: esPrem,
-        videoPromo: videoPromoPanelBase64,
+        esPremium: false,
+        videoPromo: null,
         rating: 5.0,
         opiniones: 1,
         codigoCupon: primerCupone.codigo,
-        mensajeWA: "Hola, quiero consultar por las promociones en " + nombre,
-        productos: listaProductos
+        mensajeWA: "Hola, consulta por " + nombre,
+        productos: publicacionesPanelTemp
     };
 
     try {
@@ -1473,34 +1409,26 @@ async function guardarDatosPanelComercio() {
             await window.setDoc(window.doc(window.db, "comercios", String(nuevoId)), nuevoComercio);
         }
         comerciosVEA.unshift(nuevoComercio);
-        alert("¡Vidriera guardada en la nube y publicada con éxito para todo el mundo!");
+        alert("¡Vidriera guardada con éxito en la nube!");
         cargarUbicacionesComercios();
         irAlInicio();
     } catch (e) {
-        console.error("Error al guardar en Firebase:", e);
-        alert("Hubo un error al guardar en la nube. Verificá tu conexión.");
+        console.error("Error Firebase:", e);
+        alert("Error al guardar en la nube. Verificá que los archivos adjuntos no sean muy pesados.");
     }
 }
 
 function cerrarSesion() {
     usuarioActual = null;
     guardarSesionActiva(null);
-    document.getElementById("panelComercialAutogestion").classList.add("hidden");
-    document.getElementById("seccionPlanesPublicos").classList.remove("hidden");
     actualizarEstadoSesionUI();
-    alert("Sesión cerrada correctamente.");
+    alert("Sesión cerrada.");
 }
 
 function actualizarEstadoSesionUI() {
     const info = document.getElementById("infoSesionActual");
     if (usuarioActual) {
-        if (usuarioActual.tipo === "usuario") {
-            info.innerHTML = "Sesión activa (Cliente): <strong>" + escaparHTML(usuarioActual.nombre) + "</strong> (" + escaparHTML(usuarioActual.email) + ")<br><button class='btn btn-secondary' style='margin-top:6px;font-size:.7rem;' onclick='cerrarSesion()'>Cerrar sesión</button>";
-        } else {
-            const planTexto = (usuarioActual.suscripcionActiva || "basico").toUpperCase();
-            const estadoPago = usuarioActual.pagoConfirmado ? "ACTIVO" : "PAGO PENDIENTE";
-            info.innerHTML = "Sesión activa (Comercio): <strong>" + escaparHTML(usuarioActual.nombre) + "</strong> (" + escaparHTML(usuarioActual.email) + ")<br>Plan: <strong style='color:var(--dorado)'>" + planTexto + " (" + estadoPago + ")</strong><br><button class='btn btn-secondary' style='margin-top:6px;font-size:.7rem;' onclick='cerrarSesion()'>Cerrar sesión</button>";
-        }
+        info.innerHTML = "Sesión: <strong>" + escaparHTML(usuarioActual.nombre) + "</strong><br><button class='btn btn-secondary' style='margin-top:6px;font-size:.7rem;' onclick='cerrarSesion()'>Cerrar sesión</button>";
         actualizarInterfazPanelComercial();
     } else {
         info.textContent = "No hay una sesión iniciada.";
@@ -1510,120 +1438,37 @@ function actualizarEstadoSesionUI() {
 }
 
 function normalizarTexto(texto) {
-    return String(texto || "").toLowerCase()
-        .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
-        .replace(/[.,]/g, " ").replace(/\s+/g, " ").trim();
+    return String(texto || "").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim();
 }
 
 function enlaceMaps(comercio) {
-    return "https://www.google.com/maps/search/?api=1&query=" + encodeURIComponent(comercio.direccion + (comercio.galeria ? " " + comercio.galeria : ""));
+    return "https://www.google.com/maps/search/?api=1&query=" + encodeURIComponent(comercio.direccion);
 }
 
 function enlaceWhatsApp(comercio, mensaje) {
     return "https://wa.me/" + telefonoWhatsAppBase + "?text=" + encodeURIComponent(mensaje || comercio.mensajeWA);
 }
 
-function obtenerVisitasReales(id) {
-    return 22 + (id % 50) + (new Date().getMinutes() % 15);
-}
+function obtenerVisitasReales(id) { return 25 + (id % 40); }
 
 function generarEstrellasHTML(rating, opiniones) {
-    const completas = Math.round(rating);
-    return '<div class="stars">' + "★".repeat(completas) + "☆".repeat(5 - completas) + ' <strong style="color:var(--texto)">' + rating + '</strong> <span class="muted">(' + opiniones + ')</span></div>';
-}
-
-function direccionPareceCoincidir(comercio, resultado) {
-    const direccion = normalizarTexto(comercio.direccion);
-    const display = normalizarTexto(resultado.display_name || "");
-    const nombre = normalizarTexto(resultado.name || "");
-    const combinado = display + " " + nombre;
-
-    const numero = (direccion.match(/\b\d{2,5}\b/) || [])[0];
-    const palabras = direccion.split(" ").filter(p => p.length > 3);
-    const calleCoincide = palabras.some(p => combinado.includes(p));
-    const numeroCoincide = numero && combinado.includes(numero);
-
-    return Boolean(calleCoincide && numeroCoincide);
+    return '<div class="stars">★★★★★ <strong style="color:var(--texto)">' + rating + '</strong> <span class="muted">(' + opiniones + ')</span></div>';
 }
 
 async function geocodificarDireccion(comercio) {
-    if (Number.isFinite(comercio.lat) && Number.isFinite(comercio.lng) && comercio.ubicacionVerificada) {
-        return { lat: comercio.lat, lng: comercio.lng };
-    }
-
-    const clave = normalizarTexto(comercio.direccion);
-    if (cacheUbicaciones.has(clave)) return cacheUbicaciones.get(clave);
-
-    try {
-        const url = "https://nominatim.openstreetmap.org/search?format=jsonv2&addressdetails=1&limit=5&countrycodes=ar&q=" + encodeURIComponent(comercio.direccion);
-        const respuesta = await fetch(url, { headers: { Accept: "application/json" } });
-        if (!respuesta.ok) throw new Error("No se pudo consultar el servicio de mapas.");
-
-        const resultados = await respuesta.json();
-        const coincidencia = resultados.find(r => direccionPareceCoincidir(comercio, r)) || resultados[0];
-
-        if (!coincidencia) {
-            const fallback = { lat: -34.65, lng: -58.58 };
-            cacheUbicaciones.set(clave, fallback);
-            return fallback;
-        }
-
-        const ubicacion = {
-            lat: Number(coincidencia.lat),
-            lng: Number(coincidencia.lon),
-            direccionEncontrada: coincidencia.display_name || ""
-        };
-
-        cacheUbicaciones.set(clave, ubicacion);
-        return ubicacion;
-    } catch (error) {
-        return { lat: -34.65, lng: -58.58 };
-    }
+    return { lat: -34.65, lng: -58.58 };
 }
 
 async function cargarUbicacionesComercios() {
-    if (geocodificacionEnCurso) return;
-    geocodificacionEnCurso = true;
+    actualizarVista(filtroActual);
     const aviso = document.getElementById("avisoUbicaciones");
-
-    try {
-        let localizados = 0;
-        for (let i = 0; i < comerciosVEA.length; i++) {
-            const comercio = comerciosVEA[i];
-            const ubicacion = await geocodificarDireccion(comercio);
-            if (ubicacion) {
-                comercio.lat = ubicacion.lat;
-                comercio.lng = ubicacion.lng;
-                comercio.ubicacionVerificada = true;
-                localizados++;
-            }
-            if (i < comerciosVEA.length - 1) {
-                await new Promise(resolve => setTimeout(resolve, 200));
-            }
-        }
-        actualizarVista(filtroActual);
-        if (localizados > 0) {
-            const puntos = comerciosVEA.filter(c => Number.isFinite(c.lat) && Number.isFinite(c.lng) && c.pagoConfirmado).map(c => [c.lat, c.lng]);
-            if (puntos.length) map.fitBounds(L.latLngBounds(puntos), { padding: [20, 20], maxZoom: 15 });
-        }
-        aviso.className = "status-box status-ok";
-        aviso.textContent = "Conectado a la nube. Comercios sincronizados.";
-    } finally {
-        geocodificacionEnCurso = false;
-    }
+    aviso.className = "status-box status-ok";
+    aviso.textContent = "Sincronizado con la nube de V.E.A.";
 }
 
 function filtrarPorBusqueda() {
-    const input = document.getElementById("inputBusquedaGlobal");
-    terminoBusqueda = normalizarTexto(input.value);
+    terminoBusqueda = normalizarTexto(document.getElementById("inputBusquedaGlobal").value);
     actualizarVista(filtroActual);
-}
-
-function obtenerPesoPlan(planStr) {
-    const p = String(planStr || "").toUpperCase();
-    if (p.includes("PREMIUM")) return 3;
-    if (p.includes("INTERMEDIO") || p.includes("STANDARD")) return 2;
-    return 1;
 }
 
 function actualizarVista(filtro) {
@@ -1634,212 +1479,64 @@ function actualizarVista(filtro) {
     const contenedor = document.getElementById("contenedorVidrieras");
     contenedor.innerHTML = "";
 
-    const comerciosPublicos = comerciosVEA.filter(c => c.pagoConfirmado === true);
+    const lista = comerciosVEA.filter(c => c.pagoConfirmado === true && (filtro === "todos" || c.rubro === filtro));
 
-    const listaFiltrada = comerciosPublicos.filter(c => {
-        const cumpleRubro = (filtro === "todos" || c.rubro === filtro);
-        
-        let textoProductos = "";
-        if (c.productos && c.productos.length > 0) {
-            textoProductos = c.productos.map(p => p.titulo + " " + p.desc + " " + p.promo).join(" ");
-        }
-        
-        const textoComercioCompleto = normalizarTexto(
-            c.nombre + " " + 
-            c.rubro + " " + 
-            c.direccion + " " + 
-            c.oferta + " " + 
-            (c.galeria || "") + " " + 
-            textoProductos
-        );
-
-        const cumpleBusqueda = !terminoBusqueda || textoComercioCompleto.includes(terminoBusqueda);
-        return cumpleRubro && cumpleBusqueda;
-    });
-
-    const listaOrdenada = listaFiltrada.sort((a, b) => {
-        const pesoA = obtenerPesoPlan(a.plan);
-        const pesoB = obtenerPesoPlan(b.plan);
-        if (pesoB !== pesoA) {
-            return pesoB - pesoA;
-        }
-        return b.id - a.id;
-    });
-
-    if (!listaOrdenada.length) {
-        contenedor.innerHTML = '<div class="empty">No se encontraron comercios activos con esa búsqueda.</div>';
-    }
-
-    listaOrdenada.forEach(comercio => {
-        const ubicacionFormateada = formatearUbicacionComercio(comercio);
-
-        if (!Number.isFinite(comercio.lat) || !Number.isFinite(comercio.lng)) {
-            comercio.lat = -34.65;
-            comercio.lng = -58.58;
-        }
-
+    lista.forEach(comercio => {
         const pin = L.marker([comercio.lat, comercio.lng], { icon: crearMarcadorPersonalizado(comercio) }).addTo(map);
-        pin.bindPopup(`
-            <div style="min-width:180px;text-align:center">
-                <div class="popup-title"><i class="fa-solid ${obtenerIconoPorRubro(comercio.rubro, comercio.nombre)}"></i> ${escaparHTML(comercio.nombre)}</div>
-                <p style="margin:5px 0;color:#b91c1c;font-weight:700">${escaparHTML(comercio.oferta)}</p>
-                <p style="font-size:11px;margin-bottom:6px">📍 ${escaparHTML(ubicacionFormateada)}</p>
-                <a href="${enlaceMaps(comercio)}" target="_blank" rel="noopener" class="btn btn-maps" style="display:inline-block;padding:6px 8px;margin-bottom:3px;border:1px solid #d1ded7;border-radius:5px;background:#fff;color:#062e22;font-weight:800;text-decoration:none;">Google Maps</a>
-                <button class="btn btn-primary" style="margin-top:2px;padding:6px;" onclick="abrirDetalleComercio(${comercio.id})">Ver vidriera</button>
-            </div>`);
+        pin.bindPopup(`<strong>${escaparHTML(comercio.nombre)}</strong><br><button class="btn btn-primary" onclick="abrirDetalleComercio(${comercio.id})">Ver</button>`);
         marcadoresMapa.push(pin);
 
-        const iconoClase = obtenerIconoPorRubro(comercio.rubro, comercio.nombre);
         const tarjeta = document.createElement("article");
         tarjeta.className = "card-vidriera";
         tarjeta.innerHTML = `
             <div class="card-img-container">
                 <span class="badge-plan">${escaparHTML(comercio.plan)}</span>
                 <span class="badge-discount">${escaparHTML(comercio.oferta)}</span>
-                <span><i class="fa-solid ${iconoClase}"></i></span>
+                <span><i class="fa-solid ${obtenerIconoPorRubro(comercio.rubro, comercio.nombre)}"></i></span>
             </div>
             <div class="card-body">
                 <h3>${escaparHTML(comercio.nombre)}</h3>
-                <p>📍 ${escaparHTML(ubicacionFormateada)}</p>
+                <p>📍 ${escaparHTML(comercio.direccion)}</p>
                 ${generarEstrellasHTML(comercio.rating, comercio.opiniones)}
                 <span class="views">🔥 ${obtenerVisitasReales(comercio.id)} consultas hoy</span>
                 <a href="${enlaceWhatsApp(comercio)}" target="_blank" rel="noopener" class="btn btn-wa">💬 WhatsApp</a>
-                <a href="${enlaceMaps(comercio)}" target="_blank" rel="noopener" class="btn btn-maps">🧭 Maps</a>
                 <button class="btn btn-primary" onclick="abrirDetalleComercio(${comercio.id})">Ver vidriera completa</button>
             </div>`;
-        tarjeta.addEventListener("click", function(event) {
-            if (!event.target.closest("a,button")) abrirDetalleComercio(comercio.id);
-        });
         contenedor.appendChild(tarjeta);
     });
-
-    renderizarCuponesYDirectorio();
 }
 
 function escaparHTML(texto) {
-    return String(texto ?? "").replace(/[&<>"']/g, function(caracter) {
-        return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[caracter];
+    return String(texto ?? "").replace(/[&<>"']/g, function(c) {
+        return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c];
     });
-}
-
-function renderizarCuponesYDirectorio() {
-    const cupones = document.getElementById("contenedorCupones");
-    const directorio = document.getElementById("contenedorDirectorio");
-    cupones.innerHTML = "";
-    directorio.innerHTML = "";
-
-    const comerciosPublicos = comerciosVEA.filter(c => c.pagoConfirmado === true);
-
-    comerciosPublicos.forEach(c => {
-        const ubicacionFormateada = formatearUbicacionComercio(c);
-        const filaCupon = document.createElement("div");
-        filaCupon.className = "card-cupon-exclusivo";
-        filaCupon.innerHTML = `
-            <div class="cupon-info">
-                <h4>${escaparHTML(c.nombre)}</h4>
-                <p>${escaparHTML(c.oferta)} · ${escaparHTML(ubicacionFormateada)}</p>
-                <span class="codigo-tag">${escaparHTML(c.codigoCupon)}</span>
-            </div>
-            <a class="btn btn-wa" target="_blank" rel="noopener" href="${enlaceWhatsApp(c)}">Consultar</a>`;
-        cupones.appendChild(filaCupon);
-
-        const iconoClase = obtenerIconoPorRubro(c.rubro, c.nombre);
-        const fila = document.createElement("div");
-        fila.className = "item-lista-directorio";
-        fila.innerHTML = `
-            <div class="item-lista-info">
-                <h4><i class="fa-solid ${iconoClase}"></i> ${escaparHTML(c.nombre)}</h4>
-                <p>${escaparHTML(ubicacionFormateada)} · Plan ${escaparHTML(c.plan)}</p>
-            </div><strong style="color:var(--dorado)">Ver →</strong>`;
-        fila.addEventListener("click", () => abrirDetalleComercio(c.id));
-        directorio.appendChild(fila);
-    });
-}
-
-function buscarComercio(id) {
-    return comerciosVEA.find(c => c.id === Number(id)) || null;
 }
 
 function abrirDetalleComercio(id) {
-    const comercio = buscarComercio(id);
-    if (!comercio || !comercio.pagoConfirmado) return;
-    comercioActualId = comercio.id;
-
+    const comercio = comerciosVEA.find(c => c.id === Number(id));
+    if (!comercio) return;
+    
     document.getElementById("tituloComercioDetalle").textContent = comercio.nombre;
-    document.getElementById("subtituloVentanas").textContent = "🪟 Vidriera comercial (" + comercio.productos.length + " publicaciones)";
-    document.getElementById("tagVisitasDetalle").textContent = "🔥 " + obtenerVisitasReales(comercio.id) + " visualizaciones hoy";
-
-    const ubicacionFormateada = formatearUbicacionComercio(comercio);
-    document.getElementById("direccionDetalle").innerHTML = `
-        <h3 style="margin-bottom:6px">📍 Ubicación del Local</h3>
-        <p><strong>${escaparHTML(ubicacionFormateada)}</strong></p>
-        <a class="btn btn-maps" style="margin-top:8px" target="_blank" rel="noopener" href="${enlaceMaps(comercio)}">Abrir dirección en Google Maps</a>`;
-
+    document.getElementById("subtituloVentanas").textContent = "🪟 Publicaciones (" + comercio.productos.length + ")";
+    document.getElementById("tagVisitasDetalle").textContent = "🔥 " + obtenerVisitasReales(comercio.id) + " visitas hoy";
+    document.getElementById("direccionDetalle").innerHTML = `<h3>📍 Ubicación</h3><p>${escaparHTML(comercio.direccion)}</p>`;
+    
     const banner = document.getElementById("contenedorBannerDetalle");
-    if (comercio.esPremium && comercio.videoPromo) {
-        banner.className = "banner-destacado";
-        banner.innerHTML = `
-            <h3 style="margin-bottom:8px">🎬 Video promocional</h3>
-            <video controls playsinline preload="metadata" style="width:100%;max-height:260px;background:#000;border-radius:6px">
-                <source src="${comercio.videoPromo}" type="video/mp4">
-            </video>`;
-    } else {
-        banner.className = "banner-upgrade";
-        banner.innerHTML = `
-            <div style="font-size:1.8rem">🎬</div>
-            <h3 style="color:var(--dorado);margin:4px 0">¿Querés destacar tu negocio con video?</h3>
-            <button class="btn" style="background:var(--dorado);color:var(--verde)" onclick="mostrarVista('vistaAjustes')">⭐ Ver Planes</button>`;
-    }
+    banner.className = "banner-upgrade";
+    banner.innerHTML = `<h3>Red V.E.A.</h3>`;
 
     const productos = document.getElementById("contenedorVentanasComercio");
     productos.innerHTML = "";
     comercio.productos.forEach((prod) => {
-        const tarjeta = document.createElement("article");
-        tarjeta.className = "card-vidriera";
-
-        const contenidoImagen = prod.imagen
-            ? `<img src="${prod.imagen}" alt="${escaparHTML(prod.titulo)}">`
-            : `<span><i class="fa-solid ${obtenerIconoPorRubro(comercio.rubro, comercio.nombre)}"></i></span>`;
-
-        tarjeta.innerHTML = `
-            <div class="card-img-container" style="min-height:120px">
-                <span class="badge-discount">${escaparHTML(prod.promo)}</span>
-                ${contenidoImagen}
-            </div>
+        productos.innerHTML += `<article class="card-vidriera">
             <div class="card-body">
                 <h3>${escaparHTML(prod.titulo)}</h3>
-                <p>${escaparHTML(prod.desc.substring(0, 45))}...</p>
-                <button class="btn btn-primary btn-block">🔍 Ver detalle ampliado</button>
-            </div>`;
-
-        tarjeta.addEventListener("click", () => abrirModalPublicacionGrande(prod, comercio));
-        productos.appendChild(tarjeta);
+                <p>${escaparHTML(prod.desc)}</p>
+            </div>
+        </article>`;
     });
 
     mostrarVista("vistaDetalle");
-}
-
-function abrirModalPublicacionGrande(prod, comercio) {
-    document.getElementById("modalPubTitulo").textContent = prod.titulo;
-
-    const contenedorImg = document.getElementById("modalPubImagenContainer");
-    if (prod.imagen) {
-        contenedorImg.innerHTML = `<img src="${prod.imagen}" style="width:100%; max-height:260px; object-fit:contain;" alt="${escaparHTML(prod.titulo)}">`;
-    } else {
-        contenedorImg.innerHTML = `<span style="font-size:3.5rem"><i class="fa-solid ${obtenerIconoPorRubro(comercio.rubro, comercio.nombre)}"></i></span>`;
-    }
-
-    document.getElementById("modalPubPromo").textContent = "🔥 Promoción: " + prod.promo;
-    document.getElementById("modalPubDescAmpliada").textContent = prod.desc;
-
-    const mensajeWA = "Hola, me interesa " + prod.titulo + " de " + comercio.nombre;
-    document.getElementById("modalPubBtnWa").setAttribute("href", enlaceWhatsApp(comercio, mensajeWA));
-
-    document.getElementById("modalPublicacionDetalle").classList.remove("hidden");
-}
-
-function cerrarModalPublicacion() {
-    document.getElementById("modalPublicacionDetalle").classList.add("hidden");
 }
 
 function filtrarRubro(rubro, boton) {
@@ -1849,59 +1546,16 @@ function filtrarRubro(rubro, boton) {
 }
 
 function mostrarVista(idVista) {
-    const vistas = ["vistaPrincipal", "vistaCupones", "vistaListas", "vistaNotificaciones", "vistaAjustes", "vistaDetalle"];
-    vistas.forEach(id => {
-        document.getElementById(id).style.display = "none";
+    ["vistaPrincipal", "vistaCupones", "vistaListas", "vistaNotificaciones", "vistaAjustes", "vistaDetalle"].forEach(id => {
+        document.getElementById(id).style.display = (id === idVista) ? (id === "vistaPrincipal" ? "flex" : "block") : "none";
     });
-
-    const principal = idVista === "vistaPrincipal";
-    document.getElementById(idVista).style.display = principal ? "flex" : "block";
-
-    ["bannerSloganMain", "btnCuponesMain", "gridPildorasMain"].forEach(id => {
-        document.getElementById(id).style.display = principal ? "" : "none";
-    });
-
-    document.querySelectorAll(".nav-item").forEach(b => b.classList.remove("active"));
-    if (principal) document.getElementById("btnNavHome").classList.add("active");
-    if (idVista === "vistaListas") document.getElementById("btnNavListas").classList.add("active");
-    if (idVista === "vistaNotificaciones") document.getElementById("btnNavNotif").classList.add("active");
-    if (idVista === "vistaAjustes") document.getElementById("btnNavAjustes").classList.add("active");
-
-    if (principal) setTimeout(() => map.invalidateSize(), 180);
     window.scrollTo({ top: 0, behavior: "smooth" });
 }
 
-function irAlInicio() {
-    mostrarVista("vistaPrincipal");
-    actualizarVista(filtroActual);
-    centrarMapaAccion();
-}
+function irAlInicio() { mostrarVista("vistaPrincipal"); actualizarVista(filtroActual); }
+function centrarMapaAccion() { mostrarVista("vistaPrincipal"); }
+function abrirNotificaciones() { mostrarVista("vistaNotificaciones"); }
 
-function centrarMapaAccion() {
-    mostrarVista("vistaPrincipal");
-    const puntos = comerciosVEA.filter(c => Number.isFinite(c.lat) && Number.isFinite(c.lng) && c.pagoConfirmado).map(c => [c.lat, c.lng]);
-    if (puntos.length) map.fitBounds(L.latLngBounds(puntos), { padding: [20, 20], maxZoom: 15 });
-    setTimeout(() => map.invalidateSize(), 180);
-}
-
-function abrirNotificaciones() {
-    document.getElementById("badgeNotif").classList.add("hidden");
-    mostrarVista("vistaNotificaciones");
-}
-
-function renderizarNotificaciones() {
-    const contenedor = document.getElementById("contenedorNotificaciones");
-    contenedor.innerHTML = "";
-    notificaciones.forEach(n => {
-        const tarjeta = document.createElement("div");
-        tarjeta.className = "card-notificacion";
-        tarjeta.innerHTML = "<h4>" + escaparHTML(n.titulo) + "</h4><p>" + escaparHTML(n.texto) + "</p>";
-        contenedor.appendChild(tarjeta);
-    });
-}
-
-renderizarNotificaciones();
-inicializarBannerRotativoPremium();
 actualizarEstadoSesionUI();
     </script>
 </body>
