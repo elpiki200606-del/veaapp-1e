@@ -1164,7 +1164,6 @@ function validarDuracionVideo(input) {
             input.value = "";
             videoPromoPanelBase64 = null;
         } else {
-            // Validamos tamaño liviano menor a 800KB para evitar el límite de Firebase
             if (file.size > 800000) {
                 alert("⚠️ El archivo de video es muy pesado para la base de datos gratuita. Elegí uno más corto o liviano.");
                 input.value = "";
