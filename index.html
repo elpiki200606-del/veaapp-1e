@@ -952,8 +952,12 @@ function obtenerUsuariosDB() {
 }
 
 function obtenerSesionActiva() {
-    const sesion = localStorage.getItem("vea_sesion_activa");
-    return sesion ? JSON.parse(sesion) : null;
+    try {
+        const sesion = localStorage.getItem("vea_sesion_activa");
+        return sesion ? JSON.parse(sesion) : null;
+    } catch(e) {
+        return null;
+    }
 }
 
 function guardarSesionActiva(usuario) {
@@ -966,6 +970,9 @@ function guardarSesionActiva(usuario) {
 
 let usuariosRegistrados = obtenerUsuariosDB();
 usuarioActual = obtenerSesionActiva();
+
+// Si por defecto querés arrancar testeando con el usuario de muestra del Tordo logueado para probar el panel de una, descomentá la línea de abajo:
+// if (!usuarioActual) { usuarioActual = usuariosRegistrados[0]; guardarSesionActiva(usuarioActual); }
 
 let cuponesPanelTemp = [{ titulo: "2x1 en Pintas IPA", codigo: "VEA-TORDO-IPA2X1" }];
 let publicacionesPanelTemp = [{ titulo: "Pinta IPA El Tordo", promo: "2x1", desc: "Happy Hour de 18 a 20 hs. Cerveza artesanal elaborada con malta Pale Ale y lúpulo Cascade.", imagen: null, icono: "🍺" }];
