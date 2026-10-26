@@ -674,7 +674,7 @@
             </div>
         </div>
 
-        <!-- Panel de Autogestión del Comerciante (SOLO SE MUESTRA SI ES COMERCIO) -->
+        <!-- Panel de Autogestión del Comerciante -->
         <div class="section-ajustes hidden" id="panelComercialAutogestion" style="border: 2px solid var(--dorado);">
             <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid var(--borde); padding-bottom:8px; margin-bottom:12px;">
                 <h3 style="color:var(--dorado); margin:0;">🏪 Mi Panel Comerciante V.E.A.</h3>
@@ -804,7 +804,7 @@
         </div>
     </div>
 
-    <!-- Modal de Registro (CON OPCIÓN DE CLIENTE O COMERCIANTE) -->
+    <!-- Modal de Registro -->
     <div id="modalRegistro" class="modal-overlay hidden">
         <div class="modal-content" style="max-height: 90vh;">
             <div class="modal-header-body">
@@ -1157,7 +1157,7 @@ function eliminarCuponPanel(index) {
 
 function agregarPublicacionConFoto() {
     const planClave = usuarioActual && usuarioActual.suscripcionActiva ? usuarioActual.suscripcionActiva : 'basico';
-    const maxPubsPermitidas = LIMITES_PLANES[planClave].maxPubs;
+    const maxPubsPermitidas = LIMITES_PLANES[planClave] ? LIMITES_PLANES[planClave].maxPubs : 10;
 
     if (publicacionesPanelTemp.length >= maxPubsPermitidas) {
         alert(`⚠️ Alcanzaste el límite de publicaciones de tu plan (${maxPubsPermitidas} publicaciones/fotos máximo).`);
@@ -1215,7 +1215,7 @@ function renderizarListasPanelComercial() {
     const divCupones = document.getElementById("listaCuponesPanel");
     const divPubs = document.getElementById("listaPublicacionesPanel");
     const planClave = usuarioActual && usuarioActual.suscripcionActiva ? usuarioActual.suscripcionActiva : 'basico';
-    const maxPubs = LIMITES_PLANES[planClave].maxPubs;
+    const maxPubs = LIMITES_PLANES[planClave] ? LIMITES_PLANES[planClave].maxPubs : 10;
 
     document.getElementById("labelPublicacionesPlan").textContent = `🖼️ Subir Publicaciones / Fotos (${publicacionesPanelTemp.length} / ${maxPubs} máx)`;
 
@@ -1277,14 +1277,17 @@ function guardarNuevoRegistro() {
 
     errorBox.style.display = "none";
 
-    // Si es cliente/vecino, se registra como tipo "usuario". Si es comercio, tipo "comercio".
+    // CUENTAS NUEVAS: arrancar en BÁSICO con PAGO PENDIENTE (excepto las 3 de muestra)
+    const esMuestra = (email === "tordo@vea.com" || email === "romualdito@vea.com" || email === "musa@vea.com");
+    const planAsignado = email === "tordo@vea.com" ? "premium" : (email === "romualdito@vea.com" ? "intermedio" : "basico");
+
     const nuevoUsuario = { 
         nombre: nombre, 
         email: email, 
         password: password, 
         tipo: tipoPerfil, 
-        suscripcionActiva: tipoPerfil === "comercio" ? "basico" : null,
-        pagoConfirmado: tipoPerfil === "comercio" ? false : true
+        suscripcionActiva: tipoPerfil === "comercio" ? planAsignado : null,
+        pagoConfirmado: tipoPerfil === "comercio" ? esMuestra : true
     };
 
     usuariosRegistrados.push(nuevoUsuario);
@@ -1299,12 +1302,15 @@ function guardarNuevoRegistro() {
     if (tipoPerfil === "usuario") {
         alert("¡Bienvenido, " + nombre + "! Ya podés usar la guía y consultar cupones.");
     } else {
-        alert("¡Cuenta de comerciante registrada con éxito, " + nombre + "! Recordá abonar tu suscripción para aparecer en el mapa.");
+        if (esMuestra) {
+            alert("¡Bienvenido, " + nombre + "! Cuenta de muestra con acceso completo.");
+        } else {
+            alert("¡Cuenta registrada con éxito, " + nombre + "! Recordá que para aparecer en el mapa y subir contenidos debés abonar tu suscripción.");
+        }
     }
 }
 
 function abrirModalLogin() {
-    document.getElementById("modalLogin").classList.add("hidden");
     document.getElementById("modalLogin").classList.remove("hidden");
 }
 
@@ -1334,8 +1340,6 @@ function procesarLogin() {
 
     alert("¡Bienvenido nuevamente, " + encontrado.nombre + "!");
 }
-
-function actualizarruppe() {}
 
 function actualizarInterfazPanelComercial() {
     if (!usuarioActual) return;
@@ -1385,7 +1389,7 @@ function guardarDatosPanelComercio() {
         return;
     }
 
-    const planActual = usuarioActual.suscripcionActiva.toUpperCase();
+    const planActual = (usuarioActual.suscripcionActiva || "basico").toUpperCase();
     const esPrem = planActual === "PREMIUM";
 
     const primerCupone = cuponesPanelTemp.length ? cuponesPanelTemp[0] : { titulo: "Cupón Especial", codigo: "VEA-OFF" };
@@ -1403,7 +1407,7 @@ function guardarDatosPanelComercio() {
         rubro: rubro,
         plan: planActual,
         pagoConfirmado: true,
-        limitePublicaciones: LIMITES_PLANES[usuarioActual.suscripcionActiva].maxPubs,
+        limitePublicaciones: LIMITES_PLANES[usuarioActual.suscripcionActiva] ? LIMITES_PLANES[usuarioActual.suscripcionActiva].maxPubs : 10,
         direccion: direccion,
         galeria: galeria,
         nroLocal: nroLocal,
@@ -1419,6 +1423,7 @@ function guardarDatosPanelComercio() {
         productos: listaProductos
     };
 
+    // Agregar al array global y sincronizar con localStorage para que todos lo vean
     comerciosVEA.unshift(nuevoComercio);
     guardarComerciosDB(comerciosVEA);
 
@@ -1532,6 +1537,9 @@ async function cargarUbicacionesComercios() {
     const aviso = document.getElementById("avisoUbicaciones");
 
     try {
+        // Refrescar lista desde localStorage para que Juan vea siempre lo último
+        comerciosVEA = obtenerComerciosDB();
+
         let localizados = 0;
         for (let i = 0; i < comerciosVEA.length; i++) {
             const comercio = comerciosVEA[i];
@@ -1543,7 +1551,7 @@ async function cargarUbicacionesComercios() {
                 localizados++;
             }
             if (i < comerciosVEA.length - 1) {
-                await new Promise(resolve => setTimeout(resolve, 300));
+                await new Promise(resolve => setTimeout(resolve, 200));
             }
         }
         actualizarVista(filtroActual);
@@ -1579,6 +1587,8 @@ function actualizarVista(filtro) {
     const contenedor = document.getElementById("contenedorVidrieras");
     contenedor.innerHTML = "";
 
+    // Asegurar que se leen los datos actualizados
+    comerciosVEA = obtenerComerciosDB();
     const comerciosPublicos = comerciosVEA.filter(c => c.pagoConfirmado === true);
 
     const listaFiltrada = comerciosPublicos.filter(c => {
