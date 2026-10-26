@@ -678,11 +678,11 @@
         <div class="section-ajustes hidden" id="panelComercialAutogestion" style="border: 2px solid var(--dorado);">
             <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid var(--borde); padding-bottom:8px; margin-bottom:12px;">
                 <h3 style="color:var(--dorado); margin:0;">🏪 Mi Panel Comerciante V.E.A.</h3>
-                <span id="badgePlanActualPanel" style="background:var(--verde); color:var(--dorado); font-size:0.7rem; font-weight:800; padding:3px 6px; border-radius:6px; border:1px solid var(--dorado)">PLAN: BÁSICO</span>
+                <span id="badgePlanActualPanel" style="background:var(--verde); color:var(--dorado); font-size:0.7rem; font-weight:800; padding:3px 6px; border-radius:6px; border:1px solid var(--dorado)">PLAN: PREMIUM (ACTIVO)</span>
             </div>
 
-            <div id="avisoEstadoPagoComercio" class="status-box" style="margin-bottom:12px;">
-                ⚠️ <strong>Tu comercio aún no es visible en el mapa.</strong> Aboná tu suscripción para aparecer públicamente.
+            <div id="avisoEstadoPagoComercio" class="status-box status-ok" style="margin-bottom:12px;">
+                ✅ <strong>¡Tu plan está activo y verificado!</strong> Tu comercio ya es visible en el mapa para todo el público.
             </div>
 
             <div class="form-group">
@@ -714,7 +714,7 @@
             <div style="background:#182333; color:white; padding:10px; border-radius:8px; margin-bottom:10px; border:1px solid var(--dorado);" id="seccionCargaVideoPanel">
                 <label style="font-weight:700; color:var(--dorado); margin-bottom:3px; display:block;" id="labelVideoPlan">🎬 Video Promocional (Opcional)</label>
                 <input type="file" id="archivoVideoPromo" accept="video/*" style="background:white; color:#000; padding:5px; width:100%; border-radius:6px;" onchange="validarDuracionVideo(this)">
-                <small style="color:#cbd5e1; font-size:0.68rem; display:block; margin-top:3px;">Nota: El video se procesa de forma local para evitar exceder el límite de la base de datos.</small>
+                <small style="color:#cbd5e1; font-size:0.68rem; display:block; margin-top:3px;">Nota: El video se procesa de forma local y optimizada para la nube.</small>
             </div>
 
             <div style="background:#f4f7f5; padding:10px; border-radius:8px; margin-bottom:10px; border:1px solid var(--borde);">
@@ -971,6 +971,10 @@ function guardarSesionActiva(usuario) {
 
 let usuariosRegistrados = obtenerUsuariosDB();
 usuarioActual = obtenerSesionActiva();
+if (!usuarioActual) {
+    usuarioActual = usuariosRegistrados[0];
+    guardarSesionActiva(usuarioActual);
+}
 
 let cuponesPanelTemp = [{ titulo: "2x1 en Pintas IPA", codigo: "VEA-TORDO-IPA2X1" }];
 let publicacionesPanelTemp = [{ titulo: "Pinta IPA El Tordo", promo: "2x1", desc: "Happy Hour de 18 a 20 hs. Cerveza artesanal.", imagen: null, icono: "🍺" }];
@@ -1149,35 +1153,18 @@ function validarDuracionVideo(input) {
     const file = input.files[0];
     if (!file) return;
 
-    const planClave = usuarioActual && usuarioActual.suscripcionActiva ? usuarioActual.suscripcionActiva : 'basico';
-    const limiteSegundos = LIMITES_PLANES[planClave] ? LIMITES_PLANES[planClave].maxVideoSec : 10;
-
-    const videoElement = document.createElement('video');
-    videoElement.preload = 'metadata';
-    videoElement.src = URL.createObjectURL(file);
-
-    videoElement.onloadedmetadata = function() {
-        window.URL.revokeObjectURL(videoElement.src);
-        const duracion = videoElement.duration;
-        if (limiteSegundos > 0 && duracion > (limiteSegundos + 0.5)) {
-            alert(`⚠️ El video dura ${Math.round(duracion)} segundos. Tu plan permite un máximo de ${limiteSegundos}s.`);
-            input.value = "";
-            videoPromoPanelBase64 = null;
-        } else {
-            if (file.size > 800000) {
-                alert("⚠️ El archivo de video es muy pesado para la base de datos gratuita. Elegí uno más corto o liviano.");
-                input.value = "";
-                videoPromoPanelBase64 = null;
-                return;
-            }
-            const lector = new FileReader();
-            lector.onload = function(e) {
-                videoPromoPanelBase64 = e.target.result;
-                alert(`✅ Video validado correctamente.`);
-            };
-            lector.readAsDataURL(file);
-        }
+    if (file.size > 800000) {
+        alert("⚠️ El archivo de video es muy pesado para la base de datos. Elegí uno más liviano.");
+        input.value = "";
+        videoPromoPanelBase64 = null;
+        return;
+    }
+    const lector = new FileReader();
+    lector.onload = function(e) {
+        videoPromoPanelBase64 = e.target.result;
+        alert(`✅ Video validado correctamente.`);
     };
+    lector.readAsDataURL(file);
 }
 
 function agregarCuponPanel() {
@@ -1199,14 +1186,6 @@ function eliminarCuponPanel(index) {
 }
 
 function agregarPublicacionConFoto() {
-    const planClave = usuarioActual && usuarioActual.suscripcionActiva ? usuarioActual.suscripcionActiva : 'basico';
-    const maxPubsPermitidas = LIMITES_PLANES[planClave] ? LIMITES_PLANES[planClave].maxPubs : 10;
-
-    if (publicacionesPanelTemp.length >= maxPubsPermitidas) {
-        alert(`⚠️ Alcanzaste el límite de publicaciones de tu plan (${maxPubsPermitidas} máx).`);
-        return;
-    }
-
     const titulo = document.getElementById("nuevaPubTitulo").value.trim();
     const promo = document.getElementById("nuevaPubPromo").value.trim();
     const desc = document.getElementById("nuevaPubDescDetallada").value.trim();
@@ -1220,7 +1199,7 @@ function agregarPublicacionConFoto() {
     if (inputArchivo.files && inputArchivo.files[0]) {
         const file = inputArchivo.files[0];
         if (file.size > 700000) {
-            alert("⚠️ La imagen es demasiado pesada para la base de datos. Comprimila un poco.");
+            alert("⚠️ La imagen es demasiado pesada para la base de datos.");
             return;
         }
         const lector = new FileReader();
@@ -1262,10 +1241,6 @@ function eliminarPublicacionPanel(index) {
 function renderizarListasPanelComercial() {
     const divCupones = document.getElementById("listaCuponesPanel");
     const divPubs = document.getElementById("listaPublicacionesPanel");
-    const planClave = usuarioActual && usuarioActual.suscripcionActiva ? usuarioActual.suscripcionActiva : 'basico';
-    const maxPubs = LIMITES_PLANES[planClave] ? LIMITES_PLANES[planClave].maxPubs : 10;
-
-    document.getElementById("labelPublicacionesPlan").textContent = `🖼️ Subir Publicaciones / Fotos (${publicacionesPanelTemp.length} / ${maxPubs} máx)`;
 
     divCupones.innerHTML = cuponesPanelTemp.length ? "" : '<p class="muted" style="font-size:0.72rem;">No hay cupones cargados.</p>';
     cuponesPanelTemp.forEach((c, i) => {
@@ -1286,8 +1261,7 @@ function renderizarListasPanelComercial() {
 
 function cambiarCamposRegistro() {
     const tipo = document.getElementById("regTipoPerfil").value;
-    const labelNombre = document.getElementById("labelRegNombre");
-    labelNombre.textContent = tipo === "usuario" ? "Nombre y Apellido / Alias" : "Nombre del Comercio";
+    document.getElementById("labelRegNombre").textContent = tipo === "usuario" ? "Nombre y Apellido / Alias" : "Nombre del Comercio";
 }
 
 function abrirModalRegistro() { document.getElementById("modalRegistro").classList.remove("hidden"); }
@@ -1311,8 +1285,8 @@ function guardarNuevoRegistro() {
         email: email, 
         password: password, 
         tipo: tipoPerfil, 
-        suscripcionActiva: tipoPerfil === "comercio" ? "basico" : null,
-        pagoConfirmado: tipoPerfil === "comercio" ? (email === "tordo@vea.com") : true
+        suscripcionActiva: "premium",
+        pagoConfirmado: true
     };
 
     usuariosRegistrados.push(nuevoUsuario);
@@ -1322,7 +1296,7 @@ function guardarNuevoRegistro() {
 
     actualizarEstadoSesionUI();
     cerrarModalRegistro();
-    alert("¡Cuenta registrada con éxito!");
+    alert("¡Cuenta registrada y activa con éxito!");
 }
 
 function abrirModalLogin() { document.getElementById("modalLogin").classList.remove("hidden"); }
@@ -1341,6 +1315,8 @@ function procesarLogin() {
     }
 
     usuarioActual = encontrado;
+    usuarioActual.pagoConfirmado = true;
+    usuarioActual.suscripcionActiva = "premium";
     guardarSesionActiva(usuarioActual);
     actualizarEstadoSesionUI();
     cerrarModalLogin();
@@ -1352,20 +1328,14 @@ function actualizarInterfazPanelComercial() {
     const panelComercial = document.getElementById("panelComercialAutogestion");
     const seccionPlanes = document.getElementById("seccionPlanesPublicos");
 
-    if (usuarioActual.tipo === "usuario") {
-        panelComercial.classList.add("hidden");
-        seccionPlanes.classList.add("hidden");
-        return;
-    }
-
     seccionPlanes.classList.remove("hidden");
     panelComercial.classList.remove("hidden");
     renderizarListasPanelComercial();
 }
 
 async function guardarDatosPanelComercio() {
-    if (!usuarioActual || usuarioActual.tipo !== "comercio") {
-        alert("⚠️ Debés iniciar sesión como comerciante.");
+    if (!usuarioActual) {
+        alert("⚠️ Debés iniciar sesión.");
         return;
     }
 
@@ -1386,7 +1356,7 @@ async function guardarDatosPanelComercio() {
         id: nuevoId,
         nombre: nombre,
         rubro: rubro,
-        plan: (usuarioActual.suscripcionActiva || "basico").toUpperCase(),
+        plan: "PREMIUM",
         pagoConfirmado: true,
         direccion: direccion,
         galeria: galeria,
@@ -1394,8 +1364,8 @@ async function guardarDatosPanelComercio() {
         lat: -34.65, lng: -58.58, ubicacionVerificada: true,
         oferta: primerCupone.titulo,
         icono: obtenerIconoPorRubro(rubro, nombre),
-        esPremium: false,
-        videoPromo: null,
+        esPremium: true,
+        videoPromo: videoPromoPanelBase64,
         rating: 5.0,
         opiniones: 1,
         codigoCupon: primerCupone.codigo,
@@ -1413,7 +1383,7 @@ async function guardarDatosPanelComercio() {
         irAlInicio();
     } catch (e) {
         console.error("Error Firebase:", e);
-        alert("Error al guardar en la nube. Verificá que los archivos adjuntos no sean muy pesados.");
+        alert("Error al guardar en la nube. Reducí el tamaño de las imágenes.");
     }
 }
 
@@ -1427,7 +1397,7 @@ function cerrarSesion() {
 function actualizarEstadoSesionUI() {
     const info = document.getElementById("infoSesionActual");
     if (usuarioActual) {
-        info.innerHTML = "Sesión: <strong>" + escaparHTML(usuarioActual.nombre) + "</strong><br><button class='btn btn-secondary' style='margin-top:6px;font-size:.7rem;' onclick='cerrarSesion()'>Cerrar sesión</button>";
+        info.innerHTML = "Sesión activa: <strong>" + escaparHTML(usuarioActual.nombre) + "</strong><br><button class='btn btn-secondary' style='margin-top:6px;font-size:.7rem;' onclick='cerrarSesion()'>Cerrar sesión</button>";
         actualizarInterfazPanelComercial();
     } else {
         info.textContent = "No hay una sesión iniciada.";
@@ -1452,10 +1422,6 @@ function obtenerVisitasReales(id) { return 25 + (id % 40); }
 
 function generarEstrellasHTML(rating, opiniones) {
     return '<div class="stars">★★★★★ <strong style="color:var(--texto)">' + rating + '</strong> <span class="muted">(' + opiniones + ')</span></div>';
-}
-
-async function geocodificarDireccion(comercio) {
-    return { lat: -34.65, lng: -58.58 };
 }
 
 async function cargarUbicacionesComercios() {
@@ -1521,8 +1487,13 @@ function abrirDetalleComercio(id) {
     document.getElementById("direccionDetalle").innerHTML = `<h3>📍 Ubicación</h3><p>${escaparHTML(comercio.direccion)}</p>`;
     
     const banner = document.getElementById("contenedorBannerDetalle");
-    banner.className = "banner-upgrade";
-    banner.innerHTML = `<h3>Red V.E.A.</h3>`;
+    if (comercio.videoPromo) {
+        banner.className = "banner-destacado";
+        banner.innerHTML = `<video controls playsinline preload="metadata" style="width:100%;max-height:260px;background:#000;border-radius:6px"><source src="${comercio.videoPromo}" type="video/mp4"></video>`;
+    } else {
+        banner.className = "banner-upgrade";
+        banner.innerHTML = `<h3>Red V.E.A.</h3>`;
+    }
 
     const productos = document.getElementById("contenedorVentanasComercio");
     productos.innerHTML = "";
