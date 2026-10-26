@@ -674,7 +674,7 @@
             </div>
         </div>
 
-        <!-- Panel de Autogestión del Comerciante -->
+        <!-- Panel de Autogestión del Comerciante (SOLO SE MUESTRA SI ES COMERCIO) -->
         <div class="section-ajustes hidden" id="panelComercialAutogestion" style="border: 2px solid var(--dorado);">
             <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid var(--borde); padding-bottom:8px; margin-bottom:12px;">
                 <h3 style="color:var(--dorado); margin:0;">🏪 Mi Panel Comerciante V.E.A.</h3>
@@ -747,7 +747,7 @@
             <button class="btn btn-primary btn-block" onclick="guardarDatosPanelComercio()">💾 Guardar y Actualizar Vidriera</button>
         </div>
 
-        <div class="section-ajustes">
+        <div class="section-ajustes" id="seccionPlanesPublicos">
             <h3>💳 Planes de suscripción V.E.A.</h3>
             <p class="muted" style="margin-bottom:10px">Elegí tu plan comercial para activar el acceso completo y la prioridad en el mapa.</p>
 
@@ -804,18 +804,25 @@
         </div>
     </div>
 
-    <!-- Modal de Registro -->
+    <!-- Modal de Registro (CON OPCIÓN DE CLIENTE O COMERCIANTE) -->
     <div id="modalRegistro" class="modal-overlay hidden">
         <div class="modal-content" style="max-height: 90vh;">
             <div class="modal-header-body">
-                <h3>📝 Registro de Cuenta Comerciante</h3>
+                <h3>📝 Registro en V.E.A.</h3>
                 <div class="form-group">
-                    <label for="regNombre">Nombre del Comercio / Alias</label>
-                    <input type="text" id="regNombre" placeholder="Ej: Cervecería El Tordo">
+                    <label for="regTipoPerfil">¿Cómo querés registrarte?</label>
+                    <select id="regTipoPerfil" onchange="cambiarCamposRegistro()">
+                        <option value="usuario">👤 Cliente / Vecino (Usar guía y cupones)</option>
+                        <option value="comercio">🏪 Comerciante (Publicar mi local)</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="regNombre" id="labelRegNombre">Nombre y Apellido / Alias</label>
+                    <input type="text" id="regNombre" placeholder="Ej: Juan Sabalain">
                 </div>
                 <div class="form-group">
                     <label for="regEmail">Correo electrónico (Email)</label>
-                    <input type="email" id="regEmail" placeholder="comercio@ejemplo.com">
+                    <input type="email" id="regEmail" placeholder="usuario@ejemplo.com">
                 </div>
                 <div class="form-group">
                     <label for="regPassword">Contraseña</label>
@@ -902,7 +909,7 @@ const LIMITES_PLANES = {
     'premium': { maxPubs: 40, maxVideoSec: 60 }
 };
 
-// --- BASE DE DATOS DE USUARIOS (SOLO LAS 3 DE MUESTRA TIENEN PAGO CONFIRMADO DE FÁBRICA) ---
+// --- BASE DE DATOS DE USUARIOS ---
 function obtenerUsuariosDB() {
     let base = JSON.parse(localStorage.getItem("vea_usuarios_db") || "null");
     if (!base) {
@@ -1230,6 +1237,16 @@ function renderizarListasPanelComercial() {
     });
 }
 
+function cambiarCamposRegistro() {
+    const tipo = document.getElementById("regTipoPerfil").value;
+    const labelNombre = document.getElementById("labelRegNombre");
+    if (tipo === "usuario") {
+        labelNombre.textContent = "Nombre y Apellido / Alias";
+    } else {
+        labelNombre.textContent = "Nombre del Comercio";
+    }
+}
+
 function abrirModalRegistro() {
     document.getElementById("modalRegistro").classList.remove("hidden");
 }
@@ -1239,6 +1256,7 @@ function cerrarModalRegistro() {
 }
 
 function guardarNuevoRegistro() {
+    const tipoPerfil = document.getElementById("regTipoPerfil").value;
     const nombre = document.getElementById("regNombre").value.trim();
     const email = document.getElementById("regEmail").value.trim().toLowerCase();
     const password = document.getElementById("regPassword").value;
@@ -1259,17 +1277,14 @@ function guardarNuevoRegistro() {
 
     errorBox.style.display = "none";
 
-    // CUENTAS NUEVAS: arrancar en BÁSICO con PAGO PENDIENTE (excepto las 3 de muestra)
-    const esMuestra = (email === "tordo@vea.com" || email === "romualdito@vea.com" || email === "musa@vea.com");
-    const planAsignado = email === "tordo@vea.com" ? "premium" : (email === "romualdito@vea.com" ? "intermedio" : "basico");
-
+    // Si es cliente/vecino, se registra como tipo "usuario". Si es comercio, tipo "comercio".
     const nuevoUsuario = { 
         nombre: nombre, 
         email: email, 
         password: password, 
-        tipo: "comercio", 
-        suscripcionActiva: planAsignado,
-        pagoConfirmado: esMuestra 
+        tipo: tipoPerfil, 
+        suscripcionActiva: tipoPerfil === "comercio" ? "basico" : null,
+        pagoConfirmado: tipoPerfil === "comercio" ? false : true
     };
 
     usuariosRegistrados.push(nuevoUsuario);
@@ -1280,16 +1295,16 @@ function guardarNuevoRegistro() {
 
     actualizarEstadoSesionUI();
     cerrarModalRegistro();
-    actualizarInterfazPanelComercial();
     
-    if (esMuestra) {
-        alert("¡Bienvenido, " + nombre + "! Cuenta de muestra con acceso completo.");
+    if (tipoPerfil === "usuario") {
+        alert("¡Bienvenido, " + nombre + "! Ya podés usar la guía y consultar cupones.");
     } else {
-        alert("¡Cuenta registrada con éxito, " + nombre + "! Recordá que para aparecer en el mapa y subir contenidos debés abonar tu suscripción.");
+        alert("¡Cuenta de comerciante registrada con éxito, " + nombre + "! Recordá abonar tu suscripción para aparecer en el mapa.");
     }
 }
 
 function abrirModalLogin() {
+    document.getElementById("modalLogin").classList.add("hidden");
     document.getElementById("modalLogin").classList.remove("hidden");
 }
 
@@ -1316,13 +1331,25 @@ function procesarLogin() {
 
     actualizarEstadoSesionUI();
     cerrarModalLogin();
-    actualizarInterfazPanelComercial();
 
     alert("¡Bienvenido nuevamente, " + encontrado.nombre + "!");
 }
 
+function actualizarruppe() {}
+
 function actualizarInterfazPanelComercial() {
     if (!usuarioActual) return;
+    
+    const panelComercial = document.getElementById("panelComercialAutogestion");
+    const seccionPlanes = document.getElementById("seccionPlanesPublicos");
+
+    if (usuarioActual.tipo === "usuario") {
+        panelComercial.classList.add("hidden");
+        seccionPlanes.classList.add("hidden");
+        return;
+    }
+
+    seccionPlanes.classList.remove("hidden");
     const plan = usuarioActual.suscripcionActiva || 'basico';
     const pagado = usuarioActual.pagoConfirmado;
     
@@ -1337,13 +1364,13 @@ function actualizarInterfazPanelComercial() {
         avisoPago.innerHTML = `⚠️ <strong>Tu comercio aún no es visible en el mapa.</strong> Aboná tu suscripción para aparecer públicamente.`;
     }
 
-    document.getElementById("panelComercialAutogestion").classList.remove("hidden");
+    panelComercial.classList.remove("hidden");
     renderizarListasPanelComercial();
 }
 
 function guardarDatosPanelComercio() {
-    if (!usuarioActual || !usuarioActual.pagoConfirmado) {
-        alert("⚠️ Tu cuenta tiene el pago pendiente. Debés abonar la suscripción para actualizar o publicar tu vidriera.");
+    if (!usuarioActual || usuarioActual.tipo !== "comercio" || !usuarioActual.pagoConfirmado) {
+        alert("⚠️ Tu cuenta tiene el pago pendiente o no es de comerciante. Debés abonar la suscripción para publicar.");
         return;
     }
 
@@ -1404,6 +1431,7 @@ function cerrarSesion() {
     usuarioActual = null;
     guardarSesionActiva(null);
     document.getElementById("panelComercialAutogestion").classList.add("hidden");
+    document.getElementById("seccionPlanesPublicos").classList.remove("hidden");
     actualizarEstadoSesionUI();
     alert("Sesión cerrada correctamente.");
 }
@@ -1411,13 +1439,18 @@ function cerrarSesion() {
 function actualizarEstadoSesionUI() {
     const info = document.getElementById("infoSesionActual");
     if (usuarioActual) {
-        const planTexto = (usuarioActual.suscripcionActiva || "basico").toUpperCase();
-        const estadoPago = usuarioActual.pagoConfirmado ? "ACTIVO" : "PAGO PENDIENTE";
-        info.innerHTML = "Sesión activa: <strong>" + escaparHTML(usuarioActual.nombre) + "</strong> (" + escaparHTML(usuarioActual.email) + ")<br>Plan: <strong style='color:var(--dorado)'>" + planTexto + " (" + estadoPago + ")</strong><br><button class='btn btn-secondary' style='margin-top:6px;font-size:.7rem;' onclick='cerrarSesion()'>Cerrar sesión</button>";
+        if (usuarioActual.tipo === "usuario") {
+            info.innerHTML = "Sesión activa (Cliente): <strong>" + escaparHTML(usuarioActual.nombre) + "</strong> (" + escaparHTML(usuarioActual.email) + ")<br><button class='btn btn-secondary' style='margin-top:6px;font-size:.7rem;' onclick='cerrarSesion()'>Cerrar sesión</button>";
+        } else {
+            const planTexto = (usuarioActual.suscripcionActiva || "basico").toUpperCase();
+            const estadoPago = usuarioActual.pagoConfirmado ? "ACTIVO" : "PAGO PENDIENTE";
+            info.innerHTML = "Sesión activa (Comercio): <strong>" + escaparHTML(usuarioActual.nombre) + "</strong> (" + escaparHTML(usuarioActual.email) + ")<br>Plan: <strong style='color:var(--dorado)'>" + planTexto + " (" + estadoPago + ")</strong><br><button class='btn btn-secondary' style='margin-top:6px;font-size:.7rem;' onclick='cerrarSesion()'>Cerrar sesión</button>";
+        }
         actualizarInterfazPanelComercial();
     } else {
         info.textContent = "No hay una sesión iniciada.";
         document.getElementById("panelComercialAutogestion").classList.add("hidden");
+        document.getElementById("seccionPlanesPublicos").classList.remove("hidden");
     }
 }
 
