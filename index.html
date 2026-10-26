@@ -625,7 +625,7 @@
         <section class="showcase-column">
             <h2 class="section-title">📍 Vidrieras Cerca Tuyo</h2>
             <div id="avisoUbicaciones" class="status-box">
-                Preparando el mapa. Las direcciones se comprobarán antes de mostrar sus marcadores.
+                Conectando con la nube de V.E.A...
             </div>
             <div class="grid-vidrieras" id="contenedorVidrieras"></div>
         </section>
@@ -744,7 +744,7 @@
                 <button class="btn btn-primary btn-block" onclick="agregarPublicacionConFoto()">+ Subir Publicación</button>
             </div>
 
-            <button class="btn btn-primary btn-block" onclick="guardarDatosPanelComercio()">💾 Guardar y Actualizar Vidriera</button>
+            <button class="btn btn-primary btn-block" onclick="guardarDatosPanelComercio()">💾 Guardar y Actualizar en la Nube</button>
         </div>
 
         <div class="section-ajustes" id="seccionPlanesPublicos">
@@ -889,7 +889,36 @@
         <button class="nav-item" id="btnNavAjustes" onclick="mostrarVista('vistaAjustes')"><span class="icon">⚙️</span><span>Ajustes</span></button>
     </nav>
 
+    <!-- Leaflet & Firebase SDKs -->
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getFirestore, collection, getDocs, setDoc, doc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyDLQVjJ7TrjamRO-cPUIKitmhHWqZ0af71k",
+            authDomain: "veaapp-65740.firebaseapp.com",
+            projectId: "veaapp-65740",
+            storageBucket: "veaapp-65740.firebasestorage.app",
+            messagingSenderId: "891015134947",
+            appId: "1:891015134947:web:fd2452d96007dffd494fd6",
+            measurementId: "G-4FKYWY21FN"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        window.db = db;
+        window.collection = collection;
+        window.getDocs = getDocs;
+        window.setDoc = setDoc;
+        window.doc = doc;
+
+        if (typeof window.iniciarAppCloud === "function") {
+            window.iniciarAppCloud();
+        }
+    </script>
+
     <script>
 "use strict";
 
@@ -909,7 +938,6 @@ const LIMITES_PLANES = {
     'premium': { maxPubs: 40, maxVideoSec: 60 }
 };
 
-// --- BASE DE DATOS DE USUARIOS ---
 function obtenerUsuariosDB() {
     let base = JSON.parse(localStorage.getItem("vea_usuarios_db") || "null");
     if (!base) {
@@ -921,10 +949,6 @@ function obtenerUsuariosDB() {
         localStorage.setItem("vea_usuarios_db", JSON.stringify(base));
     }
     return base;
-}
-
-function guardarUsuariosDB(base) {
-    localStorage.setItem("vea_usuarios_db", JSON.stringify(base));
 }
 
 function obtenerSesionActiva() {
@@ -946,7 +970,6 @@ usuarioActual = obtenerSesionActiva();
 let cuponesPanelTemp = [{ titulo: "2x1 en Pintas IPA", codigo: "VEA-TORDO-IPA2X1" }];
 let publicacionesPanelTemp = [{ titulo: "Pinta IPA El Tordo", promo: "2x1", desc: "Happy Hour de 18 a 20 hs. Cerveza artesanal elaborada con malta Pale Ale y lúpulo Cascade.", imagen: null, icono: "🍺" }];
 
-// --- COMERCIOS INICIALES Y PERSISTENTES EN LOCALSTORAGE ---
 const comerciosBaseIniciales = [
     {
         id: 1,
@@ -1008,20 +1031,34 @@ const comerciosBaseIniciales = [
     }
 ];
 
-function obtenerComerciosDB() {
-    let guardados = JSON.parse(localStorage.getItem("vea_comercios_db") || "null");
-    if (!guardados) {
-        guardados = comerciosBaseIniciales;
-        localStorage.setItem("vea_comercios_db", JSON.stringify(guardados));
+let comerciosVEA = comerciosBaseIniciales;
+
+async function sincronizarComerciosDesdeNube() {
+    try {
+        if (!window.db) return;
+        const querySnapshot = await window.getDocs(window.collection(window.db, "comercios"));
+        if (!querySnapshot.empty) {
+            const nubeComercios = [];
+            querySnapshot.forEach((doc) => {
+                nubeComercios.push(doc.data());
+            });
+            comerciosVEA = nubeComercios;
+        } else {
+            for (let c of comerciosBaseIniciales) {
+                await window.setDoc(window.doc(window.db, "comercios", String(c.id)), c);
+            }
+            comerciosVEA = comerciosBaseIniciales;
+        }
+        cargarUbicacionesComercios();
+        inicializarBannerRotativoPremium();
+    } catch (e) {
+        console.error("Error sincronizando nube:", e);
     }
-    return guardados;
 }
 
-function guardarComerciosDB(lista) {
-    localStorage.setItem("vea_comercios_db", JSON.stringify(lista));
-}
-
-let comerciosVEA = obtenerComerciosDB();
+window.iniciarAppCloud = function() {
+    sincronizarComerciosDesdeNube();
+};
 
 const notificaciones = [
     {titulo:"🔥 Happy Hour en Cervecería El Tordo", texto:"Consultá las condiciones de la promoción 2x1 en pintas."},
@@ -1089,7 +1126,8 @@ function inicializarBannerRotativoPremium() {
     if (comerciosPremium.length === 0) return;
 
     function actualizarBanner() {
-        const comercio = comerciosPremium[indiceBannerPremium];
+        if (!comerciosPremium.length) return;
+        const comercio = comerciosPremium[indiceBannerPremium % comerciosPremium.length];
         const bannerEl = document.getElementById("bannerRotativoPremium");
 
         bannerEl.style.opacity = "0";
@@ -1277,7 +1315,6 @@ function guardarNuevoRegistro() {
 
     errorBox.style.display = "none";
 
-    // CUENTAS NUEVAS: arrancar en BÁSICO con PAGO PENDIENTE (excepto las 3 de muestra)
     const esMuestra = (email === "tordo@vea.com" || email === "romualdito@vea.com" || email === "musa@vea.com");
     const planAsignado = email === "tordo@vea.com" ? "premium" : (email === "romualdito@vea.com" ? "intermedio" : "basico");
 
@@ -1291,7 +1328,7 @@ function guardarNuevoRegistro() {
     };
 
     usuariosRegistrados.push(nuevoUsuario);
-    guardarUsuariosDB(usuariosRegistrados);
+    localStorage.setItem("vea_usuarios_db", JSON.stringify(usuariosRegistrados));
     
     usuarioActual = nuevoUsuario;
     guardarSesionActiva(usuarioActual);
@@ -1372,7 +1409,7 @@ function actualizarInterfazPanelComercial() {
     renderizarListasPanelComercial();
 }
 
-function guardarDatosPanelComercio() {
+async function guardarDatosPanelComercio() {
     if (!usuarioActual || usuarioActual.tipo !== "comercio" || !usuarioActual.pagoConfirmado) {
         alert("⚠️ Tu cuenta tiene el pago pendiente o no es de comerciante. Debés abonar la suscripción para publicar.");
         return;
@@ -1401,8 +1438,9 @@ function guardarDatosPanelComercio() {
         imagen: p.imagen || null
     })) : [{titulo: "Promoción Principal", desc: "Consultá nuestros productos", icono: "🛍️", promo: "Destacado", imagen: null}];
 
+    const nuevoId = Date.now();
     const nuevoComercio = {
-        id: Date.now(),
+        id: nuevoId,
         nombre: nombre,
         rubro: rubro,
         plan: planActual,
@@ -1423,13 +1461,18 @@ function guardarDatosPanelComercio() {
         productos: listaProductos
     };
 
-    // Agregar al array global y sincronizar con localStorage para que todos lo vean
-    comerciosVEA.unshift(nuevoComercio);
-    guardarComerciosDB(comerciosVEA);
-
-    alert("¡Vidriera guardada y publicada con éxito para todos los usuarios!");
-    cargarUbicacionesComercios();
-    irAlInicio();
+    try {
+        if (window.db) {
+            await window.setDoc(window.doc(window.db, "comercios", String(nuevoId)), nuevoComercio);
+        }
+        comerciosVEA.unshift(nuevoComercio);
+        alert("¡Vidriera guardada en la nube y publicada con éxito para todo el mundo!");
+        cargarUbicacionesComercios();
+        irAlInicio();
+    } catch (e) {
+        console.error("Error al guardar en Firebase:", e);
+        alert("Hubo un error al guardar en la nube. Verificá tu conexión.");
+    }
 }
 
 function cerrarSesion() {
@@ -1537,9 +1580,6 @@ async function cargarUbicacionesComercios() {
     const aviso = document.getElementById("avisoUbicaciones");
 
     try {
-        // Refrescar lista desde localStorage para que Juan vea siempre lo último
-        comerciosVEA = obtenerComerciosDB();
-
         let localizados = 0;
         for (let i = 0; i < comerciosVEA.length; i++) {
             const comercio = comerciosVEA[i];
@@ -1560,7 +1600,7 @@ async function cargarUbicacionesComercios() {
             if (puntos.length) map.fitBounds(L.latLngBounds(puntos), { padding: [20, 20], maxZoom: 15 });
         }
         aviso.className = "status-box status-ok";
-        aviso.textContent = "Mapa geolocalizado con éxito.";
+        aviso.textContent = "Conectado a la nube. Comercios sincronizados.";
     } finally {
         geocodificacionEnCurso = false;
     }
@@ -1587,8 +1627,6 @@ function actualizarVista(filtro) {
     const contenedor = document.getElementById("contenedorVidrieras");
     contenedor.innerHTML = "";
 
-    // Asegurar que se leen los datos actualizados
-    comerciosVEA = obtenerComerciosDB();
     const comerciosPublicos = comerciosVEA.filter(c => c.pagoConfirmado === true);
 
     const listaFiltrada = comerciosPublicos.filter(c => {
@@ -1856,8 +1894,6 @@ function renderizarNotificaciones() {
 }
 
 renderizarNotificaciones();
-actualizarVista("todos");
-cargarUbicacionesComercios();
 inicializarBannerRotativoPremium();
 actualizarEstadoSesionUI();
     </script>
