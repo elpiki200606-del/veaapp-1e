@@ -981,7 +981,7 @@ let publicacionesPanelTemp = [{ titulo: "Pinta IPA El Tordo", promo: "2x1", desc
 
 const comerciosBaseIniciales = [
     {
-        id: 1,
+        id: "1",
         nombre: "Cervecería Artesanal El Tordo",
         rubro: "gastronomia",
         plan: "PREMIUM",
@@ -1000,7 +1000,7 @@ const comerciosBaseIniciales = [
         ]
     },
     {
-        id: 2,
+        id: "2",
         nombre: "Los Romualdito",
         rubro: "gastronomia",
         plan: "INTERMEDIO",
@@ -1019,7 +1019,7 @@ const comerciosBaseIniciales = [
         ]
     },
     {
-        id: 3,
+        id: "3",
         nombre: "Pizzería Musa Varela",
         rubro: "gastronomia",
         plan: "BÁSICO",
@@ -1351,7 +1351,7 @@ async function guardarDatosPanelComercio() {
     }
 
     const primerCupone = cuponesPanelTemp.length ? cuponesPanelTemp[0] : { titulo: "Especial", codigo: "VEA" };
-    const nuevoId = Date.now();
+    const nuevoId = String(Date.now()); // ID forzado estrictamente como String para Firebase
     const nuevoComercio = {
         id: nuevoId,
         nombre: nombre,
@@ -1361,11 +1361,13 @@ async function guardarDatosPanelComercio() {
         direccion: direccion,
         galeria: galeria,
         nroLocal: nroLocal,
-        lat: -34.65, lng: -58.58, ubicacionVerificada: true,
+        lat: -34.65, 
+        lng: -58.58, 
+        ubicacionVerificada: true,
         oferta: primerCupone.titulo,
         icono: obtenerIconoPorRubro(rubro, nombre),
         esPremium: true,
-        videoPromo: videoPromoPanelBase64,
+        videoPromo: videoPromoPanelBase64 || null,
         rating: 5.0,
         opiniones: 1,
         codigoCupon: primerCupone.codigo,
@@ -1375,15 +1377,15 @@ async function guardarDatosPanelComercio() {
 
     try {
         if (window.db) {
-            await window.setDoc(window.doc(window.db, "comercios", String(nuevoId)), nuevoComercio);
+            await window.setDoc(window.doc(window.db, "comercios", nuevoId), nuevoComercio);
         }
         comerciosVEA.unshift(nuevoComercio);
-        alert("¡Vidriera guardada con éxito en la nube!");
+        alert("¡Vidriera guardada con éxito en la nube de Firebase!");
         cargarUbicacionesComercios();
         irAlInicio();
     } catch (e) {
         console.error("Error Firebase:", e);
-        alert("Error al guardar en la nube. Reducí el tamaño de las imágenes.");
+        alert("Error al guardar en la nube: " + e.message);
     }
 }
 
@@ -1448,7 +1450,7 @@ function actualizarVista(filtro) {
 
     lista.forEach(comercio => {
         const pin = L.marker([comercio.lat, comercio.lng], { icon: crearMarcadorPersonalizado(comercio) }).addTo(map);
-        pin.bindPopup(`<strong>${escaparHTML(comercio.nombre)}</strong><br><button class="btn btn-primary" onclick="abrirDetalleComercio(${comercio.id})">Ver</button>`);
+        pin.bindPopup(`<strong>${escaparHTML(comercio.nombre)}</strong><br><button class="btn btn-primary" onclick="abrirDetalleComercio('${comercio.id}')">Ver</button>`);
         marcadoresMapa.push(pin);
 
         const tarjeta = document.createElement("article");
@@ -1465,10 +1467,12 @@ function actualizarVista(filtro) {
                 ${generarEstrellasHTML(comercio.rating, comercio.opiniones)}
                 <span class="views">🔥 ${obtenerVisitasReales(comercio.id)} consultas hoy</span>
                 <a href="${enlaceWhatsApp(comercio)}" target="_blank" rel="noopener" class="btn btn-wa">💬 WhatsApp</a>
-                <button class="btn btn-primary" onclick="abrirDetalleComercio(${comercio.id})">Ver vidriera completa</button>
+                <button class="btn btn-primary" onclick="abrirDetalleComercio('${comercio.id}')">Ver vidriera completa</button>
             </div>`;
         contenedor.appendChild(tarjeta);
     });
+
+    renderizarCuponesYDirectorio();
 }
 
 function escaparHTML(texto) {
@@ -1477,12 +1481,44 @@ function escaparHTML(texto) {
     });
 }
 
+function renderizarCuponesYDirectorio() {
+    const cupones = document.getElementById("contenedorCupones");
+    const directorio = document.getElementById("contenedorDirectorio");
+    if (!cupones || !directorio) return;
+    cupones.innerHTML = "";
+    directorio.innerHTML = "";
+
+    const comerciosPublicos = comerciosVEA.filter(c => c.pagoConfirmado === true);
+    comerciosPublicos.forEach(c => {
+        const filaCupon = document.createElement("div");
+        filaCupon.className = "card-cupon-exclusivo";
+        filaCupon.innerHTML = `
+            <div class="cupon-info">
+                <h4>${escaparHTML(c.nombre)}</h4>
+                <p>${escaparHTML(c.oferta)} · ${escaparHTML(c.direccion)}</p>
+                <span class="codigo-tag">${escaparHTML(c.codigoCupon)}</span>
+            </div>
+            <a class="btn btn-wa" target="_blank" rel="noopener" href="${enlaceWhatsApp(c)}">Consultar</a>`;
+        cupones.appendChild(filaCupon);
+
+        const fila = document.createElement("div");
+        fila.className = "item-lista-directorio";
+        fila.innerHTML = `
+            <div class="item-lista-info">
+                <h4><i class="fa-solid ${obtenerIconoPorRubro(c.rubro, c.nombre)}"></i> ${escaparHTML(c.nombre)}</h4>
+                <p>${escaparHTML(c.direccion)} · Plan ${escaparHTML(c.plan)}</p>
+            </div><strong style="color:var(--dorado)">Ver →</strong>`;
+        fila.addEventListener("click", () => abrirDetalleComercio(c.id));
+        directorio.appendChild(fila);
+    });
+}
+
 function abrirDetalleComercio(id) {
-    const comercio = comerciosVEA.find(c => c.id === Number(id));
+    const comercio = comerciosVEA.find(c => String(c.id) === String(id));
     if (!comercio) return;
     
     document.getElementById("tituloComercioDetalle").textContent = comercio.nombre;
-    document.getElementById("subtituloVentanas").textContent = "🪟 Publicaciones (" + comercio.productos.length + ")";
+    document.getElementById("subtituloVentanas").textContent = "🪟 Publicaciones (" + (comercio.productos ? comercio.productos.length : 0) + ")";
     document.getElementById("tagVisitasDetalle").textContent = "🔥 " + obtenerVisitasReales(comercio.id) + " visitas hoy";
     document.getElementById("direccionDetalle").innerHTML = `<h3>📍 Ubicación</h3><p>${escaparHTML(comercio.direccion)}</p>`;
     
@@ -1497,14 +1533,16 @@ function abrirDetalleComercio(id) {
 
     const productos = document.getElementById("contenedorVentanasComercio");
     productos.innerHTML = "";
-    comercio.productos.forEach((prod) => {
-        productos.innerHTML += `<article class="card-vidriera">
-            <div class="card-body">
-                <h3>${escaparHTML(prod.titulo)}</h3>
-                <p>${escaparHTML(prod.desc)}</p>
-            </div>
-        </article>`;
-    });
+    if (comercio.productos) {
+        comercio.productos.forEach((prod) => {
+            productos.innerHTML += `<article class="card-vidriera">
+                <div class="card-body">
+                    <h3>${escaparHTML(prod.titulo)}</h3>
+                    <p>${escaparHTML(prod.desc)}</p>
+                </div>
+            </article>`;
+        });
+    }
 
     mostrarVista("vistaDetalle");
 }
@@ -1517,7 +1555,8 @@ function filtrarRubro(rubro, boton) {
 
 function mostrarVista(idVista) {
     ["vistaPrincipal", "vistaCupones", "vistaListas", "vistaNotificaciones", "vistaAjustes", "vistaDetalle"].forEach(id => {
-        document.getElementById(id).style.display = (id === idVista) ? (id === "vistaPrincipal" ? "flex" : "block") : "none";
+        const el = document.getElementById(id);
+        if (el) el.style.display = (id === idVista) ? (id === "vistaPrincipal" ? "flex" : "block") : "none";
     });
     window.scrollTo({ top: 0, behavior: "smooth" });
 }
