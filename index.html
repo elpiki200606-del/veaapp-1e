@@ -730,6 +730,14 @@
                 <input type="text" id="inputComercioLocal" placeholder="Ej: Local 12">
             </div>
 
+            <!-- Foto de Fachada / Portada Principal -->
+            <div style="background:#f4f7f5; padding:10px; border-radius:8px; margin-bottom:10px; border:1px solid var(--borde);">
+                <label style="font-weight:700; margin-bottom:3px; display:block;">📸 Foto de Fachada / Portada Principal</label>
+                <small style="color:var(--muted); font-size:0.68rem; display:block; margin-bottom:6px;">Se mostrará como fondo principal en tu tarjeta de vidriera.</small>
+                <input type="file" id="archivoFotoFachada" accept="image/*" style="background:white; padding:6px; width:100%;" onchange="cargarFotoFachada(this)">
+                <div id="previewFachada" style="margin-top:6px; max-height:100px; overflow:hidden; border-radius:6px;"></div>
+            </div>
+
             <div style="background:#182333; color:white; padding:10px; border-radius:8px; margin-bottom:10px; border:1px solid var(--dorado);" id="seccionCargaVideoPanel">
                 <label style="font-weight:700; color:var(--dorado); margin-bottom:3px; display:block;" id="labelVideoPlan">🎬 Video Promocional en la Nube (Firebase Storage)</label>
                 <div style="background:#fff7ed; color:#9a3412; font-size:0.72rem; padding:6px; border-radius:4px; margin-bottom:6px; border:1px solid #fdba74;">
@@ -938,7 +946,7 @@
         <button class="nav-item" id="btnNavAjustes" onclick="mostrarVista('vistaAjustes')"><span class="icon">⚙️</span><span>Ajustes</span></button>
     </nav>
 
-    <!-- Leaflet & Firebase SDKs (Con Storage integrado) -->
+    <!-- Leaflet & Firebase SDKs -->
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
@@ -984,6 +992,7 @@ let terminoBusqueda = "";
 let marcadoresMapa = [];
 let usuarioActual = null;
 let videoUrlStorage = null;
+let fotoFachadaBase64 = null;
 
 const LIMITES_PLANES = {
     'basico': { maxPubs: 10, maxVideoSec: 30 },
@@ -995,9 +1004,9 @@ function obtenerUsuariosDB() {
     let base = JSON.parse(localStorage.getItem("vea_usuarios_db") || "null");
     if (!base) {
         base = [
-            { nombre: "Cervecería Artesanal El Tordo", email: "tordo@vea.com", password: "123456", tipo: "comercio", suscripcionActiva: "premium", pagoConfirmado: true },
-            { nombre: "Los Romualdito", email: "romualdito@vea.com", password: "123456", tipo: "comercio", suscripcionActiva: "intermedio", pagoConfirmado: true },
-            { nombre: "Pizzería Musa Varela", email: "musa@vea.com", password: "123456", tipo: "comercio", suscripcionActiva: "basico", pagoConfirmado: true }
+            { id: "u_tordo", nombre: "Cervecería Artesanal El Tordo", email: "tordo@vea.com", password: "123456", tipo: "comercio", suscripcionActiva: "premium", pagoConfirmado: true },
+            { id: "u_romualdito", nombre: "Los Romualdito", email: "romualdito@vea.com", password: "123456", tipo: "comercio", suscripcionActiva: "intermedio", pagoConfirmado: true },
+            { id: "u_musa", nombre: "Pizzería Musa Varela", email: "musa@vea.com", password: "123456", tipo: "comercio", suscripcionActiva: "basico", pagoConfirmado: true }
         ];
         localStorage.setItem("vea_usuarios_db", JSON.stringify(base));
     }
@@ -1029,7 +1038,8 @@ let publicacionesPanelTemp = [{ titulo: "Pinta IPA El Tordo", promo: "2x1", desc
 
 const comerciosBaseIniciales = [
     {
-        id: "1",
+        id: "u_tordo",
+        emailOwner: "tordo@vea.com",
         nombre: "Cervecería Artesanal El Tordo",
         rubro: "gastronomia",
         plan: "PREMIUM",
@@ -1040,7 +1050,7 @@ const comerciosBaseIniciales = [
         nroLocal: "",
         lat: -34.6434, lng: -58.6231, ubicacionVerificada: true,
         oferta: "2x1 en Pintas IPA", icono: "beer-mug-empty", esPremium: true,
-        videoPromo: null, rating: 4.8, opiniones: 124,
+        videoPromo: null, fotoFachada: null, rating: 4.8, opiniones: 124,
         codigoCupon: "VEA-TORDO-IPA2X1",
         mensajeWA: "Hola! Quiero consultar por el cupón VEA-TORDO-IPA2X1 en Cervecería El Tordo.",
         comentarios: [{ usuario: "Juan", texto: "Excelente cerveza y ambiente.", est: 5 }],
@@ -1049,7 +1059,8 @@ const comerciosBaseIniciales = [
         ]
     },
     {
-        id: "2",
+        id: "u_romualdito",
+        emailOwner: "romualdito@vea.com",
         nombre: "Los Romualdito",
         rubro: "gastronomia",
         plan: "INTERMEDIO",
@@ -1060,7 +1071,7 @@ const comerciosBaseIniciales = [
         nroLocal: "Local 5",
         lat: -34.6380, lng: -58.5600, ubicacionVerificada: true,
         oferta: "20% OFF en Empanadas", icono: "utensils", esPremium: false,
-        videoPromo: null, rating: 4.7, opiniones: 95,
+        videoPromo: null, fotoFachada: null, rating: 4.7, opiniones: 95,
         codigoCupon: "VEA-ROMUALDITO-20",
         mensajeWA: "Hola, quiero consultar por la promo de Los Romualdito.",
         comentarios: [{ usuario: "Martín", texto: "Muy ricas las empanadas.", est: 5 }],
@@ -1069,7 +1080,8 @@ const comerciosBaseIniciales = [
         ]
     },
     {
-        id: "3",
+        id: "u_musa",
+        emailOwner: "musa@vea.com",
         nombre: "Pizzería Musa Varela",
         rubro: "gastronomia",
         plan: "BÁSICO",
@@ -1080,7 +1092,7 @@ const comerciosBaseIniciales = [
         nroLocal: "",
         lat: -34.7500, lng: -58.7500, ubicacionVerificada: true,
         oferta: "Fugazetta Rellena con 10% OFF", icono: "utensils", esPremium: false,
-        videoPromo: null, rating: 4.5, opiniones: 62,
+        videoPromo: null, fotoFachada: null, rating: 4.5, opiniones: 62,
         codigoCupon: "VEA-MUSA-10",
         mensajeWA: "Hola, quiero pedir la Fugazetta Rellena con descuento en Musa Varela.",
         comentarios: [],
@@ -1183,6 +1195,26 @@ function inicializarBannerRotativoPremium() {
     }
 
     actualizarBanner();
+}
+
+function cargarFotoFachada(input) {
+    const file = input.files[0];
+    if (!file) return;
+    if (file.size > 800000) {
+        alert("⚠️ La foto de fachada es muy pesada. Reducila un poco.");
+        input.value = "";
+        return;
+    }
+    const lector = new FileReader();
+    lector.onload = function(e) {
+        fotoFachadaBase64 = e.target.result;
+        const preview = document.getElementById("previewFachada");
+        if (preview) {
+            preview.innerHTML = `<img src="${fotoFachadaBase64}" style="width:100%; height:100px; object-fit:cover; border-radius:6px; border:1px solid var(--borde);">`;
+        }
+        alert("✅ Foto de fachada cargada correctamente.");
+    };
+    lector.readAsDataURL(file);
 }
 
 async function subirVideoAStorage(input) {
@@ -1336,8 +1368,9 @@ function guardarNuevoRegistro() {
         return;
     }
 
-    // NUEVO COMERCIO ARRANCA EN MODO BORRADOR (pagoConfirmado: false) HASTA QUE ABONE REALMENTE
+    const nuevoId = "user_" + Date.now();
     const nuevoUsuario = { 
+        id: nuevoId,
         nombre: nombre, 
         email: email, 
         password: password, 
@@ -1382,7 +1415,9 @@ function procesarLogin() {
 
 function sincronizarDatosPanelComercioLocal() {
     if (!usuarioActual || usuarioActual.tipo !== "comercio") return;
-    const comercioPropio = comerciosVEA.find(c => c.nombre.toLowerCase() === usuarioActual.nombre.toLowerCase());
+    
+    let comercioPropio = comerciosVEA.find(c => String(c.id) === String(usuarioActual.id) || (c.emailOwner && c.emailOwner.toLowerCase() === usuarioActual.email.toLowerCase()));
+    
     const avisoPago = document.getElementById("avisoEstadoPagoComercio");
 
     if (comercioPropio) {
@@ -1391,8 +1426,21 @@ function sincronizarDatosPanelComercioLocal() {
         document.getElementById("inputComercioDireccion").value = comercioPropio.direccion;
         document.getElementById("inputComercioGaleria").value = comercioPropio.galeria || "";
         document.getElementById("inputComercioLocal").value = comercioPropio.nroLocal || "";
+        
         if (comercioPropio.productos && comercioPropio.productos.length > 0) {
             publicacionesPanelTemp = comercioPropio.productos;
+        }
+        if (comercioPropio.fotoFachada) {
+            fotoFachadaBase64 = comercioPropio.fotoFachada;
+            const preview = document.getElementById("previewFachada");
+            if (preview) {
+                preview.innerHTML = `<img src="${fotoFachadaBase64}" style="width:100%; height:100px; object-fit:cover; border-radius:6px; border:1px solid var(--borde);">`;
+            }
+        }
+        if (comercioPropio.videoPromo) {
+            videoUrlStorage = comercioPropio.videoPromo;
+            const estadoLabel = document.getElementById("estadoSubidaVideo");
+            if (estadoLabel) estadoLabel.textContent = "✅ Video cargado en la nube.";
         }
         if (comercioPropio.plan) {
             document.getElementById("badgePlanActualPanel").textContent = "PLAN: " + comercioPropio.plan;
@@ -1428,10 +1476,10 @@ function actualizarInterfazRolUsuario() {
 function seleccionarPlanPago(planElegido) {
     if (!usuarioActual || usuarioActual.tipo !== "comercio") return;
     usuarioActual.suscripcionActiva = planElegido;
-    usuarioActual.pagoConfirmado = true; // Simula la confirmación al hacer clic en el link de pago
+    usuarioActual.pagoConfirmado = true;
     guardarSesionActiva(usuarioActual);
 
-    const comercioIndex = comerciosVEA.findIndex(c => c.nombre.toLowerCase() === usuarioActual.nombre.toLowerCase());
+    let comercioIndex = comerciosVEA.findIndex(c => String(c.id) === String(usuarioActual.id) || (c.emailOwner && c.emailOwner.toLowerCase() === usuarioActual.email.toLowerCase()));
     if (comercioIndex !== -1) {
         comerciosVEA[comercioIndex].plan = planElegido.toUpperCase();
         comerciosVEA[comercioIndex].pagoConfirmado = true;
@@ -1461,13 +1509,16 @@ async function guardarDatosPanelComercio() {
     }
 
     const primerCupone = cuponesPanelTemp.length ? cuponesPanelTemp[0] : { titulo: "Especial", codigo: "VEA" };
-    let comercioExistente = comerciosVEA.find(c => c.nombre.toLowerCase() === nombre.toLowerCase());
-    const nuevoId = comercioExistente ? String(comercioExistente.id) : String(Date.now());
+    
+    const idUnicoComercio = String(usuarioActual.id);
+    let comercioExistente = comerciosVEA.find(c => String(c.id) === idUnicoComercio || (c.emailOwner && c.emailOwner.toLowerCase() === usuarioActual.email.toLowerCase()));
+    
     const planActual = (usuarioActual.suscripcionActiva || "basico").toUpperCase();
     const pagoVerificado = usuarioActual.pagoConfirmado || false;
 
     const nuevoComercio = {
-        id: nuevoId,
+        id: idUnicoComercio,
+        emailOwner: usuarioActual.email,
         nombre: nombre,
         rubro: rubro,
         plan: planActual,
@@ -1475,13 +1526,14 @@ async function guardarDatosPanelComercio() {
         direccion: direccion,
         galeria: galeria,
         nroLocal: nroLocal,
-        lat: -34.65, 
-        lng: -58.58, 
+        lat: comercioExistente ? comercioExistente.lat : -34.65, 
+        lng: comercioExistente ? comercioExistente.lng : -58.58, 
         ubicacionVerificada: true,
         oferta: primerCupone.titulo,
         icono: obtenerIconoPorRubro(rubro, nombre),
         esPremium: (planActual === 'PREMIUM' || planActual === 'INTERMEDIO'),
         videoPromo: videoUrlStorage || (comercioExistente ? comercioExistente.videoPromo : null),
+        fotoFachada: fotoFachadaBase64 || (comercioExistente ? comercioExistente.fotoFachada : null),
         rating: comercioExistente ? comercioExistente.rating : 5.0,
         opiniones: comercioExistente ? comercioExistente.opiniones : 1,
         codigoCupon: primerCupone.codigo,
@@ -1492,7 +1544,7 @@ async function guardarDatosPanelComercio() {
 
     try {
         if (window.db) {
-            await window.setDoc(window.doc(window.db, "comercios", nuevoId), nuevoComercio);
+            await window.setDoc(window.doc(window.db, "comercios", idUnicoComercio), nuevoComercio);
         }
         alert("¡Vidriera guardada y actualizada con éxito en la nube de V.E.A.!");
         irAlInicio();
@@ -1564,7 +1616,6 @@ function actualizarVista(filtro) {
 
     const ordenPlan = { 'PREMIUM': 3, 'INTERMEDIO': 2, 'BÁSICO': 1 };
     
-    // SOLO MUESTRA LOS QUE TIENEN pagoConfirmado === true
     let lista = comerciosVEA.filter(c => c.pagoConfirmado === true && (filtro === "todos" || c.rubro === filtro));
 
     if (terminoBusqueda) {
@@ -1590,11 +1641,15 @@ function actualizarVista(filtro) {
         tarjeta.className = "card-vidriera";
         tarjeta.onclick = () => abrirDetalleComercio(comercio.id);
 
+        const imgFachadaHtml = comercio.fotoFachada 
+            ? `<img src="${comercio.fotoFachada}" alt="Fachada" style="width:100%;height:100%;object-fit:cover;position:absolute;top:0;left:0;">` 
+            : `<span><i class="fa-solid ${obtenerIconoPorRubro(comercio.rubro, comercio.nombre)}"></i></span>`;
+
         tarjeta.innerHTML = `
             <div class="card-img-container">
                 <span class="badge-plan">${escaparHTML(comercio.plan || 'BÁSICO')}</span>
                 <span class="badge-discount">${escaparHTML(comercio.oferta || 'Promo')}</span>
-                <span><i class="fa-solid ${obtenerIconoPorRubro(comercio.rubro, comercio.nombre)}"></i></span>
+                ${imgFachadaHtml}
             </div>
             <div class="card-body">
                 <h3>${escaparHTML(comercio.nombre)}</h3>
