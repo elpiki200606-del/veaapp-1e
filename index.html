@@ -700,8 +700,8 @@
                 <span id="badgePlanActualPanel" style="background:var(--verde); color:var(--dorado); font-size:0.7rem; font-weight:800; padding:3px 6px; border-radius:6px; border:1px solid var(--dorado)">PLAN: BÁSICO</span>
             </div>
 
-            <div id="avisoEstadoPagoComercio" class="status-box status-ok" style="margin-bottom:12px;">
-                ✅ <strong>¡Tu plan está activo y verificado!</strong> Tu comercio ya es visible en el mapa para todo el público.
+            <div id="avisoEstadoPagoComercio" class="status-box" style="margin-bottom:12px;">
+                ⚠️ <strong>Tu plan aún no está verificado.</strong> Aboná tu suscripción abajo para que tu comercio aparezca en el mapa público.
             </div>
 
             <div class="form-group">
@@ -731,9 +731,12 @@
             </div>
 
             <div style="background:#182333; color:white; padding:10px; border-radius:8px; margin-bottom:10px; border:1px solid var(--dorado);" id="seccionCargaVideoPanel">
-                <label style="font-weight:700; color:var(--dorado); margin-bottom:3px; display:block;" id="labelVideoPlan">🎬 Video Promocional Vertical (Opcional)</label>
-                <input type="file" id="archivoVideoPromo" accept="video/*" style="background:white; color:#000; padding:5px; width:100%; border-radius:6px;" onchange="validarDuracionVideo(this)">
-                <small style="color:#cbd5e1; font-size:0.68rem; display:block; margin-top:3px;">Nota: Grabado en vertical (9:16). Duración según tu plan.</small>
+                <label style="font-weight:700; color:var(--dorado); margin-bottom:3px; display:block;" id="labelVideoPlan">🎬 Video Promocional en la Nube (Firebase Storage)</label>
+                <div style="background:#fff7ed; color:#9a3412; font-size:0.72rem; padding:6px; border-radius:4px; margin-bottom:6px; border:1px solid #fdba74;">
+                    ⚠️ <strong>Requisito de video:</strong> Debe ser grabado en <strong>formato vertical (9:16)</strong> y calidad <strong>720p (HD)</strong>.
+                </div>
+                <input type="file" id="archivoVideoPromo" accept="video/*" style="background:white; color:#000; padding:5px; width:100%; border-radius:6px;" onchange="subirVideoAStorage(this)">
+                <small id="estadoSubidaVideo" style="color:#cbd5e1; font-size:0.68rem; display:block; margin-top:3px;">Seleccioná tu video vertical para subirlo a la nube.</small>
             </div>
 
             <div style="background:#f4f7f5; padding:10px; border-radius:8px; margin-bottom:10px; border:1px solid var(--borde);">
@@ -767,7 +770,7 @@
             <button class="btn btn-primary btn-block" onclick="guardarDatosPanelComercio()" id="btnGuardarComercioTexto">💾 Guardar y Actualizar en la Nube</button>
         </div>
 
-        <!-- Planes de Suscripción -->
+        <!-- Planes de Suscripción con Links de Mercado Pago -->
         <div class="section-ajustes hidden" id="seccionPlanesPublicos">
             <h3>💳 Planes de suscripción V.E.A.</h3>
             <p class="muted" style="margin-bottom:10px">Elegí tu plan comercial para activar el acceso completo y la prioridad en el mapa.</p>
@@ -778,9 +781,9 @@
                         <h4>Plan Básico</h4>
                         <div class="plan-precio">USD 5</div>
                         <p class="muted" style="font-size:.7rem">Acceso Directo</p>
-                        <p class="muted" style="font-size:.72rem; margin-top:4px;">Hasta <strong>10 publicaciones</strong>.<br>Video vertical de hasta <strong>30 segundos</strong>.</p>
+                        <p class="muted" style="font-size:.72rem; margin-top:4px;">Hasta <strong>10 publicaciones</strong>.<br>Video vertical de hasta <strong>30 segundos</strong> (720p).</p>
                     </div>
-                    <button class="btn btn-primary btn-block" style="margin-top:8px;" onclick="cambiarPlanComercio('basico')">Elegir Básico</button>
+                    <a href="https://mpago.la/2S79kb4" target="_blank" rel="noopener" class="btn btn-primary btn-block" style="margin-top:8px; text-decoration:none;" onclick="seleccionarPlanPago('basico')">Suscribirse (MP)</a>
                 </div>
 
                 <div class="plan-card" style="border-color: var(--dorado)">
@@ -789,9 +792,9 @@
                         <h4>Plan Intermedio</h4>
                         <div class="plan-precio">USD 10</div>
                         <p class="muted" style="font-size:.7rem">Acceso Directo</p>
-                        <p class="muted" style="font-size:.72rem; margin-top:4px;">Hasta <strong>20 publicaciones</strong>.<br>Video vertical de hasta <strong>45 segundos</strong>.</p>
+                        <p class="muted" style="font-size:.72rem; margin-top:4px;">Hasta <strong>20 publicaciones</strong>.<br>Video vertical de hasta <strong>45 segundos</strong> (720p).</p>
                     </div>
-                    <button class="btn btn-primary btn-block" style="margin-top:8px;" onclick="cambiarPlanComercio('intermedio')">Elegir Intermedio</button>
+                    <a href="https://mpago.la/1qQYKhJ" target="_blank" rel="noopener" class="btn btn-primary btn-block" style="margin-top:8px; text-decoration:none;" onclick="seleccionarPlanPago('intermedio')">Suscribirse (MP)</a>
                 </div>
 
                 <div class="plan-card">
@@ -799,15 +802,15 @@
                         <h4>Plan Premium</h4>
                         <div class="plan-precio">USD 15</div>
                         <p class="muted" style="font-size:.7rem">Acceso Directo</p>
-                        <p class="muted" style="font-size:.72rem; margin-top:4px;">Hasta <strong>40 publicaciones</strong>.<br>Video vertical de hasta <strong>1 minuto</strong>.</p>
+                        <p class="muted" style="font-size:.72rem; margin-top:4px;">Hasta <strong>40 publicaciones</strong>.<br>Video vertical de hasta <strong>1 minuto</strong> (720p).</p>
                     </div>
-                    <button class="btn btn-primary btn-block" style="margin-top:8px;" onclick="cambiarPlanComercio('premium')">Elegir Premium</button>
+                    <a href="https://mpago.la/2uckMU3" target="_blank" rel="noopener" class="btn btn-primary btn-block" style="margin-top:8px; text-decoration:none;" onclick="seleccionarPlanPago('premium')">Suscribirse (MP)</a>
                 </div>
             </div>
         </div>
     </section>
 
-    <!-- Modal de Ampliación de Publicación (Con imagen grande y descripción) -->
+    <!-- Modal de Ampliación de Publicación -->
     <div id="modalPublicacionDetalle" class="modal-overlay hidden">
         <div class="modal-content">
             <div class="modal-header-body" style="text-align: center;">
@@ -935,11 +938,12 @@
         <button class="nav-item" id="btnNavAjustes" onclick="mostrarVista('vistaAjustes')"><span class="icon">⚙️</span><span>Ajustes</span></button>
     </nav>
 
-    <!-- Leaflet & Firebase SDKs -->
+    <!-- Leaflet & Firebase SDKs (Con Storage integrado) -->
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
         import { getFirestore, collection, onSnapshot, setDoc, doc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+        import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-storage.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyDLQVjJ7TrjamRO-cPUIKitmhHWqZ0af71k",
@@ -953,8 +957,13 @@
 
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
+        const storage = getStorage(app);
 
         window.db = db;
+        window.storage = storage;
+        window.ref = ref;
+        window.uploadBytes = uploadBytes;
+        window.getDownloadURL = getDownloadURL;
         window.collection = collection;
         window.onSnapshot = onSnapshot;
         window.setDoc = setDoc;
@@ -974,7 +983,7 @@ let filtroActual = "todos";
 let terminoBusqueda = "";
 let marcadoresMapa = [];
 let usuarioActual = null;
-let videoPromoPanelBase64 = null;
+let videoUrlStorage = null;
 
 const LIMITES_PLANES = {
     'basico': { maxPubs: 10, maxVideoSec: 30 },
@@ -1176,38 +1185,39 @@ function inicializarBannerRotativoPremium() {
     actualizarBanner();
 }
 
-function validarDuracionVideo(input) {
+async function subirVideoAStorage(input) {
     const file = input.files[0];
     if (!file) return;
 
     const planClave = usuarioActual && usuarioActual.suscripcionActiva ? usuarioActual.suscripcionActiva : 'basico';
     const limiteSegundos = LIMITES_PLANES[planClave] ? LIMITES_PLANES[planClave].maxVideoSec : 30;
+    const estadoLabel = document.getElementById("estadoSubidaVideo");
 
     const videoElement = document.createElement('video');
     videoElement.preload = 'metadata';
     videoElement.src = URL.createObjectURL(file);
 
-    videoElement.onloadedmetadata = function() {
+    videoElement.onloadedmetadata = async function() {
         window.URL.revokeObjectURL(videoElement.src);
         const duracion = videoElement.duration;
         if (duracion > (limiteSegundos + 0.5)) {
-            alert(`⚠️ El video dura ${Math.round(duracion)} segundos. Tu plan actual permite un máximo de ${limiteSegundos}s en formato vertical.`);
+            alert(`⚠️ El video dura ${Math.round(duracion)} segundos. Tu plan actual permite un máximo de ${limiteSegundos}s.`);
             input.value = "";
-            videoPromoPanelBase64 = null;
+            videoUrlStorage = null;
+            if (estadoLabel) estadoLabel.textContent = "Seleccioná tu video vertical.";
         } else {
-            // Aumentado el tope a 950KB para permitir videos sin molestar
-            if (file.size > 950000) {
-                alert("⚠️ El archivo de video es demasiado pesado para la base de datos gratuita. Elegí uno más liviano.");
-                input.value = "";
-                videoPromoPanelBase64 = null;
-                return;
+            try {
+                if (estadoLabel) estadoLabel.textContent = "⏳ Subiendo video a Firebase Storage...";
+                const storageRef = window.ref(window.storage, `videos_vea/${Date.now()}_${file.name}`);
+                const snapshot = await window.uploadBytes(storageRef, file);
+                videoUrlStorage = await window.getDownloadURL(snapshot.ref);
+                if (estadoLabel) estadoLabel.textContent = "✅ ¡Video subido con éxito a la nube!";
+                alert("✅ Video vertical en 720p HD subido correctamente a Firebase Storage.");
+            } catch (error) {
+                console.error("Error subiendo video:", error);
+                alert("Hubo un error al subir el video a la nube.");
+                if (estadoLabel) estadoLabel.textContent = "❌ Error al subir video.";
             }
-            const lector = new FileReader();
-            lector.onload = function(e) {
-                videoPromoPanelBase64 = e.target.result;
-                alert(`✅ Video vertical validado correctamente.`);
-            };
-            lector.readAsDataURL(file);
         }
     };
 }
@@ -1326,13 +1336,14 @@ function guardarNuevoRegistro() {
         return;
     }
 
+    // NUEVO COMERCIO ARRANCA EN MODO BORRADOR (pagoConfirmado: false) HASTA QUE ABONE REALMENTE
     const nuevoUsuario = { 
         nombre: nombre, 
         email: email, 
         password: password, 
         tipo: tipoPerfil, 
         suscripcionActiva: tipoPerfil === "comercio" ? "basico" : null,
-        pagoConfirmado: true
+        pagoConfirmado: false
     };
 
     usuariosRegistrados.push(nuevoUsuario);
@@ -1342,7 +1353,7 @@ function guardarNuevoRegistro() {
 
     actualizarEstadoSesionUI();
     cerrarModalRegistro();
-    alert("¡Cuenta registrada con éxito!");
+    alert("¡Cuenta registrada con éxito! Recordá abonar tu plan para activar tu vidriera en el mapa.");
     irAlInicio();
 }
 
@@ -1372,6 +1383,8 @@ function procesarLogin() {
 function sincronizarDatosPanelComercioLocal() {
     if (!usuarioActual || usuarioActual.tipo !== "comercio") return;
     const comercioPropio = comerciosVEA.find(c => c.nombre.toLowerCase() === usuarioActual.nombre.toLowerCase());
+    const avisoPago = document.getElementById("avisoEstadoPagoComercio");
+
     if (comercioPropio) {
         document.getElementById("inputComercioNombre").value = comercioPropio.nombre;
         document.getElementById("inputComercioRubro").value = comercioPropio.rubro;
@@ -1383,6 +1396,13 @@ function sincronizarDatosPanelComercioLocal() {
         }
         if (comercioPropio.plan) {
             document.getElementById("badgePlanActualPanel").textContent = "PLAN: " + comercioPropio.plan;
+        }
+        if (comercioPropio.pagoConfirmado) {
+            avisoPago.className = "status-box status-ok";
+            avisoPago.innerHTML = "✅ <strong>¡Tu plan está activo y verificado!</strong> Tu comercio ya es visible en el mapa para todo el público.";
+        } else {
+            avisoPago.className = "status-box";
+            avisoPago.innerHTML = "⚠️ <strong>Tu plan aún no está verificado.</strong> Aboná tu suscripción abajo para que tu comercio aparezca en el mapa público.";
         }
     }
     renderizarListasPanelComercial();
@@ -1405,21 +1425,22 @@ function actualizarInterfazRolUsuario() {
     }
 }
 
-function cambiarPlanComercio(planElegido) {
+function seleccionarPlanPago(planElegido) {
     if (!usuarioActual || usuarioActual.tipo !== "comercio") return;
     usuarioActual.suscripcionActiva = planElegido;
+    usuarioActual.pagoConfirmado = true; // Simula la confirmación al hacer clic en el link de pago
     guardarSesionActiva(usuarioActual);
 
     const comercioIndex = comerciosVEA.findIndex(c => c.nombre.toLowerCase() === usuarioActual.nombre.toLowerCase());
     if (comercioIndex !== -1) {
         comerciosVEA[comercioIndex].plan = planElegido.toUpperCase();
+        comerciosVEA[comercioIndex].pagoConfirmado = true;
         comerciosVEA[comercioIndex].esPremium = (planElegido === 'premium' || planElegido === 'intermedio');
         if (window.db) {
             window.setDoc(window.doc(window.db, "comercios", String(comerciosVEA[comercioIndex].id)), comerciosVEA[comercioIndex]);
         }
     }
-    document.getElementById("badgePlanActualPanel").textContent = "PLAN: " + planElegido.toUpperCase();
-    alert(`✅ ¡Plan ${planElegido.toUpperCase()} activado con éxito!`);
+    alert(`✅ ¡Redirigiendo a Mercado Pago para abonar el Plan ${planElegido.toUpperCase()}! Tu cuenta quedará verificada.`);
 }
 
 async function guardarDatosPanelComercio() {
@@ -1443,13 +1464,14 @@ async function guardarDatosPanelComercio() {
     let comercioExistente = comerciosVEA.find(c => c.nombre.toLowerCase() === nombre.toLowerCase());
     const nuevoId = comercioExistente ? String(comercioExistente.id) : String(Date.now());
     const planActual = (usuarioActual.suscripcionActiva || "basico").toUpperCase();
+    const pagoVerificado = usuarioActual.pagoConfirmado || false;
 
     const nuevoComercio = {
         id: nuevoId,
         nombre: nombre,
         rubro: rubro,
         plan: planActual,
-        pagoConfirmado: true,
+        pagoConfirmado: pagoVerificado,
         direccion: direccion,
         galeria: galeria,
         nroLocal: nroLocal,
@@ -1459,7 +1481,7 @@ async function guardarDatosPanelComercio() {
         oferta: primerCupone.titulo,
         icono: obtenerIconoPorRubro(rubro, nombre),
         esPremium: (planActual === 'PREMIUM' || planActual === 'INTERMEDIO'),
-        videoPromo: videoPromoPanelBase64 || (comercioExistente ? comercioExistente.videoPromo : null),
+        videoPromo: videoUrlStorage || (comercioExistente ? comercioExistente.videoPromo : null),
         rating: comercioExistente ? comercioExistente.rating : 5.0,
         opiniones: comercioExistente ? comercioExistente.opiniones : 1,
         codigoCupon: primerCupone.codigo,
@@ -1476,7 +1498,7 @@ async function guardarDatosPanelComercio() {
         irAlInicio();
     } catch (e) {
         console.error("Error Firebase:", e);
-        alert("Error al guardar en la nube. Probá usando imágenes o videos más livianos.");
+        alert("Error al guardar en la nube.");
     }
 }
 
@@ -1542,6 +1564,7 @@ function actualizarVista(filtro) {
 
     const ordenPlan = { 'PREMIUM': 3, 'INTERMEDIO': 2, 'BÁSICO': 1 };
     
+    // SOLO MUESTRA LOS QUE TIENEN pagoConfirmado === true
     let lista = comerciosVEA.filter(c => c.pagoConfirmado === true && (filtro === "todos" || c.rubro === filtro));
 
     if (terminoBusqueda) {
