@@ -1416,7 +1416,6 @@ function procesarLogin() {
 function sincronizarDatosPanelComercioLocal() {
     if (!usuarioActual || usuarioActual.tipo !== "comercio") return;
     
-    // CLAVE ÚNICA ABSOLUTA BASADA EN EL EMAIL DEL DUEÑO PARA EVITAR MULTIPLICACIONES
     const emailKey = usuarioActual.email.toLowerCase();
     let comercioPropio = comerciosVEA.find(c => (c.emailOwner && c.emailOwner.toLowerCase() === emailKey) || String(c.id) === String(usuarioActual.id));
     
@@ -1513,7 +1512,6 @@ async function guardarDatosPanelComercio() {
 
     const primerCupone = cuponesPanelTemp.length ? cuponesPanelTemp[0] : { titulo: "Especial", codigo: "VEA" };
     
-    // ID FIJO MAESTRO POR EMAIL PARA PISAR SIEMPRE EL MISMO DOCUMENTO EN FIRESTORE
     const idUnicoComercio = usuarioActual.id ? String(usuarioActual.id) : ("comercio_" + usuarioActual.email.replace(/[^a-z0-9]/g, "_"));
     usuarioActual.id = idUnicoComercio;
     guardarSesionActiva(usuarioActual);
@@ -1623,12 +1621,11 @@ function actualizarVista(filtro) {
 
     const ordenPlan = { 'PREMIUM': 3, 'INTERMEDIO': 2, 'BÁSICO': 1 };
     
-    // FILTRAR DUPLICADOS DE MANERA ESTRICTA POR ID EN MEMORIA POR SI QUEDARON BASURA EN FIREBASE
+    // FILTRADO ABSOLUTO DE DUPLICADOS POR EMAIL DE DUEÑO O ID ÚNICO
     const mapUnicos = new Map();
     comerciosVEA.forEach(c => {
         if (c.pagoConfirmado === true) {
             const keyUnica = c.emailOwner ? c.emailOwner.toLowerCase() : c.id;
-            // Si ya existe, priorizamos el más completo
             mapUnicos.set(keyUnica, c);
         }
     });
