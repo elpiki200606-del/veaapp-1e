@@ -602,7 +602,6 @@
         <button class="btn" style="background:var(--dorado);color:var(--verde);font-size:.72rem;padding:6px 10px;font-weight:800;" id="premRotativoBtn">Ver vidriera</button>
     </div>
 
-    <!-- Banner exclusivo para registrar comercios (Solo visible para comerciantes o público general según rol) -->
     <div class="banner-suscripcion-home" id="seccionBannerSuscripcionHome">
         <div style="text-align: left;">
             <strong style="color:var(--dorado); font-size:.82rem;">¿Tenés un comercio o emprendimiento?</strong>
@@ -678,7 +677,7 @@
         <div id="contenedorNotificaciones"></div>
     </section>
 
-    <!-- VISTA AJUSTES Y PANEL COMERCIAL (Rol Dinámico) -->
+    <!-- VISTA AJUSTES Y PANEL COMERCIAL -->
     <section class="vista-secundaria" id="vistaAjustes">
         <div class="detalle-topbar">
             <button class="btn-back" onclick="irAlInicio()">← Volver al inicio</button>
@@ -694,7 +693,7 @@
             </div>
         </div>
 
-        <!-- Panel de Autogestión del Comerciante (Solo visible para cuentas tipo comercio) -->
+        <!-- Panel de Autogestión del Comerciante -->
         <div class="section-ajustes hidden" id="panelComercialAutogestion" style="border: 2px solid var(--dorado);">
             <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid var(--borde); padding-bottom:8px; margin-bottom:12px;">
                 <h3 style="color:var(--dorado); margin:0;" id="tituloPanelComercioAdmin">🏪 Mi Panel Comerciante V.E.A.</h3>
@@ -734,7 +733,7 @@
             <div style="background:#182333; color:white; padding:10px; border-radius:8px; margin-bottom:10px; border:1px solid var(--dorado);" id="seccionCargaVideoPanel">
                 <label style="font-weight:700; color:var(--dorado); margin-bottom:3px; display:block;" id="labelVideoPlan">🎬 Video Promocional Vertical (Opcional)</label>
                 <input type="file" id="archivoVideoPromo" accept="video/*" style="background:white; color:#000; padding:5px; width:100%; border-radius:6px;" onchange="validarDuracionVideo(this)">
-                <small style="color:#cbd5e1; font-size:0.68rem; display:block; margin-top:3px;">Nota: El video debe grabarse en formato vertical (9:16). Duración máx según tu plan.</small>
+                <small style="color:#cbd5e1; font-size:0.68rem; display:block; margin-top:3px;">Nota: Grabado en vertical (9:16). Duración según tu plan.</small>
             </div>
 
             <div style="background:#f4f7f5; padding:10px; border-radius:8px; margin-bottom:10px; border:1px solid var(--borde);">
@@ -768,7 +767,7 @@
             <button class="btn btn-primary btn-block" onclick="guardarDatosPanelComercio()" id="btnGuardarComercioTexto">💾 Guardar y Actualizar en la Nube</button>
         </div>
 
-        <!-- Planes de Suscripción (Solo visibles para comercios) -->
+        <!-- Planes de Suscripción -->
         <div class="section-ajustes hidden" id="seccionPlanesPublicos">
             <h3>💳 Planes de suscripción V.E.A.</h3>
             <p class="muted" style="margin-bottom:10px">Elegí tu plan comercial para activar el acceso completo y la prioridad en el mapa.</p>
@@ -808,7 +807,7 @@
         </div>
     </section>
 
-    <!-- Modal de Ampliación de Publicación -->
+    <!-- Modal de Ampliación de Publicación (Con imagen grande y descripción) -->
     <div id="modalPublicacionDetalle" class="modal-overlay hidden">
         <div class="modal-content">
             <div class="modal-header-body" style="text-align: center;">
@@ -890,7 +889,6 @@
         <div id="contenedorBannerDetalle"></div>
         <div class="section-ajustes" id="direccionDetalle"></div>
 
-        <!-- Botón Cómo Llegar con Google Maps -->
         <div style="margin-bottom: 12px;">
             <a id="btnComoLlegarMaps" href="#" target="_blank" rel="noopener" class="btn btn-maps btn-block">
                 <i class="fa-solid fa-map-location-dot" style="color:var(--verde);"></i> Cómo llegar (Abrir en Google Maps)
@@ -901,7 +899,6 @@
         <p id="tagVisitasDetalle" class="views" style="display:inline-block;margin-bottom:10px"></p>
         <div class="grid-vidrieras" id="contenedorVentanasComercio"></div>
 
-        <!-- SECCIÓN DE CALIFICACIÓN Y COMENTARIOS ABAJO DE TODO -->
         <div class="section-ajustes" style="margin-top: 20px;">
             <h3 style="margin-bottom: 8px;">⭐ Calificá esta vidriera</h3>
             <div class="rating-box" id="estrellasCalificacion">
@@ -1086,7 +1083,6 @@ const comerciosBaseIniciales = [
 
 let comerciosVEA = comerciosBaseIniciales;
 
-// Sincronización en tiempo real con Firestore (onSnapshot)
 function sincronizarComerciosEnTiempoReal() {
     try {
         if (!window.db) return;
@@ -1098,7 +1094,6 @@ function sincronizarComerciosEnTiempoReal() {
             if (nubeComercios.length > 0) {
                 comerciosVEA = nubeComercios;
             } else {
-                // Si está vacía la nube, cargamos los iniciales
                 comerciosBaseIniciales.forEach(async (c) => {
                     await window.setDoc(window.doc(window.db, "comercios", String(c.id)), c);
                 });
@@ -1106,6 +1101,9 @@ function sincronizarComerciosEnTiempoReal() {
             }
             cargarUbicacionesComercios();
             inicializarBannerRotativoPremium();
+            if (usuarioActual && usuarioActual.tipo === "comercio") {
+                sincronizarDatosPanelComercioLocal();
+            }
         });
     } catch (e) {
         console.error("Error sincronizando en tiempo real:", e);
@@ -1197,8 +1195,9 @@ function validarDuracionVideo(input) {
             input.value = "";
             videoPromoPanelBase64 = null;
         } else {
-            if (file.size > 800000) {
-                alert("⚠️ El archivo de video es muy pesado para la base de datos gratuita. Elegí uno más liviano.");
+            // Aumentado el tope a 950KB para permitir videos sin molestar
+            if (file.size > 950000) {
+                alert("⚠️ El archivo de video es demasiado pesado para la base de datos gratuita. Elegí uno más liviano.");
                 input.value = "";
                 videoPromoPanelBase64 = null;
                 return;
@@ -1244,8 +1243,8 @@ function agregarPublicacionConFoto() {
 
     if (inputArchivo.files && inputArchivo.files[0]) {
         const file = inputArchivo.files[0];
-        if (file.size > 700000) {
-            alert("⚠️ La imagen es demasiado pesada para la base de datos.");
+        if (file.size > 800000) {
+            alert("⚠️ La imagen es demasiado pesada. Reducila un poco.");
             return;
         }
         const lector = new FileReader();
@@ -1370,6 +1369,25 @@ function procesarLogin() {
     irAlInicio();
 }
 
+function sincronizarDatosPanelComercioLocal() {
+    if (!usuarioActual || usuarioActual.tipo !== "comercio") return;
+    const comercioPropio = comerciosVEA.find(c => c.nombre.toLowerCase() === usuarioActual.nombre.toLowerCase());
+    if (comercioPropio) {
+        document.getElementById("inputComercioNombre").value = comercioPropio.nombre;
+        document.getElementById("inputComercioRubro").value = comercioPropio.rubro;
+        document.getElementById("inputComercioDireccion").value = comercioPropio.direccion;
+        document.getElementById("inputComercioGaleria").value = comercioPropio.galeria || "";
+        document.getElementById("inputComercioLocal").value = comercioPropio.nroLocal || "";
+        if (comercioPropio.productos && comercioPropio.productos.length > 0) {
+            publicacionesPanelTemp = comercioPropio.productos;
+        }
+        if (comercioPropio.plan) {
+            document.getElementById("badgePlanActualPanel").textContent = "PLAN: " + comercioPropio.plan;
+        }
+    }
+    renderizarListasPanelComercial();
+}
+
 function actualizarInterfazRolUsuario() {
     const panelComercial = document.getElementById("panelComercialAutogestion");
     const seccionPlanes = document.getElementById("seccionPlanesPublicos");
@@ -1383,21 +1401,7 @@ function actualizarInterfazRolUsuario() {
         if (panelComercial) panelComercial.classList.remove("hidden");
         if (seccionPlanes) seccionPlanes.classList.remove("hidden");
         if (bannerSuscripcionHome) bannerSuscripcionHome.style.display = "none";
-        
-        // Cargar datos actuales en el panel si ya existe
-        const comercioPropio = comerciosVEA.find(c => c.nombre.toLowerCase() === usuarioActual.nombre.toLowerCase());
-        if (comercioPropio) {
-            document.getElementById("inputComercioNombre").value = comercioPropio.nombre;
-            document.getElementById("inputComercioRubro").value = comercioPropio.rubro;
-            document.getElementById("inputComercioDireccion").value = comercioPropio.direccion;
-            document.getElementById("inputComercioGaleria").value = comercioPropio.galeria || "";
-            document.getElementById("inputComercioLocal").value = comercioPropio.nroLocal || "";
-            if (comercioPropio.productos) publicacionesPanelTemp = comercioPropio.productos;
-            if (comercioPropio.plan) {
-                document.getElementById("badgePlanActualPanel").textContent = "PLAN: " + comercioPropio.plan;
-            }
-        }
-        renderizarListasPanelComercial();
+        sincronizarDatosPanelComercioLocal();
     }
 }
 
@@ -1406,7 +1410,6 @@ function cambiarPlanComercio(planElegido) {
     usuarioActual.suscripcionActiva = planElegido;
     guardarSesionActiva(usuarioActual);
 
-    // Actualizar en la lista local y nube
     const comercioIndex = comerciosVEA.findIndex(c => c.nombre.toLowerCase() === usuarioActual.nombre.toLowerCase());
     if (comercioIndex !== -1) {
         comerciosVEA[comercioIndex].plan = planElegido.toUpperCase();
@@ -1416,7 +1419,7 @@ function cambiarPlanComercio(planElegido) {
         }
     }
     document.getElementById("badgePlanActualPanel").textContent = "PLAN: " + planElegido.toUpperCase();
-    alert(`✅ ¡Plan ${planElegido.toUpperCase()} activado con éxito! Duración de video vertical actualizada.`);
+    alert(`✅ ¡Plan ${planElegido.toUpperCase()} activado con éxito!`);
 }
 
 async function guardarDatosPanelComercio() {
@@ -1437,8 +1440,6 @@ async function guardarDatosPanelComercio() {
     }
 
     const primerCupone = cuponesPanelTemp.length ? cuponesPanelTemp[0] : { titulo: "Especial", codigo: "VEA" };
-    
-    // Buscar si ya existe para conservar su ID o crear uno nuevo estrictamente como String
     let comercioExistente = comerciosVEA.find(c => c.nombre.toLowerCase() === nombre.toLowerCase());
     const nuevoId = comercioExistente ? String(comercioExistente.id) : String(Date.now());
     const planActual = (usuarioActual.suscripcionActiva || "basico").toUpperCase();
@@ -1475,7 +1476,7 @@ async function guardarDatosPanelComercio() {
         irAlInicio();
     } catch (e) {
         console.error("Error Firebase:", e);
-        alert("Error al guardar en la nube: " + e.message);
+        alert("Error al guardar en la nube. Probá usando imágenes o videos más livianos.");
     }
 }
 
@@ -1539,7 +1540,6 @@ function actualizarVista(filtro) {
     if (!contenedor) return;
     contenedor.innerHTML = "";
 
-    // ORDEN DE PRIORIDAD: PREMIUM primero, luego INTERMEDIO, luego BÁSICO
     const ordenPlan = { 'PREMIUM': 3, 'INTERMEDIO': 2, 'BÁSICO': 1 };
     
     let lista = comerciosVEA.filter(c => c.pagoConfirmado === true && (filtro === "todos" || c.rubro === filtro));
@@ -1555,7 +1555,7 @@ function actualizarVista(filtro) {
     lista.sort((a, b) => {
         const pesoA = ordenPlan[(a.plan || 'BÁSICO').toUpperCase()] || 1;
         const pesoB = ordenPlan[(b.plan || 'BÁSICO').toUpperCase()] || 1;
-        return pesoB - pesoA; // Mayor peso primero
+        return pesoB - pesoA;
     });
 
     lista.forEach(comercio => {
@@ -1565,7 +1565,6 @@ function actualizarVista(filtro) {
 
         const tarjeta = document.createElement("article");
         tarjeta.className = "card-vidriera";
-        // Clic en cualquier parte de la tarjeta abre la vidriera completa
         tarjeta.onclick = () => abrirDetalleComercio(comercio.id);
 
         tarjeta.innerHTML = `
@@ -1655,12 +1654,10 @@ function enviarComentarioDetalle() {
         est: calificacionSeleccionada
     });
 
-    // Recalcular rating promedio
     let sumaEstrellas = comercio.comentarios.reduce((acc, curr) => acc + curr.est, 0);
     comercio.rating = Number((sumaEstrellas / comercio.comentarios.length).toFixed(1));
     comercio.opiniones = comercio.comentarios.length;
 
-    // Guardar en Firebase
     if (window.db) {
         window.setDoc(window.doc(window.db, "comercios", String(comercio.id)), comercio);
     }
@@ -1680,13 +1677,11 @@ function abrirDetalleComercio(id) {
     document.getElementById("tagVisitasDetalle").textContent = "🔥 " + obtenerVisitasReales(comercio.id) + " visitas hoy";
     document.getElementById("direccionDetalle").innerHTML = `<h3>📍 Ubicación</h3><p>${escaparHTML(comercio.direccion)}</p>`;
     
-    // Botón Cómo llegar (Google Maps)
     const btnMaps = document.getElementById("btnComoLlegarMaps");
     if (btnMaps) {
         btnMaps.href = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(comercio.direccion)}`;
     }
 
-    // Video promocional en formato vertical obligatorio (9:16)
     const banner = document.getElementById("contenedorBannerDetalle");
     if (comercio.videoPromo) {
         banner.className = "";
@@ -1696,22 +1691,24 @@ function abrirDetalleComercio(id) {
         banner.innerHTML = `<h3>Red Comercial V.E.A.</h3>`;
     }
 
-    // Publicaciones / Productos
     const productos = document.getElementById("contenedorVentanasComercio");
     productos.innerHTML = "";
     if (comercio.productos) {
-        comercio.productos.forEach((prod) => {
-            productos.innerHTML += `<article class="card-vidriera" style="cursor:default;">
+        comercio.productos.forEach((prod, index) => {
+            const imgHtml = prod.imagen ? `<img src="${prod.imagen}" alt="Pub" style="width:100%;height:100%;object-fit:cover;position:absolute;top:0;left:0;">` : `<span><i class="fa-solid fa-store"></i></span>`;
+            productos.innerHTML += `<article class="card-vidriera" onclick="abrirModalPublicacionIndex('${comercio.id}', ${index})">
+                <div class="card-img-container">
+                    <span class="badge-discount">${escaparHTML(prod.promo || 'Promo')}</span>
+                    ${imgHtml}
+                </div>
                 <div class="card-body">
                     <h3>${escaparHTML(prod.titulo)}</h3>
-                    <p style="color:var(--dorado); font-weight:700;">${escaparHTML(prod.promo || '')}</p>
                     <p>${escaparHTML(prod.desc)}</p>
                 </div>
             </article>`;
         });
     }
 
-    // Renderizar comentarios y calificaciones abajo de todo
     const listaComentarios = document.getElementById("listaComentariosDetalle");
     if (listaComentarios) {
         listaComentarios.innerHTML = comercio.comentarios && comercio.comentarios.length ? "" : '<p class="muted" style="font-size:0.75rem;">Aún no hay comentarios. ¡Sé el primero en opinar!</p>';
@@ -1727,6 +1724,34 @@ function abrirDetalleComercio(id) {
     }
 
     mostrarVista("vistaDetalle");
+}
+
+function abrirModalPublicacionIndex(comercioId, indexPub) {
+    const comercio = comerciosVEA.find(c => String(c.id) === String(comercioId));
+    if (!comercio || !comercio.productos || !comercio.productos[indexPub]) return;
+    const prod = comercio.productos[indexPub];
+
+    document.getElementById("modalPubTitulo").textContent = prod.titulo;
+    document.getElementById("modalPubPromo").textContent = prod.promo ? "🔥 " + prod.promo : "";
+    document.getElementById("modalPubDescAmpliada").textContent = prod.desc || "";
+
+    const imgContainer = document.getElementById("modalPubImagenContainer");
+    if (prod.imagen) {
+        imgContainer.innerHTML = `<img src="${prod.imagen}" style="max-width:100%; max-height:260px; object-fit:contain;">`;
+        imgContainer.style.display = "flex";
+    } else {
+        imgContainer.innerHTML = "";
+        imgContainer.style.display = "none";
+    }
+
+    const btnWa = document.getElementById("modalPubBtnWa");
+    btnWa.href = enlaceWhatsApp(comercio, `Hola, consulto por la publicación "${prod.titulo}" en ${comercio.nombre}.`);
+
+    document.getElementById("modalPublicacionDetalle").classList.remove("hidden");
+}
+
+function cerrarModalPublicacion() {
+    document.getElementById("modalPublicacionDetalle").classList.add("hidden");
 }
 
 function filtrarRubro(rubro, boton) {
