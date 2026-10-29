@@ -1004,9 +1004,9 @@ function obtenerUsuariosDB() {
     let base = JSON.parse(localStorage.getItem("vea_usuarios_db") || "null");
     if (!base) {
         base = [
-            { id: "u_tordo", nombre: "Cervecería Artesanal El Tordo", email: "tordo@vea.com", password: "123456", tipo: "comercio", suscripcionActiva: "premium", pagoConfirmado: true },
-            { id: "u_romualdito", nombre: "Los Romualdito", email: "romualdito@vea.com", password: "123456", tipo: "comercio", suscripcionActiva: "intermedio", pagoConfirmado: true },
-            { id: "u_musa", nombre: "Pizzería Musa Varela", email: "musa@vea.com", password: "123456", tipo: "comercio", suscripcionActiva: "basico", pagoConfirmado: true }
+            { id: "comercio_tordo_vea", nombre: "Cervecería Artesanal El Tordo", email: "tordo@vea.com", password: "123456", tipo: "comercio", suscripcionActiva: "premium", pagoConfirmado: true },
+            { id: "comercio_romualdito_vea", nombre: "Los Romualdito", email: "romualdito@vea.com", password: "123456", tipo: "comercio", suscripcionActiva: "intermedio", pagoConfirmado: true },
+            { id: "comercio_musa_veva", nombre: "Pizzería Musa Varela", email: "musa@vea.com", password: "123456", tipo: "comercio", suscripcionActiva: "basico", pagoConfirmado: true }
         ];
         localStorage.setItem("vea_usuarios_db", JSON.stringify(base));
     }
@@ -1038,7 +1038,7 @@ let publicacionesPanelTemp = [{ titulo: "Pinta IPA El Tordo", promo: "2x1", desc
 
 const comerciosBaseIniciales = [
     {
-        id: "u_tordo",
+        id: "comercio_tordo_vea",
         emailOwner: "tordo@vea.com",
         nombre: "Cervecería Artesanal El Tordo",
         rubro: "gastronomia",
@@ -1059,7 +1059,7 @@ const comerciosBaseIniciales = [
         ]
     },
     {
-        id: "u_romualdito",
+        id: "comercio_romualdito_vea",
         emailOwner: "romualdito@vea.com",
         nombre: "Los Romualdito",
         rubro: "gastronomia",
@@ -1080,7 +1080,7 @@ const comerciosBaseIniciales = [
         ]
     },
     {
-        id: "u_musa",
+        id: "comercio_musa_veva",
         emailOwner: "musa@vea.com",
         nombre: "Pizzería Musa Varela",
         rubro: "gastronomia",
@@ -1368,9 +1368,9 @@ function guardarNuevoRegistro() {
         return;
     }
 
-    const nuevoId = "user_" + Date.now();
+    const idGenerado = "comercio_" + email.replace(/[^a-z0-9]/g, "_");
     const nuevoUsuario = { 
-        id: nuevoId,
+        id: idGenerado,
         nombre: nombre, 
         email: email, 
         password: password, 
@@ -1416,7 +1416,9 @@ function procesarLogin() {
 function sincronizarDatosPanelComercioLocal() {
     if (!usuarioActual || usuarioActual.tipo !== "comercio") return;
     
-    let comercioPropio = comerciosVEA.find(c => String(c.id) === String(usuarioActual.id) || (c.emailOwner && c.emailOwner.toLowerCase() === usuarioActual.email.toLowerCase()));
+    // CLAVE ÚNICA ABSOLUTA BASADA EN EL EMAIL DEL DUEÑO PARA EVITAR MULTIPLICACIONES
+    const emailKey = usuarioActual.email.toLowerCase();
+    let comercioPropio = comerciosVEA.find(c => (c.emailOwner && c.emailOwner.toLowerCase() === emailKey) || String(c.id) === String(usuarioActual.id));
     
     const avisoPago = document.getElementById("avisoEstadoPagoComercio");
 
@@ -1479,7 +1481,8 @@ function seleccionarPlanPago(planElegido) {
     usuarioActual.pagoConfirmado = true;
     guardarSesionActiva(usuarioActual);
 
-    let comercioIndex = comerciosVEA.findIndex(c => String(c.id) === String(usuarioActual.id) || (c.emailOwner && c.emailOwner.toLowerCase() === usuarioActual.email.toLowerCase()));
+    const emailKey = usuarioActual.email.toLowerCase();
+    let comercioIndex = comerciosVEA.findIndex(c => (c.emailOwner && c.emailOwner.toLowerCase() === emailKey) || String(c.id) === String(usuarioActual.id));
     if (comercioIndex !== -1) {
         comerciosVEA[comercioIndex].plan = planElegido.toUpperCase();
         comerciosVEA[comercioIndex].pagoConfirmado = true;
@@ -1510,7 +1513,11 @@ async function guardarDatosPanelComercio() {
 
     const primerCupone = cuponesPanelTemp.length ? cuponesPanelTemp[0] : { titulo: "Especial", codigo: "VEA" };
     
-    const idUnicoComercio = String(usuarioActual.id);
+    // ID FIJO MAESTRO POR EMAIL PARA PISAR SIEMPRE EL MISMO DOCUMENTO EN FIRESTORE
+    const idUnicoComercio = usuarioActual.id ? String(usuarioActual.id) : ("comercio_" + usuarioActual.email.replace(/[^a-z0-9]/g, "_"));
+    usuarioActual.id = idUnicoComercio;
+    guardarSesionActiva(usuarioActual);
+
     let comercioExistente = comerciosVEA.find(c => String(c.id) === idUnicoComercio || (c.emailOwner && c.emailOwner.toLowerCase() === usuarioActual.email.toLowerCase()));
     
     const planActual = (usuarioActual.suscripcionActiva || "basico").toUpperCase();
@@ -1518,7 +1525,7 @@ async function guardarDatosPanelComercio() {
 
     const nuevoComercio = {
         id: idUnicoComercio,
-        emailOwner: usuarioActual.email,
+        emailOwner: usuarioActual.email.toLowerCase(),
         nombre: nombre,
         rubro: rubro,
         plan: planActual,
@@ -1616,7 +1623,17 @@ function actualizarVista(filtro) {
 
     const ordenPlan = { 'PREMIUM': 3, 'INTERMEDIO': 2, 'BÁSICO': 1 };
     
-    let lista = comerciosVEA.filter(c => c.pagoConfirmado === true && (filtro === "todos" || c.rubro === filtro));
+    // FILTRAR DUPLICADOS DE MANERA ESTRICTA POR ID EN MEMORIA POR SI QUEDARON BASURA EN FIREBASE
+    const mapUnicos = new Map();
+    comerciosVEA.forEach(c => {
+        if (c.pagoConfirmado === true) {
+            const keyUnica = c.emailOwner ? c.emailOwner.toLowerCase() : c.id;
+            // Si ya existe, priorizamos el más completo
+            mapUnicos.set(keyUnica, c);
+        }
+    });
+
+    let lista = Array.from(mapUnicos.values()).filter(c => filtro === "todos" || c.rubro === filtro);
 
     if (terminoBusqueda) {
         lista = lista.filter(c => 
