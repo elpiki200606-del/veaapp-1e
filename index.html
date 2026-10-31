@@ -1117,7 +1117,7 @@ function sincronizarComerciosEnTiempoReal() {
                 });
                 comerciosVEA = comerciosBaseIniciales;
             } else {
-                // EVITAR DUPLICADOS DE NINGUNA MANERA: Mapa único por ID o email
+                // MAPEO ÚNICO POR EMAIL O ID PARA ELIMINAR CUALQUIER CLON DUPLICADO
                 const mapaUnicos = new Map();
                 nubeComercios.forEach(c => {
                     const claveUnica = c.emailOwner ? c.emailOwner.toLowerCase() : String(c.id);
@@ -1221,7 +1221,7 @@ async function cargarFotoFachada(input) {
         alert("✅ Foto de fachada subida y sincronizada con la nube correctamente.");
     } catch (error) {
         console.error("Error al subir la fachada:", error);
-        alert("⚠️ Hubo un error al subir la fachada a la nube. Verificá tu conexión.");
+        alert("⚠️ Hubo un error al subir la fachada a la nube.");
         if (preview) preview.innerHTML = `<small style="color:var(--rojo);">❌ Error al subir.</small>`;
         input.value = "";
     }
@@ -1257,7 +1257,7 @@ async function subirVideoAStorage(input) {
                 alert("✅ Video vertical en 720p HD subido correctamente a Firebase Storage.");
             } catch (error) {
                 console.error("Error subiendo video:", error);
-                alert("Hubo un error al subir el video a la nube: " + (error.message || error.code || "Permisos denegados"));
+                alert("Hubo un error al subir el video a la nube.");
                 if (estadoLabel) estadoLabel.textContent = "❌ Error al subir video.";
             }
         }
@@ -1296,7 +1296,7 @@ function agregarPublicacionConFoto() {
     if (inputArchivo.files && inputArchivo.files[0]) {
         const file = inputArchivo.files[0];
         if (file.size > 800000) {
-            alert("⚠️ La imagen es demasiado pesada. Reducila un poco.");
+            alert("⚠️ La imagen es demasiado pesada.");
             return;
         }
         const lector = new FileReader();
@@ -1461,7 +1461,7 @@ function sincronizarDatosPanelComercioLocal() {
             avisoPago.innerHTML = "✅ <strong>¡Tu plan está activo y verificado!</strong> Tu comercio ya es visible en el mapa para todo el público.";
         } else {
             avisoPago.className = "status-box";
-            avisoPago.innerHTML = "⚠️ <strong>Tu plan aún no está verificado.</strong> Aboná tu suscripción abajo para que tu comercio aparezca en el mapa público.";
+            avisoPago.innerHTML = "⚠️ <strong>Tu plan aún no está verificado.</strong> Aboná tu suscripción abajo.";
         }
     }
     renderizarListasPanelComercial();
@@ -1500,7 +1500,7 @@ function seleccionarPlanPago(planElegido) {
             window.setDoc(window.doc(window.db, "comercios", String(comerciosVEA[comercioIndex].id)), comerciosVEA[comercioIndex]);
         }
     }
-    alert(`✅ ¡Redirigiendo a Mercado Pago para abonar el Plan ${planElegido.toUpperCase()}! Tu cuenta quedará verificada.`);
+    alert(`✅ ¡Redirigiendo a Mercado Pago para abonar el Plan ${planElegido.toUpperCase()}!`);
 }
 
 async function guardarDatosPanelComercio() {
@@ -1522,8 +1522,8 @@ async function guardarDatosPanelComercio() {
 
     const primerCupone = cuponesPanelTemp.length ? cuponesPanelTemp[0] : { titulo: "Especial", codigo: "VEA" };
     
-    // ID ÚNICO INMUTABLE BASADO EN EL CORREO DEL COMERCIANTE (EVITA CUALQUIER DUPLICADO)
-    const idUnicoComercio = "comercio_" + usuarioActual.email.replace(/[^a-z0-9]/g, "_");
+    // ID ÚNICO MAESTRO BASADO EN EL CORREO: IMPIDE CUALQUIER DUPLICADO EN EL MAPA
+    const idUnicoComercio = usuarioActual.email === "tordo@vea.com" ? "comercio_tordo_vea" : ("comercio_" + usuarioActual.email.replace(/[^a-z0-9]/g, "_"));
     usuarioActual.id = idUnicoComercio;
     guardarSesionActiva(usuarioActual);
 
@@ -1559,6 +1559,7 @@ async function guardarDatosPanelComercio() {
 
     try {
         if (window.db) {
+            // SOBREESCRIBE EXACTAMENTE EL MISMO DOCUMENTO SIN DUPLICAR NUNCA
             await window.setDoc(window.doc(window.db, "comercios", idUnicoComercio), nuevoComercio);
         }
         alert("¡Vidriera guardada y actualizada con éxito en la nube de V.E.A.!");
@@ -1631,11 +1632,14 @@ function actualizarVista(filtro) {
 
     const ordenPlan = { 'PREMIUM': 3, 'INTERMEDIO': 2, 'BÁSICO': 1 };
     
-    // FILTRADO ESTRICTO CONTRA DUPLICADOS: Mapa único basado estrictamente en el ID o email del dueño
+    // FILTRADO ESTRICTO DE SEGURIDAD CONTRA DUPLICADOS EN PANTALLA
     const mapaUnicos = new Map();
     comerciosVEA.forEach(c => {
         const keyUnica = c.emailOwner ? c.emailOwner.toLowerCase() : String(c.id);
-        mapaUnicos.set(keyUnica, c);
+        // Si ya existe, priorizamos el que tenga nombre y foto actualizados
+        if (!mapaUnicos.has(keyUnica) || (c.productos && c.productos.length > 0)) {
+            mapaUnicos.set(keyUnica, c);
+        }
     });
 
     let lista = Array.from(mapaUnicos.values()).filter(c => filtro === "todos" || c.rubro === filtro);
