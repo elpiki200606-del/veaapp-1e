@@ -67,6 +67,8 @@
         .form-group input, .form-group select, .form-group textarea { width: 100%; padding: 8px 10px; border: 1px solid var(--borde); border-radius: 6px; background: #fafafa; }
         .detalle-topbar { display: flex; align-items: center; gap: 10px; margin-bottom: 14px; flex-wrap: wrap; }
         .btn-back { background: var(--verde); color: white; border: 0; padding: 8px 12px; border-radius: 6px; }
+        .video-vertical-container { width: 100%; max-width: 320px; margin: 0 auto 14px auto; aspect-ratio: 9/16; background: #000; border-radius: 12px; overflow: hidden; display: flex; align-items: center; justify-content: center; border: 2px solid var(--dorado); }
+        .video-vertical-container video { width: 100%; height: 100%; object-fit: cover; }
         .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(6, 46, 34, 0.85); display: flex; align-items: center; justify-content: center; z-index: 3000; padding: 10px; }
         .modal-content { background: white; border-radius: 12px; max-width: 500px; width: 100%; max-height: 85vh; display: flex; flex-direction: column; overflow: hidden; margin: auto; border-top: 4px solid var(--dorado); }
         .modal-header-body { padding: 16px; overflow-y: auto; flex: 1; }
@@ -155,13 +157,19 @@
             </div>
             <div class="form-group">
                 <label>Dirección</label>
-                <input type="text" id="inputComercioDireccion" placeholder="Ej: Av. Rivadavia 18200">
+                <input type="text" id="inputComercioDireccion" placeholder="Ej: Armonía 4662, González Catán">
             </div>
 
             <div style="background:#f4f7f5; padding:10px; border-radius:8px; margin-bottom:10px;">
                 <label style="font-weight:700; margin-bottom:3px; display:block;">📸 Foto de Fachada</label>
                 <input type="file" id="archivoFotoFachada" accept="image/*" onchange="cargarFotoFachada(this)">
                 <div id="previewFachada" style="margin-top:6px;"></div>
+            </div>
+
+            <div style="background:#182333; color:white; padding:10px; border-radius:8px; margin-bottom:10px;">
+                <label style="font-weight:700; color:var(--dorado); margin-bottom:3px; display:block;">🎬 Video Promocional Vertical</label>
+                <input type="file" id="archivoVideoPromo" accept="video/*" onchange="cargarVideoPromo(this)">
+                <small id="estadoSubidaVideo" style="color:#cbd5e1; display:block; margin-top:3px;">Seleccioná tu video (formato vertical).</small>
             </div>
 
             <div style="background:#f4f7f5; padding:10px; border-radius:8px; margin-bottom:10px;">
@@ -183,6 +191,7 @@
             <button class="btn-back" onclick="irAlInicio()">← Volver</button>
             <h2 id="tituloComercioDetalle" style="margin:0"></h2>
         </div>
+        <div id="contenedorBannerDetalle"></div>
         <div class="section-ajustes" id="direccionDetalle"></div>
         <h3 class="section-title">🪟 Publicaciones</h3>
         <div class="grid-vidrieras" id="contenedorVentanasComercio"></div>
@@ -261,6 +270,7 @@ let marcadoresMapa = [];
 let usuarioActual = JSON.parse(localStorage.getItem("vea_sesion_activa") || "null");
 
 let fotoFachadaBase64 = null;
+let videoPromoBase64 = null;
 let publicacionesPanelTemp = [];
 let comerciosVEA = [];
 
@@ -271,13 +281,30 @@ const comerciosBaseIniciales = [
         nombre: "Cervecería Artesanal El Tordo",
         rubro: "gastronomia",
         plan: "PREMIUM",
-        direccion: "Av. Rivadavia 18200, Morón",
-        lat: -34.6434, lng: -58.6231,
+        direccion: "Armonía 4662, González Catán, Buenos Aires",
+        lat: -34.7500, lng: -58.7500,
         oferta: "2x1 en Pintas IPA",
         fotoFachada: null,
+        videoPromo: null,
         productos: [{titulo:"Pinta IPA El Tordo", desc:"Happy Hour artesanal.", promo:"2x1"}]
     }
 ];
+
+// Función para estimar coordenadas reales según la dirección ingresada
+function obtenerCoordenadasPorDireccion(direccion) {
+    const dirLower = direccion.toLowerCase();
+    if (dirLower.includes("gonzález catán") || dirLower.includes("gonzalez catan") || dirLower.includes("armonía") || dirLower.includes("armonia")) {
+        return { lat: -34.7500, lng: -58.7500 };
+    }
+    if (dirLower.includes("ramos mejía") || dirLower.includes("ramos mejia") || dirLower.includes("gaona") || dirLower.includes("rivadavia")) {
+        return { lat: -34.6434, lng: -58.5800 };
+    }
+    if (dirLower.includes("morón") || dirLower.includes("moron")) {
+        return { lat: -34.6500, lng: -58.6200 };
+    }
+    // Coordenada por defecto (Gran Buenos Aires centro aproximado)
+    return { lat: -34.65, lng: -58.58 };
+}
 
 async function sincronizarComerciosEnTiempoReal() {
     try {
@@ -348,6 +375,22 @@ function cargarFotoFachada(input) {
     reader.readAsDataURL(file);
 }
 
+function cargarVideoPromo(input) {
+    const file = input.files[0];
+    if (!file) return;
+    if (file.size > 5000000) { // Límite seguro para Base64 de ~5MB
+        alert("⚠️ El video es demasiado pesado. Elegí uno más corto o comprimido.");
+        input.value = "";
+        return;
+    }
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        videoPromoBase64 = e.target.result;
+        document.getElementById("estadoSubidaVideo").textContent = "✅ Video cargado listo para guardar.";
+    };
+    reader.readAsDataURL(file);
+}
+
 function agregarPublicacionConFoto() {
     const titulo = document.getElementById("nuevaPubTitulo").value.trim();
     const promo = document.getElementById("nuevaPubPromo").value.trim();
@@ -388,6 +431,9 @@ async function guardarDatosPanelComercio() {
     const idUnico = "comercio_" + usuarioActual.email.toLowerCase().replace(/[^a-z0-9]/g, "_");
     let comercioExistente = comerciosVEA.find(c => c.emailOwner === usuarioActual.email.toLowerCase() || c.id === idUnico);
 
+    // Calculamos la coordenada exacta según la dirección tipeada
+    const coords = obtenerCoordenadasPorDireccion(direccion);
+
     const objetoComercio = {
         id: idUnico,
         emailOwner: usuarioActual.email.toLowerCase(),
@@ -395,16 +441,17 @@ async function guardarDatosPanelComercio() {
         rubro: rubro,
         plan: "PREMIUM",
         direccion: direccion,
-        lat: comercioExistente ? comercioExistente.lat : -34.6434,
-        lng: comercioExistente ? comercioExistente.lng : -58.6231,
+        lat: coords.lat,
+        lng: coords.lng,
         oferta: publicacionesPanelTemp.length ? publicacionesPanelTemp[0].promo : "Promo",
         fotoFachada: fotoFachadaBase64 || (comercioExistente ? comercioExistente.fotoFachada : null),
+        videoPromo: videoPromoBase64 || (comercioExistente ? comercioExistente.videoPromo : null),
         productos: publicacionesPanelTemp
     };
 
     try {
         await window.setDoc(window.doc(window.db, "comercios", idUnico), objetoComercio);
-        alert("✅ ¡Vidriera guardada y sincronizada en Firestore con éxito!");
+        alert("✅ ¡Vidriera, video y ubicación guardados con éxito en Firestore!");
         irAlInicio();
     } catch(e) {
         alert("❌ Error al guardar en Firebase: " + e.message);
@@ -422,6 +469,10 @@ function sincronizarDatosPanelComercioLocal() {
         if (prop.fotoFachada) {
             fotoFachadaBase64 = prop.fotoFachada;
             document.getElementById("previewFachada").innerHTML = `<img src="${prop.fotoFachada}" style="width:100%; height:90px; object-fit:cover; border-radius:6px;">`;
+        }
+        if (prop.videoPromo) {
+            videoPromoBase64 = prop.videoPromo;
+            document.getElementById("estadoSubidaVideo").textContent = "✅ Video guardado cargado.";
         }
     }
     renderizarListasPanelComercial();
@@ -450,7 +501,7 @@ function actualizarVista(filtro) {
 
     lista.forEach(c => {
         const pin = L.marker([c.lat, c.lng], { icon: crearPin(c) }).addTo(map);
-        pin.bindPopup(`<strong>${c.nombre}</strong><br><button class="btn btn-primary" onclick="abrirDetalle('${c.id}')">Ver</button>`);
+        pin.bindPopup(`<strong>${c.nombre}</strong><br>${c.direccion}<br><button class="btn btn-primary" onclick="abrirDetalle('${c.id}')">Ver</button>`);
         marcadoresMapa.push(pin);
 
         const imgHtml = c.fotoFachada ? `<img src="${c.fotoFachada}">` : `<span>🏪</span>`;
@@ -471,6 +522,13 @@ function abrirDetalle(id) {
     document.getElementById("tituloComercioDetalle").textContent = c.nombre;
     document.getElementById("direccionDetalle").innerHTML = `<p>📍 ${c.direccion}</p>`;
     
+    const banner = document.getElementById("contenedorBannerDetalle");
+    if (c.videoPromo) {
+        banner.innerHTML = `<div class="video-vertical-container"><video controls playsinline src="${c.videoPromo}"></video></div>`;
+    } else {
+        banner.innerHTML = "";
+    }
+
     const prods = document.getElementById("contenedorVentanasComercio");
     prods.innerHTML = "";
     if (c.productos) {
