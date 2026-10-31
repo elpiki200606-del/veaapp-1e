@@ -248,12 +248,11 @@
                 <div id="previewFachada" style="margin-top:6px; max-height:100px; overflow:hidden; border-radius:6px;"></div>
             </div>
 
-            <!-- Video Promocional (Enlace o Archivo Ligero) -->
+            <!-- Video Promocional -->
             <div style="background:#182333; color:white; padding:10px; border-radius:8px; margin-bottom:10px; border:1px solid var(--dorado);">
-                <label style="font-weight:700; color:var(--dorado); margin-bottom:3px; display:block;">🎬 Enlace o Video Corto (MP4)</label>
-                <input type="text" id="inputVideoUrl" placeholder="Pegá enlace de video (YouTube/MP4) o subí archivo abajo" style="margin-bottom:6px; color:#000;">
-                <input type="file" id="archivoVideoPromo" accept="video/mp4" style="background:white; color:#000; padding:5px; width:100%; border-radius:6px;" onchange="cargarVideoLigero(this)">
-                <small id="estadoSubidaVideo" style="color:#cbd5e1; font-size:0.68rem; display:block; margin-top:3px;">Recomendado: video corto en MP4.</small>
+                <label style="font-weight:700; color:var(--dorado); margin-bottom:3px; display:block;">🎬 Enlace de Video (MP4 o YouTube)</label>
+                <input type="text" id="inputVideoUrl" placeholder="Pegá enlace de video (ej: https://.../video.mp4)" style="margin-bottom:6px; color:#000;">
+                <small style="color:#cbd5e1; font-size:0.68rem; display:block;">Recomendado para evitar límites de tamaño en la nube.</small>
             </div>
 
             <!-- Gestión de Cupones -->
@@ -406,7 +405,6 @@ let marcadoresMapa = [];
 let usuarioActual = JSON.parse(localStorage.getItem("vea_sesion_activa") || "null");
 
 let fotoFachadaBase64 = null;
-let videoPromoUrlOBase64 = null;
 let cuponesPanelTemp = [{ titulo: "2x1 en Pintas IPA", codigo: "VEA-TORDO-IPA2X1" }];
 let publicacionesPanelTemp = [{ titulo: "Pinta IPA El Tordo", promo: "2x1", desc: "Happy Hour de 18 a 20 hs.", imagen: null }];
 let comerciosVEA = [];
@@ -527,22 +525,6 @@ function cargarFotoFachadaBase64(input) {
     reader.readAsDataURL(file);
 }
 
-function cargarVideoLigero(input) {
-    const file = input.files[0];
-    if (!file) return;
-    if (file.size > 800000) {
-        alert("⚠️ Archivo superior a 800KB. Te sugerimos pegar un enlace de video arriba para evitar errores de Firestore.");
-        input.value = "";
-        return;
-    }
-    const reader = new FileReader();
-    reader.onload = function(e) {
-        videoPromoUrlOBase64 = e.target.result;
-        document.getElementById("estadoSubidaVideo").textContent = "✅ Video cargado localmente.";
-    };
-    reader.readAsDataURL(file);
-}
-
 function agregarCuponPanel() {
     const t = document.getElementById("nuevoCuponTitulo").value.trim();
     const c = document.getElementById("nuevoCuponCodigo").value.trim();
@@ -598,15 +580,13 @@ async function guardarDatosPanelComercio() {
     const nombre = document.getElementById("inputComercioNombre").value.trim();
     const rubro = document.getElementById("inputComercioRubro").value;
     const direccion = document.getElementById("inputComercioDireccion").value.trim();
-    const inputVidUrl = document.getElementById("inputVideoUrl").value.trim();
+    const videoUrl = document.getElementById("inputVideoUrl").value.trim();
 
     if (!nombre || !direccion) { alert("Completá nombre y dirección."); return; }
 
     const idUnico = "comercio_" + usuarioActual.email.toLowerCase().replace(/[^a-z0-9]/g, "_");
     let comercioExistente = comerciosVEA.find(c => c.emailOwner === usuarioActual.email.toLowerCase() || c.id === idUnico);
     const coords = obtenerCoordenadasPorDireccion(direccion);
-
-    const videoFinal = inputVidUrl || videoPromoBase64 || (comercioExistente ? comercioExistente.videoPromo : null);
 
     const objetoComercio = {
         id: idUnico,
@@ -619,7 +599,7 @@ async function guardarDatosPanelComercio() {
         lng: coords.lng,
         oferta: publicacionesPanelTemp.length ? publicacionesPanelTemp[0].promo : "Promo",
         fotoFachada: fotoFachadaBase64 || (comercioExistente ? comercioExistente.fotoFachada : null),
-        videoPromo: videoFinal,
+        videoPromo: videoUrl || (comercioExistente ? comercioExistente.videoPromo : null),
         productos: publicacionesPanelTemp,
         comentarios: comercioExistente && comercioExistente.comentarios ? comercioExistente.comentarios : []
     };
@@ -629,7 +609,7 @@ async function guardarDatosPanelComercio() {
         alert("✅ ¡Vidriera guardada y sincronizada correctamente en Firestore!");
         irAlInicio();
     } catch(e) {
-        alert("❌ Error: el contenido multimedia es demasiado pesado para Firestore. Probá con un video más corto o un enlace web.");
+        alert("❌ Error al guardar en Firebase: " + e.message);
     }
 }
 
@@ -640,6 +620,7 @@ function sincronizarDatosPanelComercioLocal() {
         document.getElementById("inputComercioNombre").value = prop.nombre;
         document.getElementById("inputComercioRubro").value = prop.rubro;
         document.getElementById("inputComercioDireccion").value = prop.direccion;
+        if (prop.videoPromo) document.getElementById("inputVideoUrl").value = prop.videoPromo;
         if (prop.productos) publicacionesPanelTemp = prop.productos;
         if (prop.fotoFachada) {
             fotoFachadaBase64 = prop.fotoFachada;
