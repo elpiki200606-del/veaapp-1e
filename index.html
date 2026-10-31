@@ -417,7 +417,6 @@
             margin-bottom: 14px;
         }
 
-        /* Reproductor de video vertical obligatorio (9:16) */
         .video-vertical-container {
             width: 100%;
             max-width: 320px;
@@ -563,7 +562,6 @@
         .status-ok { background: #ecfdf5; color: #166534; }
         .empty { padding: 16px; text-align: center; color: var(--muted); font-size: .82rem; }
 
-        /* Estrellas y comentarios */
         .rating-box { display: flex; gap: 4px; cursor: pointer; font-size: 1.2rem; color: #cbd5e1; }
         .rating-box span.active { color: var(--dorado); }
         .comentario-item { background: #f8fafc; border: 1px solid var(--borde); padding: 8px 10px; border-radius: 8px; margin-bottom: 6px; font-size: 0.78rem; }
@@ -733,7 +731,7 @@
             <!-- Foto de Fachada / Portada Principal -->
             <div style="background:#f4f7f5; padding:10px; border-radius:8px; margin-bottom:10px; border:1px solid var(--borde);">
                 <label style="font-weight:700; margin-bottom:3px; display:block;">📸 Foto de Fachada / Portada Principal</label>
-                <small style="color:var(--muted); font-size:0.68rem; display:block; margin-bottom:6px;">Se mostrará como fondo principal en tu tarjeta de vidriera.</small>
+                <small style="color:var(--muted); font-size:0.68rem; display:block; margin-bottom:6px;">Se subirá directamente a Firebase Storage.</small>
                 <input type="file" id="archivoFotoFachada" accept="image/*" style="background:white; padding:6px; width:100%;" onchange="cargarFotoFachada(this)">
                 <div id="previewFachada" style="margin-top:6px; max-height:100px; overflow:hidden; border-radius:6px;"></div>
             </div>
@@ -992,7 +990,7 @@ let terminoBusqueda = "";
 let marcadoresMapa = [];
 let usuarioActual = null;
 let videoUrlStorage = null;
-let fotoFachadaBase64 = null;
+let fotoFachadaUrlStorage = null;
 
 const LIMITES_PLANES = {
     'basico': { maxPubs: 10, maxVideoSec: 30 },
@@ -1102,7 +1100,7 @@ const comerciosBaseIniciales = [
     }
 ];
 
-let comerciosVEA = comerciosBaseIniciales;
+let comerciosVEA = [];
 
 function sincronizarComerciosEnTiempoReal() {
     try {
@@ -1112,14 +1110,22 @@ function sincronizarComerciosEnTiempoReal() {
             querySnapshot.forEach((docSnap) => {
                 nubeComercios.push(docSnap.data());
             });
-            if (nubeComercios.length > 0) {
-                comerciosVEA = nubeComercios;
-            } else {
+
+            if (nubeComercios.length === 0) {
                 comerciosBaseIniciales.forEach(async (c) => {
                     await window.setDoc(window.doc(window.db, "comercios", String(c.id)), c);
                 });
                 comerciosVEA = comerciosBaseIniciales;
+            } else {
+                // EVITAR DUPLICADOS DE NINGUNA MANERA: Mapa único por ID o email
+                const mapaUnicos = new Map();
+                nubeComercios.forEach(c => {
+                    const claveUnica = c.emailOwner ? c.emailOwner.toLowerCase() : String(c.id);
+                    mapaUnicos.set(claveUnica, c);
+                });
+                comerciosVEA = Array.from(mapaUnicos.values());
             }
+
             cargarUbicacionesComercios();
             inicializarBannerRotativoPremium();
             if (usuarioActual && usuarioActual.tipo === "comercio") {
@@ -1207,10 +1213,10 @@ async function cargarFotoFachada(input) {
     try {
         const storageRef = window.ref(window.storage, `fachadas_vea/${Date.now()}_${file.name}`);
         const snapshot = await window.uploadBytes(storageRef, file);
-        fotoFachadaBase64 = await window.getDownloadURL(snapshot.ref);
+        fotoFachadaUrlStorage = await window.getDownloadURL(snapshot.ref);
 
         if (preview) {
-            preview.innerHTML = `<img src="${fotoFachadaBase64}" style="width:100%; height:100px; object-fit:cover; border-radius:6px; border:1px solid var(--borde);">`;
+            preview.innerHTML = `<img src="${fotoFachadaUrlStorage}" style="width:100%; height:100px; object-fit:cover; border-radius:6px; border:1px solid var(--borde);">`;
         }
         alert("✅ Foto de fachada subida y sincronizada con la nube correctamente.");
     } catch (error) {
@@ -1251,7 +1257,7 @@ async function subirVideoAStorage(input) {
                 alert("✅ Video vertical en 720p HD subido correctamente a Firebase Storage.");
             } catch (error) {
                 console.error("Error subiendo video:", error);
-                alert("Hubo un error al subir el video a la nube.");
+                alert("Hubo un error al subir el video a la nube: " + (error.message || error.code || "Permisos denegados"));
                 if (estadoLabel) estadoLabel.textContent = "❌ Error al subir video.";
             }
         }
@@ -1436,10 +1442,10 @@ function sincronizarDatosPanelComercioLocal() {
             publicacionesPanelTemp = comercioPropio.productos;
         }
         if (comercioPropio.fotoFachada) {
-            fotoFachadaBase64 = comercioPropio.fotoFachada;
+            fotoFachadaUrlStorage = comercioPropio.fotoFachada;
             const preview = document.getElementById("previewFachada");
             if (preview) {
-                preview.innerHTML = `<img src="${fotoFachadaBase64}" style="width:100%; height:100px; object-fit:cover; border-radius:6px; border:1px solid var(--borde);">`;
+                preview.innerHTML = `<img src="${fotoFachadaUrlStorage}" style="width:100%; height:100px; object-fit:cover; border-radius:6px; border:1px solid var(--borde);">`;
             }
         }
         if (comercioPropio.videoPromo) {
@@ -1516,7 +1522,8 @@ async function guardarDatosPanelComercio() {
 
     const primerCupone = cuponesPanelTemp.length ? cuponesPanelTemp[0] : { titulo: "Especial", codigo: "VEA" };
     
-    const idUnicoComercio = usuarioActual.id ? String(usuarioActual.id) : ("comercio_" + usuarioActual.email.replace(/[^a-z0-9]/g, "_"));
+    // ID ÚNICO INMUTABLE BASADO EN EL CORREO DEL COMERCIANTE (EVITA CUALQUIER DUPLICADO)
+    const idUnicoComercio = "comercio_" + usuarioActual.email.replace(/[^a-z0-9]/g, "_");
     usuarioActual.id = idUnicoComercio;
     guardarSesionActiva(usuarioActual);
 
@@ -1541,7 +1548,7 @@ async function guardarDatosPanelComercio() {
         icono: obtenerIconoPorRubro(rubro, nombre),
         esPremium: (planActual === 'PREMIUM' || planActual === 'INTERMEDIO'),
         videoPromo: videoUrlStorage || (comercioExistente ? comercioExistente.videoPromo : null),
-        fotoFachada: fotoFachadaBase64 || (comercioExistente ? comercioExistente.fotoFachada : null),
+        fotoFachada: fotoFachadaUrlStorage || (comercioExistente ? comercioExistente.fotoFachada : null),
         rating: comercioExistente ? comercioExistente.rating : 5.0,
         opiniones: comercioExistente ? comercioExistente.opiniones : 1,
         codigoCupon: primerCupone.codigo,
@@ -1593,7 +1600,7 @@ function enlaceWhatsApp(comercio, mensaje) {
     return "https://wa.me/" + telefonoWhatsAppBase + "?text=" + encodeURIComponent(mensaje || comercio.mensajeWA);
 }
 
-function obtenerVisitasReales(id) { return 25 + (Number(id) % 40); }
+function obtenerVisitasReales(id) { return 25 + (Number(id.length) * 7); }
 
 function generarEstrellasHTML(rating, opiniones) {
     return '<div class="stars">★★★★★ <strong style="color:var(--texto)">' + rating + '</strong> <span class="muted">(' + opiniones + ')</span></div>';
@@ -1624,14 +1631,14 @@ function actualizarVista(filtro) {
 
     const ordenPlan = { 'PREMIUM': 3, 'INTERMEDIO': 2, 'BÁSICO': 1 };
     
-    // MUESTRA TODAS LAS VIDRIERAS GUARDADAS EN LA NUBE SIN DEPENDRER DE LA SESIÓN ACTIVA
-    const mapUnicos = new Map();
+    // FILTRADO ESTRICTO CONTRA DUPLICADOS: Mapa único basado estrictamente en el ID o email del dueño
+    const mapaUnicos = new Map();
     comerciosVEA.forEach(c => {
         const keyUnica = c.emailOwner ? c.emailOwner.toLowerCase() : String(c.id);
-        mapUnicos.set(keyUnica, c);
+        mapaUnicos.set(keyUnica, c);
     });
 
-    let lista = Array.from(mapUnicos.values()).filter(c => filtro === "todos" || c.rubro === filtro);
+    let lista = Array.from(mapaUnicos.values()).filter(c => filtro === "todos" || c.rubro === filtro);
 
     if (terminoBusqueda) {
         lista = lista.filter(c => 
