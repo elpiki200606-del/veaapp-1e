@@ -1197,24 +1197,28 @@ function inicializarBannerRotativoPremium() {
     actualizarBanner();
 }
 
-function cargarFotoFachada(input) {
+async function cargarFotoFachada(input) {
     const file = input.files[0];
     if (!file) return;
-    if (file.size > 800000) {
-        alert("⚠️ La foto de fachada es muy pesada. Reducila un poco.");
-        input.value = "";
-        return;
-    }
-    const lector = new FileReader();
-    lector.onload = function(e) {
-        fotoFachadaBase64 = e.target.result;
-        const preview = document.getElementById("previewFachada");
+    
+    const preview = document.getElementById("previewFachada");
+    if (preview) preview.innerHTML = `<small style="color:var(--dorado);">⏳ Subiendo fachada a la nube...</small>`;
+
+    try {
+        const storageRef = window.ref(window.storage, `fachadas_vea/${Date.now()}_${file.name}`);
+        const snapshot = await window.uploadBytes(storageRef, file);
+        fotoFachadaBase64 = await window.getDownloadURL(snapshot.ref);
+
         if (preview) {
             preview.innerHTML = `<img src="${fotoFachadaBase64}" style="width:100%; height:100px; object-fit:cover; border-radius:6px; border:1px solid var(--borde);">`;
         }
-        alert("✅ Foto de fachada cargada correctamente.");
-    };
-    lector.readAsDataURL(file);
+        alert("✅ Foto de fachada subida y sincronizada con la nube correctamente.");
+    } catch (error) {
+        console.error("Error al subir la fachada:", error);
+        alert("⚠️ Hubo un error al subir la fachada a la nube. Verificá tu conexión.");
+        if (preview) preview.innerHTML = `<small style="color:var(--rojo);">❌ Error al subir.</small>`;
+        input.value = "";
+    }
 }
 
 async function subirVideoAStorage(input) {
@@ -1562,7 +1566,7 @@ function cerrarSesion() {
     usuarioActual = null;
     guardarSesionActiva(null);
     actualizarEstadoSesionUI();
-    alert("Sesión cerrada.");
+    alert("Sesión cerrada. Tu vidriera sigue publicada y visible en el mapa.");
     irAlInicio();
 }
 
@@ -1620,15 +1624,11 @@ function actualizarVista(filtro) {
 
     const ordenPlan = { 'PREMIUM': 3, 'INTERMEDIO': 2, 'BÁSICO': 1 };
     
-    // FILTRADO ESTRICTO Y DINÁMICO: ÚNICAMENTE LAS 4 VIDRIERAS OFICIALES (INCLUYENDO LA DEL COMERCIANTE LOGUEADO)
-    const permitidosIds = ["comercio_tordo_vea", "comercio_romualdito_vea", "comercio_musa_veva"];
+    // MUESTRA TODAS LAS VIDRIERAS GUARDADAS EN LA NUBE SIN DEPENDRER DE LA SESIÓN ACTIVA
     const mapUnicos = new Map();
-    
     comerciosVEA.forEach(c => {
         const keyUnica = c.emailOwner ? c.emailOwner.toLowerCase() : String(c.id);
-        if (permitidosIds.includes(String(c.id)) || (usuarioActual && keyUnica === usuarioActual.email.toLowerCase()) || c.pagoConfirmado === true) {
-            mapUnicos.set(keyUnica, c);
-        }
+        mapUnicos.set(keyUnica, c);
     });
 
     let lista = Array.from(mapUnicos.values()).filter(c => filtro === "todos" || c.rubro === filtro);
