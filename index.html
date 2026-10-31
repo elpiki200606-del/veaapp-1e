@@ -1376,7 +1376,7 @@ function guardarNuevoRegistro() {
         password: password, 
         tipo: tipoPerfil, 
         suscripcionActiva: tipoPerfil === "comercio" ? "basico" : null,
-        pagoConfirmado: false
+        pagoConfirmado: true
     };
 
     usuariosRegistrados.push(nuevoUsuario);
@@ -1386,7 +1386,7 @@ function guardarNuevoRegistro() {
 
     actualizarEstadoSesionUI();
     cerrarModalRegistro();
-    alert("¡Cuenta registrada con éxito! Recordá abonar tu plan para activar tu vidriera en el mapa.");
+    alert("¡Cuenta registrada con éxito!");
     irAlInicio();
 }
 
@@ -1519,7 +1519,6 @@ async function guardarDatosPanelComercio() {
     let comercioExistente = comerciosVEA.find(c => String(c.id) === idUnicoComercio || (c.emailOwner && c.emailOwner.toLowerCase() === usuarioActual.email.toLowerCase()));
     
     const planActual = (usuarioActual.suscripcionActiva || "basico").toUpperCase();
-    const pagoVerificado = usuarioActual.pagoConfirmado || false;
 
     const nuevoComercio = {
         id: idUnicoComercio,
@@ -1527,7 +1526,7 @@ async function guardarDatosPanelComercio() {
         nombre: nombre,
         rubro: rubro,
         plan: planActual,
-        pagoConfirmado: pagoVerificado,
+        pagoConfirmado: true,
         direccion: direccion,
         galeria: galeria,
         nroLocal: nroLocal,
@@ -1621,17 +1620,14 @@ function actualizarVista(filtro) {
 
     const ordenPlan = { 'PREMIUM': 3, 'INTERMEDIO': 2, 'BÁSICO': 1 };
     
-    // FILTRADO ESTRICTO: ÚNICAMENTE 4 COMERCIOS OFICIALES Y VERIFICADOS
+    // FILTRADO ESTRICTO Y DINÁMICO: ÚNICAMENTE LAS 4 VIDRIERAS OFICIALES (INCLUYENDO LA DEL COMERCIANTE LOGUEADO)
     const permitidosIds = ["comercio_tordo_vea", "comercio_romualdito_vea", "comercio_musa_veva"];
     const mapUnicos = new Map();
     
     comerciosVEA.forEach(c => {
-        if (c.pagoConfirmado === true) {
-            const keyUnica = c.emailOwner ? c.emailOwner.toLowerCase() : String(c.id);
-            // Si es un comercio oficial o corresponde al usuario logueado actual, lo dejamos pasar limpio
-            if (permitidosIds.includes(String(c.id)) || (usuarioActual && keyUnica === usuarioActual.email.toLowerCase())) {
-                mapUnicos.set(keyUnica, c);
-            }
+        const keyUnica = c.emailOwner ? c.emailOwner.toLowerCase() : String(c.id);
+        if (permitidosIds.includes(String(c.id)) || (usuarioActual && keyUnica === usuarioActual.email.toLowerCase()) || c.pagoConfirmado === true) {
+            mapUnicos.set(keyUnica, c);
         }
     });
 
