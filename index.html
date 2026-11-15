@@ -1117,6 +1117,31 @@
 
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script>
+    // --- ESTADOS Y SESIÓN GLOBALES (Inicializados al tope del script) ---
+// --- ESTADOS Y SESIÓN GLOBALES ---
+let sesionActivaGlobal = null;
+let usuariosDBGlobal = [
+    { nombre: "Cervecería Artesanal El Tordo", email: "tordo@vea.com", password: "123456", tipo: "comercio", suscripcionActiva: "premium" },
+    { nombre: "Café & Bar Flores", email: "flores@vea.com", password: "123456", tipo: "comercio", suscripcionActiva: "intermedio" }
+];
+
+function obtenerSesionActiva() {
+    return sesionActivaGlobal;
+}
+
+function guardarSesionActiva(usuario) {
+    sesionActivaGlobal = usuario ? usuario : null;
+}
+
+function obtenerUsuariosDB() {
+    return usuariosDBGlobal;
+}
+
+function guardarUsuariosDB(base) {
+    if (base) {
+        usuariosDBGlobal = base;
+    }
+}
 // Configuración de Firebase para V.E.A.
 const firebaseConfig = {
     apiKey: "AIzaSyDLQVjDJ7TrjmaRO-cpUakmhHWqZ0af71k",
@@ -1169,10 +1194,7 @@ const LIMITES_PLANES = {
 
 
 // --- GESTIÓN DE USUARIOS EN MEMORIA ---
-let usuariosDBGlobal = [
-    { nombre: "Cervecería Artesanal El Tordo", email: "tordo@vea.com", password: "123456", tipo: "comercio", suscripcionActiva: "premium" },
-    { nombre: "Café & Bar Flores", email: "flores@vea.com", password: "123456", tipo: "comercio", suscripcionActiva: "intermedio" }
-];
+
 
 function obtenerUsuariosDB() {
     return usuariosDBGlobal;
