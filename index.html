@@ -1167,45 +1167,66 @@ usuarioActual = obtenerSesionActiva();
 let cuponesPanelTemp = [{ titulo: "2x1 en Pintas IPA", codigo: "VEA-TORDO-IPA2X1" }];
 let publicacionesPanelTemp = [{ titulo: "Pinta IPA El Tordo", promo: "2x1", desc: "Happy Hour de 18 a 20 hs. Cerveza artesanal elaborada con malta Pale Ale, lúpulo Cascade y Nugget, con notas cítricas y espuma persistente.", imagen: null, icono: "🍺" }];
 
-const comerciosVEA = [
-    {
-        id: 1,
-        nombre: "Cervecería Artesanal El Tordo",
-        rubro: "gastronomia",
-        plan: "PREMIUM",
-        limitePublicaciones: 40,
-        direccion: "Av. Rivadavia 18200, Morón, Buenos Aires, Argentina",
-        galeria: "",
-        nroLocal: "",
-        lat: -34.6434, lng: -58.6231, ubicacionVerificada: true,
-        oferta: "2x1 en Pintas IPA", icono: "beer-mug-empty", esPremium: true,
-        videoPromo: null, rating: 4.8, opiniones: 124,
-        codigoCupon: "VEA-TORDO-IPA2X1",
-        mensajeWA: "Hola! Quiero consultar por el cupón VEA-TORDO-IPA2X1 en Cervecería El Tordo.",
-        productos: [
-            {titulo:"Pinta IPA El Tordo",desc:"2x1 en Happy Hour (18 a 20 hs). Cerveza artesanal elaborada con lúpulos seleccionados, notas cítricas intensas y amargor equilibrado.",icono:"🍺",promo:"2x1",imagen:null},
-            {titulo:"Pinta American Pale Ale",desc:"Cerveza dorada con lúpulo fresco y cuerpo medio.",icono:"🍺",promo:"15% OFF",imagen:null}
-        ]
-    },
-    {
-        id: 2,
-        nombre: "Café & Bar Flores",
-        rubro: "gastronomia",
-        plan: "INTERMEDIO",
-        limitePublicaciones: 20,
-        direccion: "Av. Rivadavia 7000, Flores, Ciudad Autónoma de Buenos Aires, Argentina",
-        galeria: "Galería Rivadavia Center",
-        nroLocal: "Local 14",
-        lat: -34.6273, lng: -58.4623, ubicacionVerificada: true,
-        oferta: "15% OFF Desayunos", icono: "utensils", esPremium: false,
-        videoPromo: null, rating: 4.6, opiniones: 89,
-        codigoCupon: "VEA-FLORES-15OFF",
-        mensajeWA: "Hola, quiero consultar por el cupón VEA-FLORES-15OFF en Café & Bar Flores.",
-        productos: [
-            {titulo:"Café con Medialunas",desc:"Café de especialidad y dos medialunas de manteca recién horneadas.",icono:"🥐",promo:"15% OFF",imagen:null}
-        ]
+// --- CARGA PERSISTENTE DE COMERCIOS ---
+function obtenerComerciosDB() {
+    let base = JSON.parse(localStorage.getItem("vea_comercios_db") || "null");
+    if (!base) {
+        base = [
+            {
+                id: 1,
+                nombre: "Cervecería Artesanal El Tordo",
+                rubro: "gastronomia",
+                plan: "PREMIUM",
+                limitePublicaciones: 40,
+                direccion: "Av. Rivadavia 18200, Morón, Buenos Aires, Argentina",
+                galeria: "",
+                nroLocal: "",
+                lat: -34.6434, lng: -58.6231, ubicacionVerificada: true,
+                oferta: "2x1 en Pintas IPA", icono: "beer-mug-empty", esPremium: true,
+                videoPromo: null, rating: 4.8, opiniones: 124,
+                codigoCupon: "VEA-TORDO-IPA2X1",
+                mensajeWA: "Hola! Quiero consultar por el cupón VEA-TORDO-IPA2X1 en Cervecería El Tordo.",
+                productos: [
+                    {titulo:"Pinta IPA El Tordo",desc:"2x1 en Happy Hour (18 a 20 hs). Cerveza artesanal elaborada con lúpulos seleccionados, notas cítricas intensas y amargor equilibrado.",icono:"🍺",promo:"2x1",imagen:null},
+                    {titulo:"Pinta American Pale Ale",desc:"Cerveza dorada con lúpulo fresco y cuerpo medio.",icono:"🍺",promo:"15% OFF",imagen:null}
+                ]
+            },
+            {
+                id: 2,
+                nombre: "Café & Bar Flores",
+                rubro: "gastronomia",
+                plan: "INTERMEDIO",
+                limitePublicaciones: 20,
+                direccion: "Av. Rivadavia 7000, Flores, Ciudad Autónoma de Buenos Aires, Argentina",
+                galeria: "Galería Rivadavia Center",
+                nroLocal: "Local 14",
+                lat: -34.6273, lng: -58.4623, ubicacionVerificada: true,
+                oferta: "15% OFF Desayunos", icono: "utensils", esPremium: false,
+                videoPromo: null, rating: 4.6, opiniones: 89,
+                codigoCupon: "VEA-FLORES-15OFF",
+                mensajeWA: "Hola, quiero consultar por el cupón VEA-FLORES-15OFF en Café & Bar Flores.",
+                productos: [
+                    {titulo:"Café con Medialunas",desc:"Café de especialidad y dos medialunas de manteca recién horneadas.",icono:"🥐",promo:"15% OFF",imagen:null}
+                ]
+            }
+        ];
+        localStorage.setItem("vea_comercios_db", JSON.stringify(base));
     }
-];
+    return base;
+}
+
+function guardarComerciosDB(base) {
+    localStorage.setItem("vea_comercios_db", JSON.stringify(base));
+    // (Dentro de guardarDatosPanelComercio, justo antes del alert final o después de modificar el array)
+    guardarComerciosDB(comerciosVEA);
+
+    alert("¡Vidriera y publicaciones actualizadas con éxito!");
+    actualizarEstadoSesionUI();
+    cargarUbicacionesComercios();
+    irAlInicio();
+}
+
+let comerciosVEA = obtenerComerciosDB();
 
 const notificaciones = [
     {titulo:"🔥 Happy Hour en Cervecería El Tordo", texto:"Consultá las condiciones de la promoción 2x1 en pintas."},
