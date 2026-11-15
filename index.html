@@ -1221,6 +1221,11 @@ usuarioActual = obtenerSesionActiva();
 
 let cuponesPanelTemp = [{ titulo: "2x1 en Pintas IPA", codigo: "VEA-TORDO-IPA2X1" }];
 let publicacionesPanelTemp = [{ titulo: "Pinta IPA El Tordo", promo: "2x1", desc: "Happy Hour de 18 a 20 hs. Cerveza artesanal elaborada con malta Pale Ale, lúpulo Cascade y Nugget, con notas cítricas y espuma persistente.", imagen: null, icono: "🍺" }];
+ map = L.map("map").setView([-34.6434, -58.6231], 12);
+
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '&copy; OpenStreetMap contributors'
+}).addTo(map);
 
 // --- CARGA PERSISTENTE DE COMERCIOS ---
 // --- GESTIÓN DE COMERCIOS EN MEMORIA ---
@@ -1285,11 +1290,6 @@ const notificaciones = [
     {titulo:"☕ Descuento en Café & Bar Flores", texto:"Promoción de desayunos. Consultá la disponibilidad."}
 ];
 
- map = L.map("map").setView([-34.6434, -58.6231], 12);
-
-L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    attribution: '&copy; OpenStreetMap contributors'
-}).addTo(map);
 
 const rubroIconosMap = {
     'gastronomia': 'fa-utensils',
