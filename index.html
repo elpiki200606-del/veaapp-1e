@@ -8,7 +8,10 @@
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
     <!-- FontAwesome para íconos dinámicos de rubro -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
-
+<!-- Firebase App (Core) -->
+<script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
+<!-- Firebase Firestore (Base de datos) -->
+<script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore-compat.js"></script>
     <style>
         :root {
             --verde: #062e22;
@@ -1113,7 +1116,27 @@
     </nav>
 
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-    <script>
+<script>
+// Configuración de Firebase para V.E.A.
+const firebaseConfig = {
+    apiKey: "AIzaSyDLQVjDJ7TrjmaRO-cpUakmhHWqZ0af71k",
+    authDomain: "veaapp-65740.firebaseapp.com",
+    projectId: "veaapp-65740",
+    storageBucket: "veaapp-65740.firebasestorage.app",
+    messagingSenderId: "891015134947",
+    appId: "1:891015134947:web:fd2452d96007dffd494fd6",
+    measurementId: "G-4FKYWY21FN"
+};
+
+// Inicializar Firebase
+firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore();
+
+"use strict";
+
+let telefonowhatsappBase = "5491100000000";
+
+        
 "use strict";
 
 const telefonoWhatsAppBase = "5491100000000";
@@ -1533,7 +1556,7 @@ function actualizarInterfazPanelComercial() {
     renderizarListasPanelComercial();
 }
 
-function guardarDatosPanelComercio() {
+async function guardarDatosPanelComercio() {
     const nombre = document.getElementById("inputComercioNombre").value.trim();
     const rubro = document.getElementById("inputComercioRubro").value;
     const direccion = document.getElementById("inputComercioDireccion").value.trim();
@@ -1543,18 +1566,6 @@ function guardarDatosPanelComercio() {
     if (!nombre || !direccion) {
         alert("Por favor, completá el nombre del comercio y la dirección.");
         return;
-    }
-
-    // Actualizamos el nombre en la sesión activa y base de usuarios local para que no se pierda
-    if (usuarioActual) {
-        usuarioActual.nombre = nombre;
-        guardarSesionActiva(usuarioActual);
-        let usuariosDB = obtenerUsuariosDB();
-        let idxU = usuariosDB.findIndex(u => u.email.toLowerCase() === usuarioActual.email.toLowerCase());
-        if (idxU !== -1) {
-            usuariosDB[idxU].nombre = nombre;
-            guardarUsuariosDB(usuariosDB);
-        }
     }
 
     const planActual = usuarioActual && usuarioActual.suscripcionActiva ? usuarioActual.suscripcionActiva.toUpperCase() : "BÁSICO";
@@ -1569,53 +1580,51 @@ function guardarDatosPanelComercio() {
         imagen: p.imagen || null
     })) : [{titulo: "Promoción Principal", desc: "Consultá nuestros productos", icono: "🛍️", promo: "Destacado", imagen: null}];
 
-    // Buscamos si ya existe el comercio en la lista actual para actualizarlo en lugar de duplicarlo
-    let comercioExistente = null;
-    if (usuarioActual) {
-        comercioExistente = comerciosVEA.find(c => c.nombre.toLowerCase() === usuarioActual.nombre.toLowerCase() || (comercioActualId && c.id === comercioActualId));
-    }
+    // Identificador único en la nube basado en el email del usuario
+    const idComercioDoc = usuarioActual ? usuarioActual.email.replace(/[@.]/g, "_") : ("comercio_" + Date.now());
 
-    if (comercioExistente) {
-        comercioExistente.nombre = nombre;
-        comercioExistente.rubro = rubro;
-        comercioExistente.direccion = direccion;
-        comercioExistente.galeria = galeria;
-        comercioExistente.nroLocal = nroLocal;
-        comercioExistente.oferta = primerCupone.titulo;
-        comercioExistente.codigoCupon = primerCupone.codigo;
-        comercioExistente.icono = obtenerIconoPorRubro(rubro, nombre);
-        comercioExistente.productos = listaProductos;
-        if (videoPromoPanelBase64) {
-            comercioExistente.videoPromo = videoPromoPanelBase64;
+    const datosComercioParaNube = {
+        id: comercioActualId || Date.now(),
+        nombre: nombre,
+        rubro: rubro,
+        plan: planActual,
+        limitePublicaciones: LIMITES_PLANES[usuarioActual ? (usuarioActual.suscripcionActiva || 'basico') : 'basico'].maxPubs,
+        direccion: direccion,
+        galeria: galeria,
+        nroLocal: nroLocal,
+        lat: -34.65, lng: -58.58, ubicacionVerificada: true,
+        oferta: primerCupone.titulo,
+        icono: obtenerIconoPorRubro(rubro, nombre),
+        esPremium: esPrem,
+        videoPromo: videoPromoPanelBase64 || null,
+        rating: 5.0,
+        opiniones: 1,
+        codigoCupon: primerCupone.codigo,
+        mensajeWA: "Hola, quiero consultar por las promociones en " + nombre,
+        productos: listaProductos,
+        emailDueño: usuarioActual ? usuarioActual.email : ""
+    };
+
+    try {
+        // 🔥 GUARDADO OFICIAL EN LA NUBE DE FIRESTORE
+        await db.collection("comercios").doc(idComercioDoc).set(datosComercioParaNube, { merge: true });
+
+        // Actualizamos el arreglo local para que se vea reflejado al instante en tu pantalla
+        let indexLocal = comerciosVEA.findIndex(c => c.emailDueño === datosComercioParaNube.emailDueño || c.id === datosComercioParaNube.id);
+        if (indexLocal !== -1) {
+            comerciosVEA[indexLocal] = datosComercioParaNube;
+        } else {
+            comerciosVEA.unshift(datosComercioParaNube);
         }
-    } else {
-        const nuevoComercio = {
-            id: comerciosVEA.length + 1,
-            nombre: nombre,
-            rubro: rubro,
-            plan: planActual,
-            limitePublicaciones: LIMITES_PLANES[usuarioActual ? (usuarioActual.suscripcionActiva || 'basico') : 'basico'].maxPubs,
-            direccion: direccion,
-            galeria: galeria,
-            nroLocal: nroLocal,
-            lat: -34.65, lng: -58.58, ubicacionVerificada: true,
-            oferta: primerCupone.titulo,
-            icono: obtenerIconoPorRubro(rubro, nombre),
-            esPremium: esPrem,
-            videoPromo: videoPromoPanelBase64,
-            rating: 5.0,
-            opiniones: 1,
-            codigoCupon: primerCupone.codigo,
-            mensajeWA: "Hola, quiero consultar por las promociones en " + nombre,
-            productos: listaProductos
-        };
-        comerciosVEA.unshift(nuevoComercio);
-    }
 
-    alert("¡Vidriera y publicaciones actualizadas con éxito en el mapa V.E.A.!");
-    actualizarEstadoSesionUI();
-    cargarUbicacionesComercios();
-    irAlInicio();
+        alert("¡Vidriera guardada con éxito en la nube de Firebase para todo el mundo!");
+        actualizarEstadoSesionUI();
+        cargarUbicacionesComercios();
+        irAlInicio();
+    } catch (error) {
+        console.error("Error al guardar en Firebase:", error);
+        alert("Hubo un error al guardar en la nube. Revisá la consola.");
+    }
 }
 
 function cerrarSesion() {
