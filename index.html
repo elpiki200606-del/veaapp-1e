@@ -1524,6 +1524,18 @@ function guardarDatosPanelComercio() {
         return;
     }
 
+    // Actualizamos el nombre en la sesión activa y base de usuarios local para que no se pierda
+    if (usuarioActual) {
+        usuarioActual.nombre = nombre;
+        guardarSesionActiva(usuarioActual);
+        let usuariosDB = obtenerUsuariosDB();
+        let idxU = usuariosDB.findIndex(u => u.email.toLowerCase() === usuarioActual.email.toLowerCase());
+        if (idxU !== -1) {
+            usuariosDB[idxU].nombre = nombre;
+            guardarUsuariosDB(usuariosDB);
+        }
+    }
+
     const planActual = usuarioActual && usuarioActual.suscripcionActiva ? usuarioActual.suscripcionActiva.toUpperCase() : "BÁSICO";
     const esPrem = planActual === "PREMIUM";
 
@@ -1536,29 +1548,51 @@ function guardarDatosPanelComercio() {
         imagen: p.imagen || null
     })) : [{titulo: "Promoción Principal", desc: "Consultá nuestros productos", icono: "🛍️", promo: "Destacado", imagen: null}];
 
-    const nuevoComercio = {
-        id: comerciosVEA.length + 1,
-        nombre: nombre,
-        rubro: rubro,
-        plan: planActual,
-        limitePublicaciones: LIMITES_PLANES[usuarioActual.suscripcionActiva || 'basico'].maxPubs,
-        direccion: direccion,
-        galeria: galeria,
-        nroLocal: nroLocal,
-        lat: -34.65, lng: -58.58, ubicacionVerificada: true,
-        oferta: primerCupone.titulo,
-        icono: obtenerIconoPorRubro(rubro, nombre),
-        esPremium: esPrem,
-        videoPromo: videoPromoPanelBase64,
-        rating: 5.0,
-        opiniones: 1,
-        codigoCupon: primerCupone.codigo,
-        mensajeWA: "Hola, quiero consultar por las promociones en " + nombre,
-        productos: listaProductos
-    };
+    // Buscamos si ya existe el comercio en la lista actual para actualizarlo en lugar de duplicarlo
+    let comercioExistente = null;
+    if (usuarioActual) {
+        comercioExistente = comerciosVEA.find(c => c.nombre.toLowerCase() === usuarioActual.nombre.toLowerCase() || (comercioActualId && c.id === comercioActualId));
+    }
 
-    comerciosVEA.unshift(nuevoComercio);
+    if (comercioExistente) {
+        comercioExistente.nombre = nombre;
+        comercioExistente.rubro = rubro;
+        comercioExistente.direccion = direccion;
+        comercioExistente.galeria = galeria;
+        comercioExistente.nroLocal = nroLocal;
+        comercioExistente.oferta = primerCupone.titulo;
+        comercioExistente.codigoCupon = primerCupone.codigo;
+        comercioExistente.icono = obtenerIconoPorRubro(rubro, nombre);
+        comercioExistente.productos = listaProductos;
+        if (videoPromoPanelBase64) {
+            comercioExistente.videoPromo = videoPromoPanelBase64;
+        }
+    } else {
+        const nuevoComercio = {
+            id: comerciosVEA.length + 1,
+            nombre: nombre,
+            rubro: rubro,
+            plan: planActual,
+            limitePublicaciones: LIMITES_PLANES[usuarioActual ? (usuarioActual.suscripcionActiva || 'basico') : 'basico'].maxPubs,
+            direccion: direccion,
+            galeria: galeria,
+            nroLocal: nroLocal,
+            lat: -34.65, lng: -58.58, ubicacionVerificada: true,
+            oferta: primerCupone.titulo,
+            icono: obtenerIconoPorRubro(rubro, nombre),
+            esPremium: esPrem,
+            videoPromo: videoPromoPanelBase64,
+            rating: 5.0,
+            opiniones: 1,
+            codigoCupon: primerCupone.codigo,
+            mensajeWA: "Hola, quiero consultar por las promociones en " + nombre,
+            productos: listaProductos
+        };
+        comerciosVEA.unshift(nuevoComercio);
+    }
+
     alert("¡Vidriera y publicaciones actualizadas con éxito en el mapa V.E.A.!");
+    actualizarEstadoSesionUI();
     cargarUbicacionesComercios();
     irAlInicio();
 }
