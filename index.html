@@ -1576,70 +1576,101 @@ async function guardarDatosPanelComercio() {
     const rubro = document.getElementById("inputComercioRubro").value;
     const direccion = document.getElementById("inputComercioDireccion").value.trim();
     const galeria = document.getElementById("inputComercioGaleria").value.trim();
-    const nroLocal = document.getElementById("inputComercioLocal").value.trim();
+    const nrolocal = document.getElementById("inputComerciopLocal") ? document.getElementById("inputComerciopLocal").value.trim() : (document.getElementById("inputComercioLocal") ? document.getElementById("inputComercioLocal").value.trim() : "");
 
     if (!nombre || !direccion) {
         alert("Por favor, completá el nombre del comercio y la dirección.");
         return;
     }
 
+    // --- 1. TRADUCIR DIRECCIÓN A COORDENADAS REALES (Geocodificación con OpenStreetMap) ---
+    let latFinal = -34.65; // Valor por defecto (Ramos Mejía) si falla
+    let lngFinal = -58.58;
+
+    try {
+        // Le sumamos ", Buenos Aires, Argentina" para que el buscador sea más preciso
+        const queryBusqueda = encodeURIComponent(`${direccion}, Buenos Aires, Argentina`);
+        const respuestaGeo = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${queryBusqueda}&limit=1`);
+        const datosGeo = await respuestaGeo.json();
+
+        if (datosGeo && datosGeo.length > 0) {
+            latFinal = parseFloat(datosGeo[0].lat);
+            lngFinal = parseFloat(datosGeo[0].lon);
+        }
+    } catch (error) {
+        console.error("No se pudo geocodificar la dirección, usando valores por defecto.", error);
+    }
+
+    // --- 2. ICONO DINÁMICO SEGÚN EL RUBRO ---
+    let iconoFinal = "🏪"; // Icono genérico por defecto
+    const rubroLower = rubro ? rubro.toLowerCase() : "";
+    if (rubroLower.includes("cervez") || rubroLower.includes("birra") || rubroLower.includes("bar")) {
+        iconoFinal = "🍺";
+    } else if (rubroLower.includes("pizz") || rubroLower.includes("restaur") || rubroLower.includes("comida")) {
+        iconoFinal = "🍕";
+    } else if (rubroLower.includes("ferreter") || rubroLower.includes("construcc")) {
+        iconoFinal = "🔨";
+    } else if (rubroLower.includes("carne") || rubroLower.includes("carnicer") || rubroLower.includes("granja")) {
+        iconoFinal = "🥩";
+    } else if (rubroLower.includes("panader") || rubroLower.includes("factur")) {
+        iconoFinal = "🥐";
+    }
+
     const planActual = usuarioActual && usuarioActual.suscripcionActiva ? usuarioActual.suscripcionActiva.toUpperCase() : "BÁSICO";
     const esPrem = planActual === "PREMIUM";
 
-    const primerCupone = cuponesPanelTemp.length ? cuponesPanelTemp[0] : { titulo: "Cupón Especial", codigo: "VEA-OFF" };
+    const primerCupone = cuponesPanelTemp.length ? cuponesPanelTemp[0] : { titulo: "Cupón Especial", codigo: "VEA OFF" };
     const listaProductos = publicacionesPanelTemp.length ? publicacionesPanelTemp.map(p => ({
         titulo: p.titulo,
         desc: p.desc,
-        icono: p.icono || "🛍️",
+        icono: p.icono || "📦",
         promo: p.promo,
         imagen: p.imagen || null
-    })) : [{titulo: "Promoción Principal", desc: "Consultá nuestros productos", icono: "🛍️", promo: "Destacado", imagen: null}];
+    })) : [{titulo: "Promoción Principal", desc: "Consultá nuestros productos", icono: "🔥", promo: "Destacado", imagen: null}];
 
-    // Identificador único en la nube basado en el email del usuario
-   // Identificador único inquebrantable basado en el email del usuario
-    const idComercioDoc = usuarioActual ? usuarioActual.email.replace(/[@.]/g, "_") : ("comercio_" + Date.now());
+    // Identificador único basado en el email del usuario
+    const idComercioDoc = usuarioActual.email.replace(/[@\.]/g, '_');
 
-    const datosComercioParaNube = {
-        id: (usuarioActual && usuarioActual.email === "tordo@vea.com") ? 1 : (comercioActualId || Date.now()),
+    const datosComercio = {
+        id: idComercioDoc,
+        emailDueño: usuarioActual.email,
         nombre: nombre,
         rubro: rubro,
-        plan: planActual,
-        limitePublicaciones: LIMITES_PLANES[usuarioActual ? (usuarioActual.suscripcionActiva || 'basico') : 'basico'].maxPubs,
         direccion: direccion,
         galeria: galeria,
-        nroLocal: nroLocal,
-        lat: -34.65, lng: -58.58, ubicacionVerificada: true,
-        oferta: primerCupone.titulo,
-        icono: obtenerIconoPorRubro(rubro, nombre),
+        nroLocal: nrolocal,
+        lat: latFinal,       // <-- Acá viaja la latitud real calculada de Moreno u otra ciudad
+        lng: lngFinal,       // <-- Acá viaja la longitud real calculada
+        icono: iconoFinal,   // <-- Icono automático según rubro
+        plan: planActual,
         esPremium: esPrem,
-        videoPromo: videoPromoPanelBase64 || null,
-        rating: 5.0,
-        opiniones: 1,
-        codigoCupon: primerCupone.codigo,
-        mensajeWA: "Hola, quiero consultar por las promociones en " + nombre,
+        cupones: [primerCupone],
         productos: listaProductos,
-        emailDueño: usuarioActual ? usuarioActual.email : ""
+        fechaActualizacion: new Date().toISOString()
     };
 
     try {
-        // 🔥 GUARDADO OFICIAL EN LA NUBE DE FIRESTORE
-        await db.collection("comercios").doc(idComercioDoc).set(datosComercioParaNube, { merge: true });
-
-        // Actualizamos el arreglo local para que se vea reflejado al instante en tu pantalla
-        let indexLocal = comerciosVEA.findIndex(c => c.emailDueño === datosComercioParaNube.emailDueño || c.id === datosComercioParaNube.id);
-        if (indexLocal !== -1) {
-            comerciosVEA[indexLocal] = datosComercioParaNube;
+        // Guardado directo en Firestore con ID único para pisar y actualizar sin duplicar
+        await db.collection("comerciosVEA").doc(idComercioDoc).set(datosComercio, { merge: true });
+        
+        // Actualizamos nuestro arreglo local para que el mapa lo refleje al instante
+        const indexLocal = comerciosVEA.findIndex(c => c.id === idComercioDoc);
+        if (indexLocal >= 0) {
+            comerciosVEA[indexLocal] = datosComercio;
         } else {
-            comerciosVEA.unshift(datosComercioParaNube);
+            comerciosVEA.push(datosComercio);
         }
 
-        alert("¡Vidriera guardada con éxito en la nube de Firebase para todo el mundo!");
-        actualizarEstadoSesionUI();
-        cargarUbicacionesComercios();
-        irAlInicio();
+        alert("¡Datos y ubicación actualizados con éxito en la nube y en el mapa!");
+        
+        // Si tenés una función para repintar el mapa, la llamamos acá:
+        if (typeof actualizarMapaComercios === "function") {
+            actualizarMapaComercios();
+        }
+
     } catch (error) {
-        console.error("Error al guardar en Firebase:", error);
-        alert("Hubo un error al guardar en la nube. Revisá la consola.");
+        console.error("Error al guardar en Firestore: ", error);
+        alert("Hubo un error al guardar los datos. Verificá tu conexión.");
     }
 }
 
