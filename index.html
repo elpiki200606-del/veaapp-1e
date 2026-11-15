@@ -1131,7 +1131,22 @@ const firebaseConfig = {
 // Inicializar Firebase
 firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore();
-
+// Descargar comercios de Firestore al iniciar la página para que nunca falte nada
+db.collection("comercios").get().then((querySnapshot) => {
+    if (!querySnapshot.empty) {
+        let comerciosNube = [];
+        querySnapshot.forEach((doc) => {
+            comerciosNube.push(doc.data());
+        });
+        // Si hay comercios en la nube, pisamos el arreglo local con la verdad de la milanesa
+        comerciosVEA = comerciosNube;
+        if (typeof cargarUbicacionesComercios === "function") {
+            cargarUbicacionesComercios();
+        }
+    }
+}).catch((error) => {
+    console.error("Error al cargar comercios de la nube:", error);
+});
 "use strict";
 
 let telefonowhatsappBase = "5491100000000";
@@ -1581,10 +1596,11 @@ async function guardarDatosPanelComercio() {
     })) : [{titulo: "Promoción Principal", desc: "Consultá nuestros productos", icono: "🛍️", promo: "Destacado", imagen: null}];
 
     // Identificador único en la nube basado en el email del usuario
+   // Identificador único inquebrantable basado en el email del usuario
     const idComercioDoc = usuarioActual ? usuarioActual.email.replace(/[@.]/g, "_") : ("comercio_" + Date.now());
 
     const datosComercioParaNube = {
-        id: comercioActualId || Date.now(),
+        id: (usuarioActual && usuarioActual.email === "tordo@vea.com") ? 1 : (comercioActualId || Date.now()),
         nombre: nombre,
         rubro: rubro,
         plan: planActual,
