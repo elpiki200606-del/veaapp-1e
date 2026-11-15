@@ -1120,6 +1120,7 @@
     // --- ESTADOS Y SESIÓN GLOBALES (Inicializados al tope del script) ---
 // --- ESTADOS Y SESIÓN GLOBALES ---
 let sesionActivaGlobal = null;
+let map = null;
 let usuariosDBGlobal = [
     { nombre: "Cervecería Artesanal El Tordo", email: "tordo@vea.com", password: "123456", tipo: "comercio", suscripcionActiva: "premium" },
     { nombre: "Café & Bar Flores", email: "flores@vea.com", password: "123456", tipo: "comercio", suscripcionActiva: "intermedio" }
@@ -1284,7 +1285,7 @@ const notificaciones = [
     {titulo:"☕ Descuento en Café & Bar Flores", texto:"Promoción de desayunos. Consultá la disponibilidad."}
 ];
 
-let map = L.map("map").setView([-34.6434, -58.6231], 12);
+ map = L.map("map").setView([-34.6434, -58.6231], 12);
 
 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
     attribution: '&copy; OpenStreetMap contributors'
