@@ -1165,8 +1165,8 @@ let videoPromoPanelBase64 = null;
 const cacheUbicaciones = new Map();
 
 const LIMITES_PLANES = {
-    'basico': { maxPubs: 10, maxVideoSec: 10 },
-    'intermedio': { maxPubs: 20, maxVideoSec: 20 },
+    'basico': { maxPubs: 10, maxVideoSec: 20 },
+    'intermedio': { maxPubs: 20, maxVideoSec: 30 },
     'premium': { maxPubs: 40, maxVideoSec: 60 }
 };
 
@@ -1616,8 +1616,9 @@ async function guardarDatosPanelComercio() {
         iconoFinal = "🥐";
     }
 
-    const planActual = usuarioActual && usuarioActual.suscripcionActiva ? usuarioActual.suscripcionActiva.toUpperCase() : "BÁSICO";
-    const esPrem = planActual === "PREMIUM";
+    const planActual = "PREMIUM";
+const esPrem = true;
+    
 
     const primerCupone = cuponesPanelTemp.length ? cuponesPanelTemp[0] : { titulo: "Cupón Especial", codigo: "VEA OFF" };
     const listaProductos = publicacionesPanelTemp.length ? publicacionesPanelTemp.map(p => ({
