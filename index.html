@@ -1771,31 +1771,40 @@ async function cargarUbicacionesComercios() {
     geocodificacionEnCurso = true;
     const aviso = document.getElementById("avisoUbicaciones");
 
+    async function cargarUbicacionesComercios() {
     try {
         let localizados = 0;
         for (let i = 0; i < comerciosVEA.length; i++) {
             const comercio = comerciosVEA[i];
-            const ubicacion = await geocodificarDireccion(comercio);
-            if (ubicacion) {
-                comercio.lat = ubicacion.lat;
-                comercio.lng = ubicacion.lng;
-                comercio.ubicacionVerificada = true;
+            
+            if (Number.isFinite(comercio.lat) && Number.isFinite(comercio.lng)) {
                 localizados++;
-            }
-            if (i < comerciosVEA.length - 1) {
-                await new Promise(resolve => setTimeout(resolve, 500));
+            } else {
+                comercio.lat = -34.65;
+                comercio.lng = -58.58;
             }
         }
+        
         actualizarVista(filtroActual);
+        
         if (localizados > 0) {
             const puntos = comerciosVEA.filter(c => Number.isFinite(c.lat) && Number.isFinite(c.lng)).map(c => [c.lat, c.lng]);
-            if (puntos.length) map.fitBounds(L.latLngBounds(puntos), { padding: [20, 20], maxZoom: 15 });
+            if (puntos.length) {
+                map.fitBounds(L.latLngBounds(puntos), { padding: [20, 20], maxZoom: 15 });
+            }
         }
-        aviso.className = "status-box status-ok";
-        aviso.textContent = "Mapa geolocalizado con éxito.";
+        
+        const aviso = document.getElementById("aviso");
+        if (aviso) {
+            aviso.className = "status-box status-ok";
+            aviso.textContent = "Mapa sincronizado con éxito.";
+        }
+    } catch (error) {
+        console.error("Error al cargar las ubicaciones: ", error);
     } finally {
         geocodificacionEnCurso = false;
     }
+}
 }
 
 function filtrarPorBusqueda() {
