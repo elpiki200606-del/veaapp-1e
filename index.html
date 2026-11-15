@@ -2001,7 +2001,21 @@ function filtrarRubro(rubro, boton) {
     if (boton) boton.classList.add("active");
     actualizarVista(rubro);
 }
-
+function cargarDatosEnPanelComercio() {
+    if (!usuarioActual) return;
+    
+    // Buscamos si el usuario ya tiene un comercio en nuestro arreglo local
+    let comercioDelUsuario = comerciosVEA.find(c => c.emailDueño === usuarioActual.email);
+    
+    if (comercioDelUsuario) {
+        // Precargamos los inputs para que puedas editar sin rellenar de cero
+        if (document.getElementById("inputComercioNombre")) document.getElementById("inputComercioNombre").value = comercioDelUsuario.nombre || "";
+        if (document.getElementById("inputComercioRubro")) document.getElementById("inputComercioRubro").value = comercioDelUsuario.rubro || "";
+        if (document.getElementById("inputComercioDireccion")) document.getElementById("inputComercioDireccion").value = comercioDelUsuario.direccion || "";
+        if (document.getElementById("inputComercioGaleria")) document.getElementById("inputComercioGaleria").value = comercioDelUsuario.galeria || "";
+        if (document.getElementById("inputComercioLocal")) document.getElementById("inputComercioLocal").value = comercioDelUsuario.nroLocal || "";
+    }
+}
 function mostrarVista(idVista) {
     const vistas = ["vistaPrincipal", "vistaCupones", "vistaListas", "vistaNotificaciones", "vistaAjustes", "vistaDetalle"];
     vistas.forEach(id => {
@@ -2020,7 +2034,10 @@ function mostrarVista(idVista) {
     if (idVista === "vistaListas") document.getElementById("btnNavListas").classList.add("active");
     if (idVista === "vistaNotificaciones") document.getElementById("btnNavNotif").classList.add("active");
     if (idVista === "vistaAjustes") document.getElementById("btnNavAjustes").classList.add("active");
-
+if (idVista === "vistaAjustes") {
+            document.getElementById("btnNavAjustes").classList.add("active");
+            cargarDatosEnPanelComercio();
+        }
     if (principal) setTimeout(() => map.invalidateSize(), 180);
     window.scrollTo({ top: 0, behavior: "smooth" });
 }
