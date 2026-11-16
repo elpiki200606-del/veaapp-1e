@@ -917,14 +917,24 @@
                 <label for="inputComercioNombre">Nombre del Comercio</label>
                 <input type="text" id="inputComercioNombre" placeholder="Ej: Cervecería El Tordo">
             </div>
-            <div class="form-group">
-                <label for="inputComercioRubro">Rubro</label>
-                <select id="inputComercioRubro">
-                    <option value="gastronomia">Gastronomía</option>
-                    <option value="comercio">Comercio</option>
-                    <option value="servicios">Servicios</option>
-                    <option value="emprendedores">Emprendedores</option>
-                </select>
+           <div class="form-group">
+    <label for="inputComercioRubro">Rubro Comercial</label>
+    <select id="inputComercioRubro">
+        <option value="gastronomia">🍕 Gastronomía / Bar / Restaurante / Cafetería</option>
+        <option value="indumentaria">👕 Indumentaria / Ropa / Calzado</option>
+        <option value="ferreteria">🔨 Ferretería / Corralón / Construcción</option>
+        <option value="carniceria">🥩 Carnicería / Granja / Pollería</option>
+        <option value="panaderia">🥐 Panadería / Facturas / Confitería</option>
+        <option value="almacen">🛒 Almacén / Kiosco / Supermercado</option>
+        <option value="farmacia">💊 Farmacia / Perfumería / Salud</option>
+        <option value="veterinaria">🐾 Veterinaria / Mascotas</option>
+        <option value="peluqueria">💇 Peluquería / Barbería / Estética</option>
+        <option value="servicios">🧰 Servicios Profesionales / Técnicos</option>
+        <option value="automotor">🚗 Mecánica / Repuestos / gomería</option>
+        <option value="libreria">📚 Librería / Juguetería / Regalería</option>
+        <option value="emprendedores">⭐ Emprendedores / Varios</option>
+    </select>
+</div>
             </div>
             <div class="form-group">
                 <label for="inputComercioDireccion">Dirección Calle y Altura</label>
@@ -1120,12 +1130,24 @@
     "use strict";
 
     // --- ESTADOS Y SESIÓN GLOBALES ---
-    let sesionActivaGlobal = null;
-    let map = null;
-    let usuariosDBGlobal = [
-        { nombre: "Cervecería Artesanal El Tordo", email: "tordo@vea.com", password: "123456", tipo: "comercio", suscripcionActiva: "premium" },
-        { nombre: "Café & Bar Flores", email: "flores@vea.com", password: "123456", tipo: "comercio", suscripcionActiva: "intermedio" }
-    ];
+ let sesionActivaGlobal = null;
+let map = null;
+
+// Inicializar Firebase de manera global para que todas las funciones lo vean
+const firebaseConfig = {
+    apiKey: "AIzaSyDLQVjDJ7TrjmaRO-cpUakmhHWqZ0af71k",
+    authDomain: "veaapp-65740.firebaseapp.com",
+    projectId: "veaapp-65740",
+    storageBucket: "veaapp-65740.firebasestorage.app",
+    messagingSenderId: "891015134947",
+    appId: "1:891015134947:web:fd2452d96007dffd494fd6",
+    measurementId: "G-4FKYWY21FN"
+};
+
+if (!firebase.apps.length) {
+    firebase.initializeApp(firebaseConfig);
+}
+const db = firebase.firestore();
 
     const telefonoWhatsAppBase = "5491100000000";
     let comercioActualId = null;
@@ -1230,16 +1252,41 @@
     ];
 
     const rubroIconosMap = {
-        'gastronomia': 'fa-utensils',
-        'comercio': 'fa-store',
-        'servicios': 'fa-wrench',
-        'emprendedores': 'fa-star',
-        'cerveceria': 'fa-beer-mug-empty',
-        'banco': 'fa-building-columns',
-        'estacion': 'fa-gas-pump',
-        'peluqueria': 'fa-scissors',
-        'default': 'fa-shop'
-    };
+    'gastronomia': 'fa-utensils',
+    'indumentaria': 'fa-shirt',
+    'ferreteria': 'fa-hammer',
+    'carniceria': 'fa-drumstick-bite',
+    'panaderia': 'fa-bread-slice',
+    'almacen': 'fa-basket-shopping',
+    'farmacia': 'fa-pills',
+    'veterinaria': 'fa-paw',
+    'peluqueria': 'fa-scissors',
+    'servicios': 'fa-wrench',
+    'automotor': 'fa-car',
+    'libreria': 'fa-book',
+    'emprendedores': 'fa-star',
+    'cerveceria': 'fa-beer-mug-empty',
+    'banco': 'fa-building-columns',
+    'estacion': 'fa-gas-pump',
+    'default': 'fa-shop'
+};
+
+function obtenerIconoPorRubro(rubro, nombre = "") {
+    const r = String(rubro || "").toLowerCase();
+    if (rubroIconosMap[r]) return rubroIconosMap[r];
+
+    const texto = (nombre + " " + rubro).toLowerCase();
+    if (texto.includes('cervez') || texto.includes('birra') || texto.includes('bar')) return 'fa-beer-mug-empty';
+    if (texto.includes('ropa') || texto.includes('moda') || texto.includes('indumentaria')) return 'fa-shirt';
+    if (texto.includes('ferreter') || texto.includes('construcc')) return 'fa-hammer';
+    if (texto.includes('carne') || texto.includes('carnicer') || texto.includes('pollo')) return 'fa-drumstick-bite';
+    if (texto.includes('panader') || texto.includes('factur')) return 'fa-bread-slice';
+    if (texto.includes('kiosco') || texto.includes('almacen') || texto.includes('mercado')) return 'fa-basket-shopping';
+    if (texto.includes('farmacia') || texto.includes('remedios')) return 'fa-pills';
+    if (texto.includes('peluquer') || texto.includes('barber')) return 'fa-scissors';
+    if (texto.includes('mecanic') || texto.includes('auto') || texto.includes('repuesto')) return 'fa-car';
+    return rubroIconosMap['default'];
+}
 
     function obtenerIconoPorRubro(rubro, nombre = "") {
         const texto = (nombre + " " + rubro).toLowerCase();
@@ -1968,59 +2015,42 @@
     }
 
     // --- BLOQUE MAESTRO DE INICIALIZACIÓN (DOM Y MAPA SEGUROS) ---
-    document.addEventListener("DOMContentLoaded", function() {
-        // 1. Inicializar el mapa de forma limpia y segura cuando el HTML ya existe
-        map = L.map("map").setView([-34.6434, -58.6231], 12);
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            attribution: '&copy; OpenStreetMap contributors'
-        }).addTo(map);
+   document.addEventListener("DOMContentLoaded", function() {
+    map = L.map("map").setView([-34.6434, -58.6231], 12);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '&copy; OpenStreetMap contributors'
+    }).addTo(map);
 
-        // 2. Conexión a Firebase Firestore para descargar comercios en vivo
-        const firebaseConfig = {
-            apiKey: "AIzaSyDLQVjDJ7TrjmaRO-cpUakmhHWqZ0af71k",
-            authDomain: "veaapp-65740.firebaseapp.com",
-            projectId: "veaapp-65740",
-            storageBucket: "veaapp-65740.firebasestorage.app",
-            messagingSenderId: "891015134947",
-            appId: "1:891015134947:web:fd2452d96007dffd494fd6",
-            measurementId: "G-4FKYWY21FN"
-        };
-
-        try {
-            if (!firebase.apps.length) {
-                firebase.initializeApp(firebaseConfig);
+    // Sincronizar con Firestore al arrancar
+    db.collection("comerciosVEA").get().then((querySnapshot) => {
+        querySnapshot.forEach((doc) => {
+            const comercioRemoto = doc.data();
+            if (comercioRemoto.lat && comercioRemoto.lng) {
+                const existe = comerciosVEA.some(c => c.id === comercioRemoto.id);
+                if (!existe) {
+                    comerciosVEA.push(comercioRemoto);
+                }
             }
-            const db = firebase.firestore();
-            db.collection("comerciosVEA").get().then((querySnapshot) => {
-                querySnapshot.forEach((doc) => {
-                    const comercioRemoto = doc.data();
-                    if (comercioRemoto.lat && comercioRemoto.lng) {
-                        const existe = comerciosVEA.some(c => c.id === comercioRemoto.id);
-                        if (!existe) {
-                            comerciosVEA.push(comercioRemoto);
-                        }
-                    }
-                });
-                actualizarVista("todos");
-            }).catch((error) => {
-                console.error("Error al sincronizar con Firestore: ", error);
-            });
-        } catch (e) {
-            console.error("Firebase no disponible o error de inicialización", e);
-        }
-
-        // 3. Renderizado y arranque general de la interfaz
-        renderizarNotificaciones();
+        });
         actualizarVista("todos");
-        inicializarBannerRotativoPremium();
-        actualizarEstadoSesionUI();
-
-        const aviso = document.getElementById("avisoUbicaciones");
-        if (aviso) {
-            aviso.className = "status-box status-ok";
-            aviso.textContent = "Mapa sincronizado con éxito.";
-        }
+    }).catch((error) => {
+        console.error("Error al sincronizar con Firestore: ", error);
     });
+
+    renderizarNotificaciones();
+    actualizarVista("todos");
+    inicializarBannerRotativoPremium();
+    actualizarEstadoSesionUI();
+
+    const aviso = document.getElementById("avisoUbicaciones");
+    if (aviso) {
+        aviso.className = "status-box status-ok";
+        aviso.textContent = "Mapa sincronizado con éxito.";
+    }
+});
+
+       
+    
 </script>
 </body>
 </html>
