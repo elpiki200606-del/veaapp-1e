@@ -1778,16 +1778,11 @@ async function geocodificarDireccion(comercio) {
 }
 
 async function cargarUbicacionesComercios() {
-    if (geocodificacionEnCurso) return;
-    geocodificacionEnCurso = true;
-    const aviso = document.getElementById("avisoUbicaciones");
-
-    async function cargarUbicacionesComercios() {
+    if (!map) return;
     try {
         let localizados = 0;
         for (let i = 0; i < comerciosVEA.length; i++) {
             const comercio = comerciosVEA[i];
-            
             if (Number.isFinite(comercio.lat) && Number.isFinite(comercio.lng)) {
                 localizados++;
             } else {
@@ -1795,16 +1790,6 @@ async function cargarUbicacionesComercios() {
                 comercio.lng = -58.58;
             }
         }
-        
-        actualizarVista(filtroActual);
-        
-        if (localizados > 0) {
-            const puntos = comerciosVEA.filter(c => Number.isFinite(c.lat) && Number.isFinite(c.lng)).map(c => [c.lat, c.lng]);
-            if (puntos.length) {
-                map.fitBounds(L.latLngBounds(puntos), { padding: [20, 20], maxZoom: 15 });
-            }
-        }
-        
         const aviso = document.getElementById("aviso");
         if (aviso) {
             aviso.className = "status-box status-ok";
@@ -1815,7 +1800,6 @@ async function cargarUbicacionesComercios() {
     } finally {
         geocodificacionEnCurso = false;
     }
-}
 }
 
 function filtrarPorBusqueda() {
