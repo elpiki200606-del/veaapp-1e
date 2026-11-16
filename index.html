@@ -1129,9 +1129,13 @@
 <script>
     "use strict";
 
-    // --- ESTADOS Y SESIÓN GLOBALES ---
- let sesionActivaGlobal = null;
-let map = null;
+    // --- ESTADOS Y SESIÓN GLOBALES (DECLARADOS PRIMERO QUE NADA) ---
+    let sesionActivaGlobal = null;
+    let map = null;
+    let usuariosDBGlobal = [
+        { nombre: "Cervecería Artesanal El Tordo", email: "tordo@vea.com", password: "123456", tipo: "comercio", suscripcionActiva: "premium" },
+        { nombre: "Café & Bar Flores", email: "flores@vea.com", password: "123456", tipo: "comercio", suscripcionActiva: "intermedio" }
+    ];
 
 // Inicializar Firebase de manera global para que todas las funciones lo vean
 const firebaseConfig = {
@@ -1173,7 +1177,7 @@ const db = firebase.firestore();
         sesionActivaGlobal = usuario ? usuario : null;
     }
 
-    function obtenerUsuariosDB() {
+   function obtenerUsuariosDB() {
         return usuariosDBGlobal;
     }
 
