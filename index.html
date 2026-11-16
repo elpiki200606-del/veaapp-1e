@@ -936,10 +936,12 @@
     </select>
 </div>
             </div>
-            <div class="form-group">
-                <label for="inputComercioDireccion">Dirección Calle y Altura</label>
-                <input type="text" id="inputComercioDireccion" placeholder="Ej: Av. Rivadavia 18200, Morón">
-            </div>
+           <div class="form-group" style="position: relative;">
+    <label for="inputComercioDireccion">Dirección Calle y Altura</label>
+    <input type="text" id="inputComercioDireccion" placeholder="Ej: Armona 4662, González Catán" oninput="buscarSugerenciasDireccion(this.value)" autocomplete="off">
+    <!-- Contenedor flotante para las sugerencias del mapa -->
+    <div id="listaSugerenciasMapa" style="position: absolute; top: 100%; left: 0; right: 0; background: white; border: 1px solid var(--borde); border-radius: 6px; max-height: 180px; overflow-y: auto; z-index: 999; display: none; box-shadow: 0 4px 12px rgba(0,0,0,0.15);"></div>
+</div>
             <div class="form-group">
                 <label for="inputComercioGaleria">Nombre de la Galería (Opcional)</label>
                 <input type="text" id="inputComercioGaleria" placeholder="Ej: Galería Avellaneda Center">
@@ -1186,7 +1188,54 @@ const db = firebase.firestore();
             usuariosDBGlobal = base;
         }
     }
+let timeoutSugerencias = null;
+let latSeleccionadaTemp = null;
+let lngSeleccionadaTemp = null;
 
+function buscarSugerenciasDireccion(texto) {
+    const contenedor = document.getElementById("listaSugerenciasMapa");
+    if (!texto || texto.length < 4) {
+        if (contenedor) contenedor.style.display = "none";
+        return;
+    }
+
+    clearTimeout(timeoutSugerencias);
+    timeoutSugerencias = setTimeout(async () => {
+        try {
+            const url = `https://nominatim.openstreetmap.org/search?format=json&limit=5&q=${encodeURIComponent(texto + ", Buenos Aires, Argentina")}`;
+            const respuesta = await fetch(url);
+            const resultados = await respuesta.json();
+
+            if (!contenedor) return;
+            contenedor.innerHTML = "";
+            if (resultados && resultados.length > 0) {
+                resultados.forEach(lugar => {
+                    const item = document.createElement("div");
+                    item.style.cssText = "padding: 8px 10px; font-size: 0.78rem; border-bottom: 1px solid #eee; cursor: pointer; background: #fff; color: #173c30;";
+                    item.textContent = lugar.display_name;
+                    
+                    item.onclick = () => {
+                        document.getElementById("inputComercioDireccion").value = lugar.display_name;
+                        latSeleccionadaTemp = parseFloat(lugar.lat);
+                        lngSeleccionadaTemp = parseFloat(lugar.lon);
+                        contenedor.style.display = "none";
+                    };
+
+                    item.onmouseover = () => item.style.background = "#f4f7f5";
+                    item.onmouseout = () => item.style.background = "#fff";
+
+                    contenedor.appendChild(item);
+                });
+                contenedor.style.display = "block";
+            } else {
+                contenedor.style.display = "none";
+            }
+        } catch (error) {
+            console.error("Error buscando sugerencias:", error);
+            if (contenedor) contenedor.style.display = "none";
+        }
+    }, 350);
+}
     let usuariosRegistrados = obtenerUsuariosDB();
     usuarioActual = obtenerSesionActiva();
 
@@ -1586,9 +1635,12 @@ function obtenerIconoPorRubro(rubro, nombre = "") {
             return;
         }
 
-        let latFinal = -34.65;
-        let lngFinal = -58.58;
+        // Si el usuario seleccionó una sugerencia de la lista, usamos esas coordenadas exactas. 
+    // Si escribió directo sin seleccionar, intentamos una búsqueda rápida de emergencia.
+    let latFinal = latSeleccionadaTemp;
+    let lngFinal = lngSeleccionadaTemp;
 
+    if (!latFinal || !lngFinal) {
         try {
             const queryBusqueda = encodeURIComponent(`${direccion}, Buenos Aires, Argentina`);
             const respuestaGeo = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${queryBusqueda}&limit=1`);
@@ -1597,10 +1649,15 @@ function obtenerIconoPorRubro(rubro, nombre = "") {
             if (datosGeo && datosGeo.length > 0) {
                 latFinal = parseFloat(datosGeo[0].lat);
                 lngFinal = parseFloat(datosGeo[0].lon);
+            } else {
+                latFinal = -34.65;
+                lngFinal = -58.58;
             }
         } catch (error) {
-            console.error("No se pudo geocodificar la dirección, usando valores por defecto.", error);
+            latFinal = -34.65;
+            lngFinal = -58.58;
         }
+    }
 
         let iconoFinal = "🏪";
         const rubroLower = rubro ? rubro.toLowerCase() : "";
