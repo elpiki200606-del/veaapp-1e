@@ -1903,7 +1903,7 @@ function renderizarListaBusqueda() {
     if (resultados.length === 0) {
         contenedorLista.style.display = "block";
         contenedorLista.innerHTML = `<div style="padding: 12px; text-align: center; font-size: 0.8rem; color: var(--texto);">No se encontraron comercios para "<b>${terminoBusquedaGlobal}</b>".</div>`;
-        return;
+
     }
 
     let htmlLista = `<div style="padding: 8px 12px; font-size: 0.75rem; font-weight: bold; background: var(--fondo); border-bottom: 1px solid var(--borde); color: var(--verde);">Resultados de búsqueda (${resultados.length}):</div>`;
