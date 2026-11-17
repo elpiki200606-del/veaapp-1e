@@ -1806,8 +1806,20 @@ function filtrarPorBusqueda() {
 // Función para renderizar la lista de resultados debajo del buscador ordenada por plan (Premium > Intermedio > Básico)
 
 function renderizarListaBusqueda() {
-    const contenedorLista = document.getElementById("contenedorListaBusqueda");
-    if (!contenedorLista) return;
+    let contenedorLista = document.getElementById("contenedorListaBusqueda");
+    
+    // Si por alguna razón el HTML no lo tiene, lo inyectamos de forma segura debajo del buscador
+    if (!contenedorLista) {
+        const barraBusqueda = document.querySelector(".search-bar-container") || document.getElementById("inputBusquedaGlobal");
+        if (barraBusqueda) {
+            contenedorLista = document.createElement("div");
+            contenedorLista.id = "contenedorListaBusqueda";
+            contenedorLista.style.cssText = "max-height: 350px; overflow-y: auto; margin: 10px 15px; display: none; background: #ffffff; border-radius: 8px; border: 1px solid var(--borde); box-shadow: 0 4px 12px rgba(0,0,0,0.1); z-index: 1000; position: relative;";
+            barraBusqueda.insertAdjacentElement("afterend", contenedorLista);
+        } else {
+            return;
+        }
+    }
 
     if (!terminoBusqueda) {
         contenedorLista.style.display = "none";
@@ -1815,7 +1827,6 @@ function renderizarListaBusqueda() {
         return;
     }
 
-    // 1. Recopilamos los rubros asociados según el diccionario de intención
     let rubrosAsociados = [];
     for (let clave in diccionarioIntencion) {
         if (terminoBusqueda.includes(clave)) {
@@ -1823,7 +1834,6 @@ function renderizarListaBusqueda() {
         }
     }
 
-    // 2. FILTRADO ESTRICTO
     let resultados = comerciosDBGlobal.filter(comercio => {
         const nombreNorm = normalizarTexto(comercio.nombre || "");
         const rubroNorm = normalizarTexto(comercio.rubro || "");
@@ -1838,7 +1848,6 @@ function renderizarListaBusqueda() {
         return matchTexto || matchRubroCruzado;
     });
 
-    // 3. ORDENAMIENTO POR PLAN (Premium > Intermedio > Básico)
     resultados.sort((a, b) => obtenerPesoPlan(b.plan) - obtenerPesoPlan(a.plan));
 
     if (resultados.length === 0) {
@@ -1847,7 +1856,6 @@ function renderizarListaBusqueda() {
         return;
     }
 
-    // 4. RENDERIZADO DE LA LISTA
     let htmlLista = `<div style="padding: 8px 12px; font-size: 0.75rem; font-weight: bold; background: var(--fondo); border-bottom: 1px solid var(--borde); color: var(--verde);">Resultados de búsqueda (${resultados.length}):</div>`;
     
     resultados.forEach(comercio => {
@@ -1864,6 +1872,7 @@ function renderizarListaBusqueda() {
     contenedorLista.innerHTML = htmlLista;
     contenedorLista.style.display = "block";
 }
+
 
 
 
@@ -1888,17 +1897,15 @@ function renderizarListaBusqueda() {
 
         return matchTexto || matchRubroCruzado;
     });
-
-    // Ordenamos estrictamente por plan usando tu función existente (Mayor peso = Premium primero)
+// Ordenamos estrictamente por plan (Premium > Intermedio > Básico)
     resultados.sort((a, b) => obtenerPesoPlan(b.plan) - obtenerPesoPlan(a.plan));
 
     if (resultados.length === 0) {
         contenedorLista.style.display = "block";
         contenedorLista.innerHTML = `<div style="padding: 12px; text-align: center; font-size: 0.8rem; color: var(--texto);">No se encontraron comercios para "<b>${terminoBusquedaGlobal}</b>".</div>`;
-
+        return;
     }
 
-    // Construimos la lista visual
     let htmlLista = `<div style="padding: 8px 12px; font-size: 0.75rem; font-weight: bold; background: var(--fondo); border-bottom: 1px solid var(--borde); color: var(--verde);">Resultados de búsqueda (${resultados.length}):</div>`;
     
     resultados.forEach(comercio => {
@@ -1915,13 +1922,6 @@ function renderizarListaBusqueda() {
     contenedorLista.innerHTML = htmlLista;
     contenedorLista.style.display = "block";
 
-
-    function obtenerPesoPlan(planStr) {
-        const p = String(planStr || "").toUpperCase();
-        if (p.includes("PREMIUM")) return 3;
-        if (p.includes("INTERMEDIO") || p.includes("STANDARD")) return 2;
-        return 1;
-    }
 
     function actualizarVista(filtro) {
         filtroActual = filtro;
