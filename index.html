@@ -1804,6 +1804,7 @@ function filtrarPorBusqueda() {
 }
 
 // Función para renderizar la lista de resultados debajo del buscador ordenada por plan (Premium > Intermedio > Básico)
+
 function renderizarListaBusqueda() {
     const contenedorLista = document.getElementById("contenedorListaBusqueda");
     if (!contenedorLista) return;
@@ -1814,6 +1815,7 @@ function renderizarListaBusqueda() {
         return;
     }
 
+    // 1. Recopilamos los rubros asociados según el diccionario de intención
     let rubrosAsociados = [];
     for (let clave in diccionarioIntencion) {
         if (terminoBusqueda.includes(clave)) {
@@ -1821,6 +1823,7 @@ function renderizarListaBusqueda() {
         }
     }
 
+    // 2. FILTRADO ESTRICTO
     let resultados = comerciosDBGlobal.filter(comercio => {
         const nombreNorm = normalizarTexto(comercio.nombre || "");
         const rubroNorm = normalizarTexto(comercio.rubro || "");
@@ -1835,6 +1838,7 @@ function renderizarListaBusqueda() {
         return matchTexto || matchRubroCruzado;
     });
 
+    // 3. ORDENAMIENTO POR PLAN (Premium > Intermedio > Básico)
     resultados.sort((a, b) => obtenerPesoPlan(b.plan) - obtenerPesoPlan(a.plan));
 
     if (resultados.length === 0) {
@@ -1843,6 +1847,7 @@ function renderizarListaBusqueda() {
         return;
     }
 
+    // 4. RENDERIZADO DE LA LISTA
     let htmlLista = `<div style="padding: 8px 12px; font-size: 0.75rem; font-weight: bold; background: var(--fondo); border-bottom: 1px solid var(--borde); color: var(--verde);">Resultados de búsqueda (${resultados.length}):</div>`;
     
     resultados.forEach(comercio => {
@@ -1859,6 +1864,7 @@ function renderizarListaBusqueda() {
     contenedorLista.innerHTML = htmlLista;
     contenedorLista.style.display = "block";
 }
+
 
 
     // Filtramos usando el diccionario cruzado + coincidencia en nombre, rubro o descripciones
