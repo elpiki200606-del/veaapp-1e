@@ -920,20 +920,78 @@
             </div>
            <div class="form-group">
     <label for="inputComercioRubro">Rubro Comercial</label>
-    <select id="inputComercioRubro">
-        <option value="gastronomia">🍕 Gastronomía / Bar / Restaurante / Cafetería</option>
-        <option value="indumentaria">👕 Indumentaria / Ropa / Calzado</option>
-        <option value="ferreteria">🔨 Ferretería / Corralón / Construcción</option>
-        <option value="carniceria">🥩 Carnicería / Granja / Pollería</option>
-        <option value="panaderia">🥐 Panadería / Facturas / Confitería</option>
-        <option value="almacen">🛒 Almacén / Kiosco / Supermercado</option>
-        <option value="farmacia">💊 Farmacia / Perfumería / Salud</option>
-        <option value="veterinaria">🐾 Veterinaria / Mascotas</option>
-        <option value="peluqueria">💇 Peluquería / Barbería / Estética</option>
-        <option value="servicios">🧰 Servicios Profesionales / Técnicos</option>
-        <option value="automotor">🚗 Mecánica / Repuestos / gomería</option>
-        <option value="libreria">📚 Librería / Juguetería / Regalería</option>
-        <option value="emprendedores">⭐ Emprendedores / Varios</option>
+  <select id="inputComercioRubro">
+        <optgroup label="🥩 Carnes, Granja y Frescos">
+            <option value="carniceria">🥩 Carnicería</option>
+            <option value="polleria">🍗 Pollería</option>
+            <option value="granja">🥚 Granja / Huevos / Pollo</option>
+            <option value="pescaderia">🐟 Pescadería</option>
+            <option value="fiambreria">🧀 Fiambrería / Quesería</option>
+        </optgroup>
+        <optgroup label="🥬 Verdulería, Almacén y Panificados">
+            <option value="verduleria">🥬 Verdulería</option>
+            <option value="fruteria">🍎 Frutería</option>
+            <option value="panaderia">🥐 Panadería / Facturas</option>
+            <option value="confiteria">🍰 Confitería / Pastelería</option>
+            <option value="almacen">🛒 Almacén / Despensa</option>
+            <option value="autoservicio">🏪 Autoservicio / Supermercado</option>
+            <option value="kiosco">🍬 Kiosco / Maxikiosco</option>
+            <option value="dietetica">🌾 Dietética / Productos Naturales</option>
+            <option value="vinoteca">🍷 Vinoteca / Bebidas</option>
+        </optgroup>
+        <optgroup label="🍕 Gastronomía">
+            <option value="gastronomia">🍽️ Restaurante / Bodegón</option>
+            <option value="pizzeria">🍕 Pizzería / Empanadas</option>
+            <option value="rotiseria">🥡 Rotisería / Comidas para llevar</option>
+            <option value="parrilla">🔥 Parrilla</option>
+            <option value="cerveceria">🍺 Cervecería / Bar</option>
+            <option value="cafeteria">☕ Cafetería / Casa de Té</option>
+            <option value="heladeria">🍨 Heladería</option>
+        </optgroup>
+        <optgroup label="👕 Indumentaria y Calzado">
+            <option value="indumentaria">👕 Indumentaria / Ropa en general</option>
+            <option value="ropa_deportiva">👟 Ropa Deportiva</option>
+            <option value="ropa_infantil">🧸 Ropa Infantil / Bebés</option>
+            <option value="lenceria">👙 Lencería / Ropa Interior</option>
+            <option value="zapateria">👠 Zapatería / Calzado</option>
+            <option value="marroquineria">👜 Marroquinería / Carteras / Mochilas</option>
+            <option value="merceria">🧵 Mercería / Telas</option>
+        </optgroup>
+        <optgroup label="🔨 Ferretería, Hogar y Construcción">
+            <option value="ferreteria">🔨 Ferretería</option>
+            <option value="buloneria">🔩 Bulonería</option>
+            <option value="corralon">🧱 Corralón / Materiales de Construcción</option>
+            <option value="pintureria">🎨 Pinturería</option>
+            <option value="sanitarios">🚰 Sanitarios / Plomería / Gas</option>
+            <option value="electricidad">⚡ Casa de Electricidad / Iluminación</option>
+            <option value="muebleria">🛋️ Mueblería / Decoración</option>
+            <option value="bazar">🍽️ Bazar / Artículos del Hogar</option>
+            <option value="vivero">🪴 Vivero / Jardinería</option>
+        </optgroup>
+        <optgroup label="🚗 Automotor y Rodados">
+            <option value="mecanica">🔧 Taller Mecánico</option>
+            <option value="repuestos">⚙️ Casa de Repuestos</option>
+            <option value="gomeria">🛞 Gomería</option>
+            <option value="lubricentro">🛢️ Lubricentro</option>
+            <option value="bicicleteria">🚲 Bicicletería</option>
+        </optgroup>
+        <optgroup label="💊 Salud, Estética y Mascotas">
+            <option value="farmacia">💊 Farmacia</option>
+            <option value="perfumeria">🧴 Perfumería / Cosmética</option>
+            <option value="optica">👓 Óptica</option>
+            <option value="peluqueria">💇 Peluquería</option>
+            <option value="barberia">💈 Barbería</option>
+            <option value="estetica">💅 Estética / Manicuría / Depilación</option>
+            <option value="veterinaria">🐾 Veterinaria</option>
+            <option value="petshop">🦴 Pet Shop / Forrajería</option>
+        </optgroup>
+        <optgroup label="📚 Librería, Tecnología y Servicios">
+            <option value="libreria">📚 Librería / Papelería</option>
+            <option value="jugueteria">🎲 Juguetería / Regalería</option>
+            <option value="tecnologia">📱 Celulares / Computación / Accesorios</option>
+            <option value="servicios">🧰 Servicios Profesionales / Oficios</option>
+            <option value="emprendedores">⭐ Emprendedores / Artesanías</option>
+        </optgroup>
     </select>
 </div>
            <div class="form-group" style="position: relative;">
@@ -1305,24 +1363,104 @@ function buscarSugerenciasDireccion(texto) {
     ];
 
     const rubroIconosMap = {
-    'gastronomia': 'fa-utensils',
-    'indumentaria': 'fa-shirt',
-    'ferreteria': 'fa-hammer',
-    'carniceria': 'fa-drumstick-bite',
-    'panaderia': 'fa-bread-slice',
-    'almacen': 'fa-basket-shopping',
-    'farmacia': 'fa-pills',
-    'veterinaria': 'fa-paw',
-    'peluqueria': 'fa-scissors',
-    'servicios': 'fa-wrench',
-    'automotor': 'fa-car',
-    'libreria': 'fa-book',
-    'emprendedores': 'fa-star',
-    'cerveceria': 'fa-beer-mug-empty',
-    'banco': 'fa-building-columns',
-    'estacion': 'fa-gas-pump',
-    'default': 'fa-shop'
-};
+        // Carnes y Frescos
+        'carniceria': 'fa-drumstick-bite',
+        'polleria': 'fa-drumstick-bite',
+        'granja': 'fa-egg',
+        'pescaderia': 'fa-fish',
+        'fiambreria': 'fa-cheese',
+        // Verdulería, Almacén y Panificados
+        'verduleria': 'fa-carrot',
+        'fruteria': 'fa-apple-whole',
+        'panaderia': 'fa-bread-slice',
+        'confiteria': 'fa-cake-candles',
+        'almacen': 'fa-basket-shopping',
+        'autoservicio': 'fa-cart-shopping',
+        'kiosco': 'fa-candy-cane',
+        'dietetica': 'fa-seedling',
+        'vinoteca': 'fa-wine-bottle',
+        // Gastronomía
+        'gastronomia': 'fa-utensils',
+        'pizzeria': 'fa-pizza-slice',
+        'rotiseria': 'fa-utensils',
+        'parrilla': 'fa-fire',
+        'cerveceria': 'fa-beer-mug-empty',
+        'cafeteria': 'fa-mug-hot',
+        'heladeria': 'fa-ice-cream',
+        // Indumentaria y Calzado
+        'indumentaria': 'fa-shirt',
+        'ropa_deportiva': 'fa-person-running',
+        'ropa_infantil': 'fa-baby',
+        'lenceria': 'fa-shirt',
+        'zapateria': 'fa-shoe-prints',
+        'marroquineria': 'fa-bag-shopping',
+        'merceria': 'fa-scissors',
+        // Ferretería, Hogar y Construcción
+        'ferreteria': 'fa-hammer',
+        'buloneria': 'fa-screwdriver-wrench',
+        'corralon': 'fa-trowel-bricks',
+        'pintureria': 'fa-paint-roller',
+        'sanitarios': 'fa-faucet',
+        'electricidad': 'fa-bolt',
+        'muebleria': 'fa-couch',
+        'bazar': 'fa-mug-saucer',
+        'vivero': 'fa-leaf',
+        // Automotor y Rodados
+        'mecanica': 'fa-wrench',
+        'repuestos': 'fa-gears',
+        'gomeria': 'fa-car-side',
+        'lubricentro': 'fa-oil-can',
+        'bicicleteria': 'fa-bicycle',
+        // Salud, Estética y Mascotas
+        'farmacia': 'fa-pills',
+        'perfumeria': 'fa-spray-can-sparkles',
+        'optica': 'fa-glasses',
+        'peluqueria': 'fa-scissors',
+        'barberia': 'fa-scissors',
+        'estetica': 'fa-spa',
+        'veterinaria': 'fa-paw',
+        'petshop': 'fa-bone',
+        // Librería, Tecnología y Servicios
+        'libreria': 'fa-book',
+        'jugueteria': 'fa-gamepad',
+        'tecnologia': 'fa-mobile-screen-button',
+        'servicios': 'fa-toolbox',
+        'emprendedores': 'fa-star',
+        'banco': 'fa-building-columns',
+        'estacion': 'fa-gas-pump',
+        'default': 'fa-shop'
+    };
+
+    function obtenerIconoPorRubro(rubro, nombre = "") {
+        const r = String(rubro || "").toLowerCase().trim();
+        if (rubroIconosMap[r]) return rubroIconosMap[r];
+
+        const texto = normalizarTexto(nombre + " " + r);
+        if (texto.includes('verduleria')) return 'fa-carrot';
+        if (texto.includes('fruteria')) return 'fa-apple-whole';
+        if (texto.includes('carniceria')) return 'fa-drumstick-bite';
+        if (texto.includes('polleria') || texto.includes('granja')) return 'fa-egg';
+        if (texto.includes('pescaderia')) return 'fa-fish';
+        if (texto.includes('fiambreria') || texto.includes('queseria')) return 'fa-cheese';
+        if (texto.includes('cervez') || texto.includes('tordo') || texto.includes('bar') || texto.includes('birra')) return 'fa-beer-mug-empty';
+        if (texto.includes('pizz') || texto.includes('empanada')) return 'fa-pizza-slice';
+        if (texto.includes('helad')) return 'fa-ice-cream';
+        if (texto.includes('cafe')) return 'fa-mug-hot';
+        if (texto.includes('ropa') || texto.includes('moda') || texto.includes('indumentaria')) return 'fa-shirt';
+        if (texto.includes('zapat') || texto.includes('calzado')) return 'fa-shoe-prints';
+        if (texto.includes('ferreter')) return 'fa-hammer';
+        if (texto.includes('corralon')) return 'fa-trowel-bricks';
+        if (texto.includes('pinturer')) return 'fa-paint-roller';
+        if (texto.includes('panader') || texto.includes('factur')) return 'fa-bread-slice';
+        if (texto.includes('kiosco')) return 'fa-candy-cane';
+        if (texto.includes('almacen') || texto.includes('mercado')) return 'fa-basket-shopping';
+        if (texto.includes('farmacia')) return 'fa-pills';
+        if (texto.includes('peluquer') || texto.includes('barber')) return 'fa-scissors';
+        if (texto.includes('veterinar')) return 'fa-paw';
+        if (texto.includes('mecanic') || texto.includes('auto') || texto.includes('repuesto')) return 'fa-wrench';
+        if (texto.includes('bicicleter')) return 'fa-bicycle';
+        return rubroIconosMap['default'];
+    }
 
 function obtenerIconoPorRubro(rubro, nombre = "") {
     const r = String(rubro || "").toLowerCase();
@@ -1888,7 +2026,13 @@ function obtenerIconoPorRubro(rubro, nombre = "") {
         contenedor.innerHTML = "";
 
         const listaFiltrada = comerciosVEA.filter(c => {
-            const cumpleRubro = (filtro === "todos" || c.rubro === filtro);
+            const gruposPildoras = {
+                gastronomia: ["gastronomia", "pizzeria", "rotiseria", "parrilla", "cerveceria", "cafeteria", "heladeria", "panaderia", "confiteria"],
+                comercio: ["carniceria", "polleria", "granja", "pescaderia", "fiambreria", "verduleria", "fruteria", "almacen", "autoservicio", "kiosco", "dietetica", "vinoteca", "indumentaria", "ropa_deportiva", "ropa_infantil", "lenceria", "zapateria", "marroquineria", "merceria", "ferreteria", "buloneria", "corralon", "pintureria", "sanitarios", "electricidad", "muebleria", "bazar", "vivero", "repuestos", "farmacia", "perfumeria", "optica", "petshop", "libreria", "jugueteria", "tecnologia"],
+                servicios: ["servicios", "mecanica", "gomeria", "lubricentro", "bicicleteria", "peluqueria", "barberia", "estetica", "veterinaria"],
+                emprendedores: ["emprendedores"]
+            };
+            const cumpleRubro = (filtro === "todos" || c.rubro === filtro || (gruposPildoras[filtro] && gruposPildoras[filtro].includes(c.rubro)));
             
             let textoProductos = "";
             if (c.productos && c.productos.length > 0) {
