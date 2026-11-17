@@ -792,7 +792,8 @@
         <h1>V.E.A.</h1>
         <p>VIDRIERAS ELECTRÓNICAS ARGENTINAS</p>
     </header>
-
+<!-- Contenedor de la lista de resultados de búsqueda -->
+<div id="contenedorListaBusqueda" style="max-height: 350px; overflow-y: auto; margin: 10px 15px; display: none; background: var(--blanco); border-radius: 8px; border: 1px solid var(--borde); box-shadow: 0 4px 12px rgba(0,0,0,0.1);"></div>
     <!-- Barra de Búsqueda Avanzada por Palabras Clave -->
     <div class="search-bar-container">
         <input type="text" id="inputBusquedaGlobal" placeholder="🔍 Buscá por producto (ej: ropa, cerveza, ferretería)..." oninput="filtrarPorBusqueda()">
@@ -1768,11 +1769,99 @@ function obtenerIconoPorRubro(rubro, nombre = "") {
         return '<div class="stars">' + "★".repeat(completas) + "☆".repeat(5 - completas) + ' <strong style="color:var(--texto)">' + r + '</strong> <span class="muted">(' + o + ')</span></div>';
     }
 
-    function filtrarPorBusqueda() {
-        const input = document.getElementById("inputBusquedaGlobal");
-        terminoBusqueda = normalizarTexto(input.value);
-        actualizarVista(filtroActual);
+   // Diccionario cruzado de intención (asocia palabras coloquiales a múltiples rubros)
+const diccionarioIntencion = {
+    "tornillo": ["ferreteria", "buloneria", "corralon", "repuestos", "automotor", "bicicleteria"],
+    "clavo": ["ferreteria", "buloneria", "corralon"],
+    "tuerca": ["ferreteria", "buloneria", "corralon", "repuestos", "automotor"],
+    "caño": ["ferreteria", "sanitarios", "corralon", "plomeria"],
+    "cable": ["ferreteria", "electricidad", "iluminacion", "corralon"],
+    "pintura": ["pintureria", "ferreteria", "corralon"],
+    "banana": ["verduleria", "fruteria", "dietetica", "gastronomia", "heladeria", "almacen"],
+    "fruta": ["verduleria", "fruteria", "dietetica", "almacen"],
+    "papa": ["verduleria", "almacen", "gastronomia"],
+    "asado": ["carniceria", "granja", "polleria", "gastronomia", "parrilla", "almacen"],
+    "carne": ["carniceria", "granja", "polleria", "gastronomia", "parrilla"],
+    "pan": ["panaderia", "confiteria", "gastronomia", "cafeteria", "almacen"],
+    "birra": ["cerveceria", "gastronomia", "vinoteca", "almacen", "kiosco", "bebidas"],
+    "cerveza": ["cerveceria", "gastronomia", "vinoteca", "almacen", "kiosco", "bebidas"],
+    "aceite": ["automotor", "lubricentro", "repuestos", "mecanica", "gomeria"],
+    "cubierta": ["gomeria", "automotor", "bicicleteria"],
+    "remedio": ["farmacia", "perfumeria"],
+    "zapatillas": ["indumentaria", "zapateria", "deportes"],
+    "ropa": ["indumentaria", "zapateria", "merceria"]
+};
+
+let terminoBusquedaGlobal = "";
+
+function filtrarPorBusqueda() {
+    const input = document.getElementById("inputBusquedaGlobal");
+    terminoBusquedaGlobal = normalizarTexto(input.value.trim());
+    
+    // Actualizamos el mapa y obtenemos los comercios filtrados y ordenados por plan
+    actualizarVista(filtroActual);
+    renderizarListaBusqueda();
+}
+
+// Función para renderizar la lista de resultados debajo del buscador ordenada por plan (Premium > Intermedio > Básico)
+function renderizarListaBusqueda() {
+    const contenedorLista = document.getElementById("contenedorListaBusqueda");
+    if (!contenedorLista) return;
+
+    if (!terminoBusquedaGlobal) {
+        contenedorLista.style.display = "none";
+        contenedorLista.innerHTML = "";
+        return;
     }
+
+    // Filtramos usando el diccionario cruzado + coincidencia en nombre, rubro o descripciones
+    let rubrosAsociados = [];
+    for (let clave in diccionarioIntencion) {
+        if (terminoBusquedaGlobal.includes(clave)) {
+            rubrosAsociados = rubrosAsociados.concat(diccionarioIntencion[clave]);
+        }
+    }
+
+    let resultados = comerciosDBGlobal.filter(comercio => {
+        const nombreNorm = normalizarTexto(comercio.nombre || "");
+        const rubroNorm = normalizarTexto(comercio.rubro || "");
+        const descNorm = normalizarTexto(comercio.descripcion || "");
+        
+        const matchTexto = nombreNorm.includes(terminoBusquedaGlobal) || 
+                           rubroNorm.includes(terminoBusquedaGlobal) || 
+                           descNorm.includes(terminoBusquedaGlobal);
+                           
+        const matchRubroCruzado = rubrosAsociados.includes(rubroNorm);
+
+        return matchTexto || matchRubroCruzado;
+    });
+
+    // Ordenamos estrictamente por plan usando tu función existente (Mayor peso = Premium primero)
+    resultados.sort((a, b) => obtenerPesoPlan(b.plan) - obtenerPesoPlan(a.plan));
+
+    if (resultados.length === 0) {
+        contenedorLista.style.display = "block";
+        contenedorLista.innerHTML = `<div style="padding: 12px; text-align: center; font-size: 0.8rem; color: var(--texto);">No se encontraron comercios para "<b>${terminoBusquedaGlobal}</b>".</div>`;
+        return;
+    }
+
+    // Construimos la lista visual
+    let htmlLista = `<div style="padding: 8px 12px; font-size: 0.75rem; font-weight: bold; background: var(--fondo); border-bottom: 1px solid var(--borde); color: var(--verde);">Resultados de búsqueda (${resultados.length}):</div>`;
+    
+    resultados.forEach(comercio => {
+        const badgePlan = comercio.plan ? `<span style="font-size: 0.65rem; padding: 2px 6px; background: var(--dorado); color: var(--verde); border-radius: 4px; font-weight: bold; float: right;">${comercio.plan}</span>` : '';
+        htmlLista += `
+            <div onclick="enfocarComercioEnMapa(${comercio.id})" style="padding: 10px 12px; border-bottom: 1px solid var(--borde); cursor: pointer; transition: background 0.2s;" onmouseover="this.style.background='#f4f7f5'" onmouseout="this.style.background='#fff'">
+                ${badgePlan}
+                <div style="font-weight: bold; font-size: 0.82rem; color: var(--verde);">${comercio.nombre}</div>
+                <div style="font-size: 0.72rem; color: var(--muted);">${comercio.rubro} • 📍 ${comercio.direccion || 'Dirección no especificada'}</div>
+            </div>
+        `;
+    });
+
+    contenedorLista.innerHTML = htmlLista;
+    contenedorLista.style.display = "block";
+}
 
     function obtenerPesoPlan(planStr) {
         const p = String(planStr || "").toUpperCase();
