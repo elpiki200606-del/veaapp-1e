@@ -1810,11 +1810,10 @@ function renderizarListaBusqueda() {
 
     if (!terminoBusqueda) {
         contenedorLista.style.display = "none";
-        contenedorLista.innerHTML = ""
-        return
+        contenedorLista.innerHTML = "";
+        return;
     }
 
-    // 1. Recopilamos los rubros asociados según el diccionario de intención
     let rubrosAsociados = [];
     for (let clave in diccionarioIntencion) {
         if (terminoBusqueda.includes(clave)) {
@@ -1822,7 +1821,6 @@ function renderizarListaBusqueda() {
         }
     }
 
-    // 2. FILTRADO ESTRICTO
     let resultados = comerciosDBGlobal.filter(comercio => {
         const nombreNorm = normalizarTexto(comercio.nombre || "");
         const rubroNorm = normalizarTexto(comercio.rubro || "");
@@ -1837,7 +1835,6 @@ function renderizarListaBusqueda() {
         return matchTexto || matchRubroCruzado;
     });
 
-    // 3. ORDENAMIENTO POR PLAN
     resultados.sort((a, b) => obtenerPesoPlan(b.plan) - obtenerPesoPlan(a.plan));
 
     if (resultados.length === 0) {
@@ -1846,7 +1843,6 @@ function renderizarListaBusqueda() {
         return;
     }
 
-    // 4. RENDERIZADO DE LA LISTA
     let htmlLista = `<div style="padding: 8px 12px; font-size: 0.75rem; font-weight: bold; background: var(--fondo); border-bottom: 1px solid var(--borde); color: var(--verde);">Resultados de búsqueda (${resultados.length}):</div>`;
     
     resultados.forEach(comercio => {
@@ -1863,6 +1859,7 @@ function renderizarListaBusqueda() {
     contenedorLista.innerHTML = htmlLista;
     contenedorLista.style.display = "block";
 }
+
 
     // Filtramos usando el diccionario cruzado + coincidencia en nombre, rubro o descripciones
     let rubrosAsociados = [];
@@ -1892,7 +1889,7 @@ function renderizarListaBusqueda() {
     if (resultados.length === 0) {
         contenedorLista.style.display = "block";
         contenedorLista.innerHTML = `<div style="padding: 12px; text-align: center; font-size: 0.8rem; color: var(--texto);">No se encontraron comercios para "<b>${terminoBusquedaGlobal}</b>".</div>`;
-        
+
     }
 
     // Construimos la lista visual
