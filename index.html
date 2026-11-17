@@ -936,7 +936,6 @@
         <option value="emprendedores">⭐ Emprendedores / Varios</option>
     </select>
 </div>
-            </div>
            <div class="form-group" style="position: relative;">
     <label for="inputComercioDireccion">Dirección Calle y Altura</label>
     <input type="text" id="inputComercioDireccion" placeholder="Ej: Armona 4662, González Catán" oninput="buscarSugerenciasDireccion(this.value)" autocomplete="off">
@@ -1342,15 +1341,6 @@ function obtenerIconoPorRubro(rubro, nombre = "") {
     return rubroIconosMap['default'];
 }
 
-    function obtenerIconoPorRubro(rubro, nombre = "") {
-        const texto = (nombre + " " + rubro).toLowerCase();
-        if (texto.includes('cervez') || texto.includes('tordo') || texto.includes('bar') || texto.includes('birra')) return 'fa-beer-mug-empty';
-        if (texto.includes('banco') || texto.includes('finanz')) return 'fa-building-columns';
-        if (texto.includes('estacion') || texto.includes('ypf') || texto.includes('shell') || texto.includes('combustible')) return 'fa-gas-pump';
-        if (texto.includes('peluquer') || texto.includes('barber')) return 'fa-scissors';
-        return rubroIconosMap[rubro] || rubroIconosMap['default'];
-    }
-
     function crearMarcadorPersonalizado(comercio) {
         const claseIcono = obtenerIconoPorRubro(comercio.rubro, comercio.nombre);
         return L.divIcon({
@@ -1636,29 +1626,27 @@ function obtenerIconoPorRubro(rubro, nombre = "") {
             return;
         }
 
-        // Si el usuario seleccionó una sugerencia de la lista, usamos esas coordenadas exactas. 
-    // Si escribió directo sin seleccionar, intentamos una búsqueda rápida de emergencia.
-    let latFinal = latSeleccionadaTemp;
-    let lngFinal = lngSeleccionadaTemp;
+        let latFinal = latSeleccionadaTemp;
+        let lngFinal = lngSeleccionadaTemp;
 
-    if (!latFinal || !lngFinal) {
-        try {
-            const queryBusqueda = encodeURIComponent(`${direccion}, Buenos Aires, Argentina`);
-            const respuestaGeo = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${queryBusqueda}&limit=1`);
-            const datosGeo = await respuestaGeo.json();
+        if (!latFinal || !lngFinal) {
+            try {
+                const queryBusqueda = encodeURIComponent(`${direccion}, Buenos Aires, Argentina`);
+                const respuestaGeo = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${queryBusqueda}&limit=1`);
+                const datosGeo = await respuestaGeo.json();
 
-            if (datosGeo && datosGeo.length > 0) {
-                latFinal = parseFloat(datosGeo[0].lat);
-                lngFinal = parseFloat(datosGeo[0].lon);
-            } else {
+                if (datosGeo && datosGeo.length > 0) {
+                    latFinal = parseFloat(datosGeo[0].lat);
+                    lngFinal = parseFloat(datosGeo[0].lon);
+                } else {
+                    latFinal = -34.65;
+                    lngFinal = -58.58;
+                }
+            } catch (error) {
                 latFinal = -34.65;
                 lngFinal = -58.58;
             }
-        } catch (error) {
-            latFinal = -34.65;
-            lngFinal = -58.58;
         }
-    }
 
         let iconoFinal = "🏪";
         const rubroLower = rubro ? rubro.toLowerCase() : "";
@@ -1769,159 +1757,125 @@ function obtenerIconoPorRubro(rubro, nombre = "") {
         return '<div class="stars">' + "★".repeat(completas) + "☆".repeat(5 - completas) + ' <strong style="color:var(--texto)">' + r + '</strong> <span class="muted">(' + o + ')</span></div>';
     }
 
-   // Diccionario cruzado de intención (asocia palabras coloquiales a múltiples rubros)
-const diccionarioIntencion = {
-    "tornillo": ["ferreteria", "buloneria", "corralon", "repuestos", "automotor", "bicicleteria"],
-    "clavo": ["ferreteria", "buloneria", "corralon"],
-    "tuerca": ["ferreteria", "buloneria", "corralon", "repuestos", "automotor"],
-    "caño": ["ferreteria", "sanitarios", "corralon", "plomeria"],
-    "cable": ["ferreteria", "electricidad", "iluminacion", "corralon"],
-    "pintura": ["pintureria", "ferreteria", "corralon"],
-    "banana": ["verduleria", "fruteria", "dietetica", "gastronomia", "heladeria", "almacen"],
-    "fruta": ["verduleria", "fruteria", "dietetica", "almacen"],
-    "papa": ["verduleria", "almacen", "gastronomia"],
-    "asado": ["carniceria", "granja", "polleria", "gastronomia", "parrilla", "almacen"],
-    "carne": ["carniceria", "granja", "polleria", "gastronomia", "parrilla"],
-    "pan": ["panaderia", "confiteria", "gastronomia", "cafeteria", "almacen"],
-    "birra": ["cerveceria", "gastronomia", "vinoteca", "almacen", "kiosco", "bebidas"],
-    "cerveza": ["cerveceria", "gastronomia", "vinoteca", "almacen", "kiosco", "bebidas"],
-    "aceite": ["automotor", "lubricentro", "repuestos", "mecanica", "gomeria"],
-    "cubierta": ["gomeria", "automotor", "bicicleteria"],
-    "remedio": ["farmacia", "perfumeria"],
-    "zapatillas": ["indumentaria", "zapateria", "deportes"],
-    "ropa": ["indumentaria", "zapateria", "merceria"]
-};
+    // Función auxiliar para ponderar el plan comercial (Premium > Intermedio > Básico)
+    function obtenerPesoPlan(planStr) {
+        const p = String(planStr || "").toUpperCase();
+        if (p.includes("PREMIUM")) return 3;
+        if (p.includes("INTERMEDIO") || p.includes("STANDARD")) return 2;
+        return 1;
+    }
 
-let terminoBusquedaGlobal = "";
+    // Diccionario cruzado de intención (asocia palabras coloquiales a múltiples rubros)
+    const diccionarioIntencion = {
+        "tornillo": ["ferreteria", "buloneria", "corralon", "repuestos", "automotor", "bicicleteria"],
+        "clavo": ["ferreteria", "buloneria", "corralon"],
+        "tuerca": ["ferreteria", "buloneria", "corralon", "repuestos", "automotor"],
+        "caño": ["ferreteria", "sanitarios", "corralon", "plomeria"],
+        "cable": ["ferreteria", "electricidad", "iluminacion", "corralon"],
+        "pintura": ["pintureria", "ferreteria", "corralon"],
+        "banana": ["verduleria", "fruteria", "dietetica", "gastronomia", "heladeria", "almacen"],
+        "fruta": ["verduleria", "fruteria", "dietetica", "almacen"],
+        "papa": ["verduleria", "almacen", "gastronomia"],
+        "asado": ["carniceria", "granja", "polleria", "gastronomia", "parrilla", "almacen"],
+        "carne": ["carniceria", "granja", "polleria", "gastronomia", "parrilla"],
+        "pan": ["panaderia", "confiteria", "gastronomia", "cafeteria", "almacen"],
+        "birra": ["cerveceria", "gastronomia", "vinoteca", "almacen", "kiosco", "bebidas"],
+        "cerveza": ["cerveceria", "gastronomia", "vinoteca", "almacen", "kiosco", "bebidas"],
+        "aceite": ["automotor", "lubricentro", "repuestos", "mecanica", "gomeria"],
+        "cubierta": ["gomeria", "automotor", "bicicleteria"],
+        "remedio": ["farmacia", "perfumeria"],
+        "zapatillas": ["indumentaria", "zapateria", "deportes"],
+        "ropa": ["indumentaria", "zapateria", "merceria"]
+    };
 
-function filtrarPorBusqueda() {
-    const input = document.getElementById("inputBusquedaGlobal");
-    terminoBusquedaGlobal = normalizarTexto(input.value.trim());
-    
-    // Actualizamos el mapa y obtenemos los comercios filtrados y ordenados por plan
-    actualizarVista(filtroActual);
-    renderizarListaBusqueda();
-}
+    let terminoBusquedaGlobal = "";
 
-// Función para renderizar la lista de resultados debajo del buscador ordenada por plan (Premium > Intermedio > Básico)
+    function filtrarPorBusqueda() {
+        const input = document.getElementById("inputBusquedaGlobal");
+        terminoBusquedaGlobal = normalizarTexto(input.value.trim());
+        terminoBusqueda = terminoBusquedaGlobal;
+        
+        actualizarVista(filtroActual);
+        renderizarListaBusqueda();
+    }
 
-function renderizarListaBusqueda() {
-    let contenedorLista = document.getElementById("contenedorListaBusqueda");
-    
-    // Si por alguna razón el HTML no lo tiene, lo inyectamos de forma segura debajo del buscador
-    if (!contenedorLista) {
-        const barraBusqueda = document.querySelector(".search-bar-container") || document.getElementById("inputBusquedaGlobal");
-        if (barraBusqueda) {
-            contenedorLista = document.createElement("div");
-            contenedorLista.id = "contenedorListaBusqueda";
-            contenedorLista.style.cssText = "max-height: 350px; overflow-y: auto; margin: 10px 15px; display: none; background: #ffffff; border-radius: 8px; border: 1px solid var(--borde); box-shadow: 0 4px 12px rgba(0,0,0,0.1); z-index: 1000; position: relative;";
-            barraBusqueda.insertAdjacentElement("afterend", contenedorLista);
-        } else {
+    // Función limpia y unificada para renderizar la lista de búsqueda
+    function renderizarListaBusqueda() {
+        let contenedorLista = document.getElementById("contenedorListaBusqueda");
+        
+        if (!contenedorLista) {
+            const barraBusqueda = document.querySelector(".search-bar-container") || document.getElementById("inputBusquedaGlobal");
+            if (barraBusqueda) {
+                contenedorLista = document.createElement("div");
+                contenedorLista.id = "contenedorListaBusqueda";
+                contenedorLista.style.cssText = "max-height: 350px; overflow-y: auto; margin: 10px 15px; display: none; background: #ffffff; border-radius: 8px; border: 1px solid var(--borde); box-shadow: 0 4px 12px rgba(0,0,0,0.1); z-index: 1000; position: relative;";
+                barraBusqueda.insertAdjacentElement("afterend", contenedorLista);
+            } else {
+                return;
+            }
+        }
+
+        if (!terminoBusquedaGlobal) {
+            contenedorLista.style.display = "none";
+            contenedorLista.innerHTML = "";
             return;
         }
-    }
 
-    if (!terminoBusqueda) {
-        contenedorLista.style.display = "none";
-        contenedorLista.innerHTML = "";
-        return;
-    }
-
-    let rubrosAsociados = [];
-    for (let clave in diccionarioIntencion) {
-        if (terminoBusqueda.includes(clave)) {
-            rubrosAsociados = rubrosAsociados.concat(diccionarioIntencion[clave]);
+        let rubrosAsociados = [];
+        for (let clave in diccionarioIntencion) {
+            if (terminoBusquedaGlobal.includes(clave)) {
+                rubrosAsociados = rubrosAsociados.concat(diccionarioIntencion[clave]);
+            }
         }
-    }
 
-    let resultados = comerciosDBGlobal.filter(comercio => {
-        const nombreNorm = normalizarTexto(comercio.nombre || "");
-        const rubroNorm = normalizarTexto(comercio.rubro || "");
-        const descNorm = normalizarTexto(comercio.descripcion || "");
-        
-        const matchTexto = nombreNorm.includes(terminoBusqueda) || 
-                           rubroNorm.includes(terminoBusqueda) || 
-                           descNorm.includes(terminoBusqueda);
-                           
-        const matchRubroCruzado = rubrosAsociados.some(r => rubroNorm.includes(r) || r.includes(rubroNorm));
+        let resultados = comerciosDBGlobal.filter(comercio => {
+            const nombreNorm = normalizarTexto(comercio.nombre || "");
+            const rubroNorm = normalizarTexto(comercio.rubro || "");
+            const descNorm = normalizarTexto(comercio.descripcion || "");
+            
+            const matchTexto = nombreNorm.includes(terminoBusquedaGlobal) || 
+                               rubroNorm.includes(terminoBusquedaGlobal) || 
+                               descNorm.includes(terminoBusquedaGlobal);
+                               
+            const matchRubroCruzado = rubrosAsociados.some(r => rubroNorm.includes(r) || r.includes(rubroNorm));
 
-        return matchTexto || matchRubroCruzado;
-    });
+            return matchTexto || matchRubroCruzado;
+        });
 
-    resultados.sort((a, b) => obtenerPesoPlan(b.plan) - obtenerPesoPlan(a.plan));
+        resultados.sort((a, b) => obtenerPesoPlan(b.plan) - obtenerPesoPlan(a.plan));
 
-    if (resultados.length === 0) {
-        contenedorLista.style.display = "block";
-        contenedorLista.innerHTML = `<div style="padding: 12px; text-align: center; font-size: 0.8rem; color: var(--texto);">No se encontraron comercios para "<b>${terminoBusqueda}</b>".</div>`;
-        return;
-    }
-
-    let htmlLista = `<div style="padding: 8px 12px; font-size: 0.75rem; font-weight: bold; background: var(--fondo); border-bottom: 1px solid var(--borde); color: var(--verde);">Resultados de búsqueda (${resultados.length}):</div>`;
-    
-    resultados.forEach(comercio => {
-        const badgePlan = comercio.plan ? `<span style="font-size: 0.65rem; padding: 2px 6px; background: var(--dorado); color: var(--verde); border-radius: 4px; font-weight: bold; float: right;">${comercio.plan}</span>` : '';
-        htmlLista += `
-            <div onclick="enfocarComercioEnMapa(${comercio.id})" style="padding: 10px 12px; border-bottom: 1px solid var(--borde); cursor: pointer; transition: background 0.2s;" onmouseover="this.style.background='#f4f7f5'" onmouseout="this.style.background='#fff'">
-                ${badgePlan}
-                <div style="font-weight: bold; font-size: 0.82rem; color: var(--verde);">${comercio.nombre}</div>
-                <div style="font-size: 0.72rem; color: var(--muted);">${comercio.rubro} • 📍 ${comercio.direccion || 'Dirección no especificada'}</div>
-            </div>
-        `;
-    });
-
-    contenedorLista.innerHTML = htmlLista;
-    contenedorLista.style.display = "block";
-}
-
-
-
-
-    // Filtramos usando el diccionario cruzado + coincidencia en nombre, rubro o descripciones
-    let rubrosAsociados = [];
-    for (let clave in diccionarioIntencion) {
-        if (terminoBusquedaGlobal.includes(clave)) {
-            rubrosAsociados = rubrosAsociados.concat(diccionarioIntencion[clave]);
+        if (resultados.length === 0) {
+            contenedorLista.style.display = "block";
+            contenedorLista.innerHTML = `<div style="padding: 12px; text-align: center; font-size: 0.8rem; color: var(--texto);">No se encontraron comercios para "<b>${terminoBusquedaGlobal}</b>".</div>`;
+            return;
         }
-    }
 
-    let resultados = comerciosDBGlobal.filter(comercio => {
-        const nombreNorm = normalizarTexto(comercio.nombre || "");
-        const rubroNorm = normalizarTexto(comercio.rubro || "");
-        const descNorm = normalizarTexto(comercio.descripcion || "");
+        let htmlLista = `<div style="padding: 8px 12px; font-size: 0.75rem; font-weight: bold; background: var(--fondo); border-bottom: 1px solid var(--borde); color: var(--verde);">Resultados de búsqueda (${resultados.length}):</div>`;
         
-        const matchTexto = nombreNorm.includes(terminoBusquedaGlobal) || 
-                           rubroNorm.includes(terminoBusquedaGlobal) || 
-                           descNorm.includes(terminoBusquedaGlobal);
-                           
-        const matchRubroCruzado = rubrosAsociados.includes(rubroNorm);
+        resultados.forEach(comercio => {
+            const badgePlan = comercio.plan ? `<span style="font-size: 0.65rem; padding: 2px 6px; background: var(--dorado); color: var(--verde); border-radius: 4px; font-weight: bold; float: right;">${comercio.plan}</span>` : '';
+            htmlLista += `
+                <div onclick="enfocarComercioEnMapa(${comercio.id})" style="padding: 10px 12px; border-bottom: 1px solid var(--borde); cursor: pointer; transition: background 0.2s;" onmouseover="this.style.background='#f4f7f5'" onmouseout="this.style.background='#fff'">
+                    ${badgePlan}
+                    <div style="font-weight: bold; font-size: 0.82rem; color: var(--verde);">${comercio.nombre}</div>
+                    <div style="font-size: 0.72rem; color: var(--muted);">${comercio.rubro} • 📍 ${comercio.direccion || 'Dirección no especificada'}</div>
+                </div>
+            `;
+        });
 
-        return matchTexto || matchRubroCruzado;
-    });
-// Ordenamos estrictamente por plan (Premium > Intermedio > Básico)
-    resultados.sort((a, b) => obtenerPesoPlan(b.plan) - obtenerPesoPlan(a.plan));
-
-    if (resultados.length === 0) {
+        contenedorLista.innerHTML = htmlLista;
         contenedorLista.style.display = "block";
-        contenedorLista.innerHTML = `<div style="padding: 12px; text-align: center; font-size: 0.8rem; color: var(--texto);">No se encontraron comercios para "<b>${terminoBusquedaGlobal}</b>".</div>`;
-
     }
 
-    let htmlLista = `<div style="padding: 8px 12px; font-size: 0.75rem; font-weight: bold; background: var(--fondo); border-bottom: 1px solid var(--borde); color: var(--verde);">Resultados de búsqueda (${resultados.length}):</div>`;
-    
-    resultados.forEach(comercio => {
-        const badgePlan = comercio.plan ? `<span style="font-size: 0.65rem; padding: 2px 6px; background: var(--dorado); color: var(--verde); border-radius: 4px; font-weight: bold; float: right;">${comercio.plan}</span>` : '';
-        htmlLista += `
-            <div onclick="enfocarComercioEnMapa(${comercio.id})" style="padding: 10px 12px; border-bottom: 1px solid var(--borde); cursor: pointer; transition: background 0.2s;" onmouseover="this.style.background='#f4f7f5'" onmouseout="this.style.background='#fff'">
-                ${badgePlan}
-                <div style="font-weight: bold; font-size: 0.82rem; color: var(--verde);">${comercio.nombre}</div>
-                <div style="font-size: 0.72rem; color: var(--muted);">${comercio.rubro} • 📍 ${comercio.direccion || 'Dirección no especificada'}</div>
-            </div>
-        `;
-    });
-
-    contenedorLista.innerHTML = htmlLista;
-    contenedorLista.style.display = "block";
-
+    function enfocarComercioEnMapa(id) {
+        const comercio = buscarComercio(id);
+        if (!comercio) return;
+        mostrarVista("vistaPrincipal");
+        if (map && Number.isFinite(comercio.lat) && Number.isFinite(comercio.lng)) {
+            map.setView([comercio.lat, comercio.lng], 16);
+        }
+        document.getElementById("contenedorListaBusqueda").style.display = "none";
+    }
 
     function actualizarVista(filtro) {
         filtroActual = filtro;
@@ -2218,42 +2172,38 @@ function renderizarListaBusqueda() {
     }
 
     // --- BLOQUE MAESTRO DE INICIALIZACIÓN (DOM Y MAPA SEGUROS) ---
-   document.addEventListener("DOMContentLoaded", function() {
-    map = L.map("map").setView([-34.6434, -58.6231], 12);
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        attribution: '&copy; OpenStreetMap contributors'
-    }).addTo(map);
+    document.addEventListener("DOMContentLoaded", function() {
+        map = L.map("map").setView([-34.6434, -58.6231], 12);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; OpenStreetMap contributors'
+        }).addTo(map);
 
-    // Sincronizar con Firestore al arrancar
-    db.collection("comerciosVEA").get().then((querySnapshot) => {
-        querySnapshot.forEach((doc) => {
-            const comercioRemoto = doc.data();
-            if (comercioRemoto.lat && comercioRemoto.lng) {
-                const existe = comerciosVEA.some(c => c.id === comercioRemoto.id);
-                if (!existe) {
-                    comerciosVEA.push(comercioRemoto);
+        db.collection("comerciosVEA").get().then((querySnapshot) => {
+            querySnapshot.forEach((doc) => {
+                const comercioRemoto = doc.data();
+                if (comercioRemoto.lat && comercioRemoto.lng) {
+                    const existe = comerciosVEA.some(c => c.id === comercioRemoto.id);
+                    if (!existe) {
+                        comerciosVEA.push(comercioRemoto);
+                    }
                 }
-            }
+            });
+            actualizarVista("todos");
+        }).catch((error) => {
+            console.error("Error al sincronizar con Firestore: ", error);
         });
+
+        renderizarNotificaciones();
         actualizarVista("todos");
-    }).catch((error) => {
-        console.error("Error al sincronizar con Firestore: ", error);
+        inicializarBannerRotativoPremium();
+        actualizarEstadoSesionUI();
+
+        const aviso = document.getElementById("avisoUbicaciones");
+        if (aviso) {
+            aviso.className = "status-box status-ok";
+            aviso.textContent = "Mapa sincronizado con éxito.";
+        }
     });
-
-    renderizarNotificaciones();
-    actualizarVista("todos");
-    inicializarBannerRotativoPremium();
-    actualizarEstadoSesionUI();
-
-    const aviso = document.getElementById("avisoUbicaciones");
-    if (aviso) {
-        aviso.className = "status-box status-ok";
-        aviso.textContent = "Mapa sincronizado con éxito.";
-    }
-});
-
-       
-    
 </script>
 </body>
 </html>
