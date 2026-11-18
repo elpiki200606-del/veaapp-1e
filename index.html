@@ -1,6 +1,38 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
+    <head>
+<style>
+    :root {
+        --verde: #062e22;
+        --verde2: #0b4533;
+        --dorado: #d4af37;
+        --fondo: #f4f7f5;
+        --texto: #173c30;
+        --muted: #62776e;
+        --borde: #d1ded7;
+        --blanco: #fff;
+        --azul: #2563eb;
+        --whatsapp: #16a34a;
+        --rojo: #dc2626;
+    }
+    *, *::before, *::after {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+    }
+    body {
+        font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+        color: var(--texto);
+        background: var(--fondo);
+        min-height: 100vh;
+        padding-bottom: 75px;
+    }
+</style>
+
+<script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-auth-compat.js"></script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>V.E.A. | Vidrieras Electrónicas Argentinas</title>
@@ -12,7 +44,7 @@
 <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-auth-compat.js"></script>
-        <style>
+        
 :root {
     --verde: #062e22;
     --verde2: #0b4533;
