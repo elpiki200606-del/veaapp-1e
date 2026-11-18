@@ -1192,10 +1192,230 @@
     // --- ESTADOS Y SESIÓN GLOBALES (DECLARADOS PRIMERO QUE NADA) ---
     let sesionActivaGlobal = null;
     let map = null;
+    // --- GESTIÓN DE USUARIOS 100% EN FIREBASE FIRESTORE ---
+    // --- GESTIÓN DE USUARIOS 100% EN FIREBASE FIRESTORE ---
     let usuariosDBGlobal = [
         { nombre: "Cervecería Artesanal El Tordo", email: "tordo@vea.com", password: "123456", tipo: "comercio", suscripcionActiva: "premium" },
         { nombre: "Café & Bar Flores", email: "flores@vea.com", password: "123456", tipo: "comercio", suscripcionActiva: "intermedio" }
     ];
+
+    // Función para sincronizar y obtener usuarios desde Firestore
+    async function obtenerUsuariosDBCloud() {
+        try {
+            const snapshot = await db.collection("usuariosVEA").get();
+            let usuariosRemotos = [];
+            snapshot.forEach(doc => {
+                usuariosRemotos.push(doc.data());
+            });
+            if (usuariosRemotos.length > 0) {
+                return usuariosRemotos;
+            }
+        } catch (e) {
+            console.error("Error al obtener usuarios de Firebase:", e);
+        }
+        return usuariosDBGlobal;
+    }
+
+    async function guardarNuevoRegistro() {
+        const nombre = document.getElementById("regNombre").value.trim();
+        const email = document.getElementById("regEmail").value.trim().toLowerCase();
+        const password = document.getElementById("regPassword").value;
+        const errorBox = document.getElementById("errorRegistro");
+
+        if (!nombre || !email || !password) {
+            errorBox.textContent = "Por favor, completá todos los campos.";
+            errorBox.style.display = "block";
+            return;
+        }
+
+        try {
+            // Verificamos en la nube si ya existe el email
+            let usuariosActuales = await obtenerUsuariosDBCloud();
+            const emailYaExiste = usuariosActuales.some(u => u.email.toLowerCase() === email);
+            
+            if (emailYaExiste) {
+                errorBox.textContent = "Este correo electrónico ya se encuentra registrado. Iniciá sesión.";
+                errorBox.style.display = "block";
+                return;
+            }
+
+            errorBox.style.display = "none";
+
+            const nuevoUsuario = { 
+                nombre: nombre, 
+                email: email, 
+                password: password, 
+                tipo: "comercio", 
+                suscripcionActiva: "basico"
+            };
+
+            // ID limpio para el documento en Firebase basado en el email
+            const idDocUsuario = email.replace(/[@\.]/g, '_');
+            await db.collection("usuariosVEA").doc(idDocUsuario).set(nuevoUsuario);
+            
+            usuarioActual = nuevoUsuario;
+            sesionActivaGlobal = nuevoUsuario;
+
+            actualizarEstadoSesionUI();
+            cerrarModalRegistro();
+            actualizarInterfazPanelComercial();
+            
+            alert("¡Cuenta registrada en la nube e iniciada con éxito, " + nombre + "!");
+        } catch (error) {
+            console.error("Error al registrar en Firebase:", error);
+            errorBox.textContent = "Error al conectar con la base de datos.";
+            errorBox.style.display = "block";
+        }
+    }
+
+    async function procesarLogin() {
+        const email = document.getElementById("loginEmail").value.trim().toLowerCase();
+        const password = document.getElementById("loginPassword").value;
+        const errorBox = document.getElementById("errorLogin");
+
+        try {
+            // Consultamos la base de datos en la nube
+            let usuariosActuales = await obtenerUsuariosDBCloud();
+            const encontrado = usuariosActuales.find(u => u.email.toLowerCase() === email && u.password === password);
+
+            if (!encontrado) {
+                errorBox.textContent = "Usuario no existe o contraseña incorrecta.";
+                errorBox.style.display = "block";
+                return;
+            }
+
+            errorBox.style.display = "none";
+            usuarioActual = encontrado;
+            sesionActivaGlobal = encontrado;
+
+            actualizarEstadoSesionUI();
+            cerrarModalLogin();
+            actualizarInterfazPanelComercial();
+
+            alert("¡Bienvenido nuevamente, " + encontrado.nombre + "!");
+        } catch (error) {
+            console.error("Error en login con Firebase:", error);
+            errorBox.textContent = "Error al conectar con la base de datos.";
+            errorBox.style.display = "block";
+        }
+    }
+
+    function cerrarSesion() {
+        usuarioActual = null;
+        sesionActivaGlobal = null;
+        document.getElementById("panelComercialAutogestion").classList.add("hidden");
+        actualizarEstadoSesionUI();
+        alert("Sesión cerrada correctamente.");
+    }
+
+    // Función para sincronizar y obtener usuarios desde Firestore
+    async function obtenerUsuariosDBCloud() {
+        try {
+            const snapshot = await db.collection("usuariosVEA").get();
+            let usuariosRemotos = [];
+            snapshot.forEach(doc => {
+                usuariosRemotos.push(doc.data());
+            });
+            if (usuariosRemotos.length > 0) {
+                return usuariosRemotos;
+            }
+        } catch (e) {
+            console.error("Error al obtener usuarios de Firebase:", e);
+        }
+        return usuariosDBGlobal;
+    }
+
+    async function guardarNuevoRegistro() {
+        const nombre = document.getElementById("regNombre").value.trim();
+        const email = document.getElementById("regEmail").value.trim().toLowerCase();
+        const password = document.getElementById("regPassword").value;
+        const errorBox = document.getElementById("errorRegistro");
+
+        if (!nombre || !email || !password) {
+            errorBox.textContent = "Por favor, completá todos los campos.";
+            errorBox.style.display = "block";
+            return;
+        }
+
+        try {
+            // Verificamos en la nube si ya existe el email
+            let usuariosActuales = await obtenerUsuariosDBCloud();
+            const emailYaExiste = usuariosActuales.some(u => u.email.toLowerCase() === email);
+            
+            if (emailYaExiste) {
+                errorBox.textContent = "Este correo electrónico ya se encuentra registrado. Iniciá sesión.";
+                errorBox.style.display = "block";
+                return;
+            }
+
+            errorBox.style.display = "none";
+
+            const nuevoUsuario = { 
+                nombre: nombre, 
+                email: email, 
+                password: password, 
+                tipo: "comercio", 
+                suscripcionActiva: "basico"
+            };
+
+            // ID limpio para el documento en Firebase basado en el email
+            const idDocUsuario = email.replace(/[@\.]/g, '_');
+            await db.collection("usuariosVEA").doc(idDocUsuario).set(nuevoUsuario);
+            
+            usuarioActual = nuevoUsuario;
+            sesionActivaGlobal = nuevoUsuario;
+
+            actualizarEstadoSesionUI();
+            cerrarModalRegistro();
+            actualizarInterfazPanelComercial();
+            
+            alert("¡Cuenta registrada en la nube e iniciada con éxito, " + nombre + "!");
+        } catch (error) {
+            console.error("Error al registrar en Firebase:", error);
+            errorBox.textContent = "Error al conectar con la base de datos.";
+            errorBox.style.display = "block";
+        }
+    }
+
+    async function procesarLogin() {
+        const email = document.getElementById("loginEmail").value.trim().toLowerCase();
+        const password = document.getElementById("loginPassword").value;
+        const errorBox = document.getElementById("errorLogin");
+
+        try {
+            // Consultamos la base de datos en la nube
+            let usuariosActuales = await obtenerUsuariosDBCloud();
+            const encontrado = usuariosActuales.find(u => u.email.toLowerCase() === email && u.password === password);
+
+            if (!encontrado) {
+                errorBox.textContent = "Usuario no existe o contraseña incorrecta.";
+                errorBox.style.display = "block";
+                return;
+            }
+
+            errorBox.style.display = "none";
+            usuarioActual = encontrado;
+            sesionActivaGlobal = encontrado;
+
+            actualizarEstadoSesionUI();
+            cerrarModalLogin();
+            actualizarInterfazPanelComercial();
+
+            alert("¡Bienvenido nuevamente, " + encontrado.nombre + "!");
+        } catch (error) {
+            console.error("Error en login con Firebase:", error);
+            errorBox.textContent = "Error al conectar con la base de datos.";
+            errorBox.style.display = "block";
+        }
+    }
+
+    function cerrarSesion() {
+        usuarioActual = null;
+        sesionActivaGlobal = null;
+        document.getElementById("panelComercialAutogestion").classList.add("hidden");
+        actualizarEstadoSesionUI();
+        alert("Sesión cerrada correctamente.");
+    }
 
 // Inicializar Firebase de manera global para que todas las funciones lo vean
 const firebaseConfig = {
