@@ -1124,6 +1124,10 @@
                     <label for="regPassword">Contraseña</label>
                     <input type="password" id="regPassword" placeholder="Mínimo 6 caracteres">
                 </div>
+                <div class="form-group">
+                <label for="regWhatsapp">WhatsApp del comercio (para clientes y avisos)</label>
+                <input type="tel" id="regWhatsapp" placeholder="Ej: 1123456789" autocomplete="off">
+            </div>
                 <p id="errorRegistro" style="color:#b91c1c;font-size:.75rem;margin-bottom:6px;display:none;"></p>
             </div>
             <div class="modal-footer">
@@ -1140,11 +1144,12 @@
                 <h3>🔑 Iniciar Sesión en V.E.A.</h3>
                 <div class="form-group">
                     <label for="loginEmail">Correo electrónico</label>
-                    <input type="email" id="loginEmail" placeholder="comercio@vea.com">
+                    
+                    <input type="email" id="loginEmail" placeholder="comercio@vea.com" autocomplete="off">
                 </div>
                 <div class="form-group">
                     <label for="loginPassword">Contraseña</label>
-                    <input type="password" id="loginPassword" placeholder="123456">
+                   <input type="password" id="loginPassword" placeholder="123456" autocomplete="new-password">
                 </div>
                 <p id="errorLogin" style="color:#b91c1c;font-size:.75rem;margin-bottom:6px;display:none;"></p>
             </div>
@@ -1432,7 +1437,16 @@ if (!firebase.apps.length) {
     firebase.initializeApp(firebaseConfig);
 }
 const db = firebase.firestore();
-
+// Observador de sesión (Blindaje contra F5)
+firebase.auth().onAuthStateChanged((user) => {
+    if (user) {
+        console.log("Sesión activa en la nube:", user.email);
+        usuarioActual = user; // Actualizamos la variable global de usuario si ya la usás en la app
+    } else {
+        console.log("No hay usuario autenticado.");
+        usuarioActual = null;
+    }
+});
     const telefonoWhatsAppBase = "5491100000000";
     let comercioActualId = null;
     let filtroActual = "todos";
@@ -1889,24 +1903,50 @@ function obtenerIconoPorRubro(rubro, nombre = "") {
         document.getElementById("modalRegistro").classList.add("hidden");
     }
 
-    function guardarNuevoRegistro() {
-        const nombre = document.getElementById("regNombre").value.trim();
-        const email = document.getElementById("regEmail").value.trim().toLowerCase();
-        const password = document.getElementById("regPassword").value;
-        const errorBox = document.getElementById("errorRegistro");
+    async function guardarNuevoRegistro() {
+    const nombre = document.getElementById("regNombre").value.trim();
+    const email = document.getElementById("regEmail").value.trim().toLowerCase();
+    const password = document.getElementById("regPassword").value.trim();
+    const whatsapp = document.getElementById("regWhatsapp") ? document.getElementById("regWhatsapp").value.trim() : ""; // Asegurate de tener este input en tu HTML
+    const errorBox = document.getElementById("errorRegistro");
 
-        if (!nombre || !email || !password) {
-            errorBox.textContent = "Por favor, completá todos los campos.";
-            errorBox.style.display = "block";
-            return;
-        }
+    if (!nombre || !email || !password || !whatsapp) {
+        errorBox.textContent = "Por favor, completá todos los campos, incluyendo el WhatsApp.";
+        errorBox.style.display = "block";
+        return;
+    }
 
-        const emailYaExiste = usuariosRegistrados.some(u => u.email.toLowerCase() === email);
-        if (emailYaExiste) {
-            errorBox.textContent = "Este correo electrónico ya se encuentra registrado. Iniciá sesión.";
-            errorBox.style.display = "block";
-            return;
-        }
+    try {
+        // 1. Crear usuario en Firebase Auth
+        const userCredential = await firebase.auth().createUserWithEmailAndPassword(email, password);
+        const user = userCredential.user;
+
+        // 2. Enviar correo de verificación obligatorio
+        await user.sendEmailVerification();
+
+        // 3. Guardar datos en Firestore con el mes de prueba Premium y el WhatsApp
+        const fechaActual = new Date().toISOString();
+        await firebase.firestore().collection("comerciosVEA").doc(user.uid).set({
+            nombreComercio: nombre,
+            emailDueño: email,
+            whatsappDueño: whatsapp,
+            fechaRegistro: fechaActual,
+            estadoSuscripcion: "trial_premium", // 1 mes gratis de regalo
+            emailVerificado: false,
+            activo: true
+        });
+
+        alert("¡Registro exitoso! Te enviamos un correo de verificación. Validá tu mail para activar tu panel y disfrutar tu mes Premium.");
+        
+        // Cerrar modal de registro si lo tenés implementado
+        cerrarModalRegistro();
+
+    } catch (error) {
+        console.error("Error en el registro:", error);
+        errorBox.textContent = "Error al registrarse: " + error.message;
+        errorBox.style.display = "block";
+    }
+
 
         errorBox.style.display = "none";
 
@@ -2568,6 +2608,194 @@ function obtenerIconoPorRubro(rubro, nombre = "") {
             aviso.textContent = "Mapa sincronizado con éxito.";
         }
     });
+</script>
+const aviso = document.getElementById("avisoUbicaciones");
+    if (aviso) {
+        aviso.className = "status-box status-ok";
+        aviso.textContant = "Mapa sincronizado con éxito.";
+    }
+});
+</script> <!-- ACÁ CIERRA EL SCRIPT ORIGINAL -->
+
+<script>
+    // --- SISTEMA DE AVISO CÁLIDO Y CONTROL DE VENCIMIENTO ---
+    function verificarAlertaVencimiento(fechaRegistroComercio) {
+        if (!fechaRegistroComercio) return;
+
+        const fechaInicio = new Date(fechaRegistroComercio);
+        const fechaActual = new Date();
+        
+        const diferenciaTiempo = fechaActual - fechaInicio;
+        const diasTranscurridos = Math.floor(diferenciaTiempo / (1000 * 60 * 60 * 24));
+        const diasRestantes = 30 - diasTranscurridos;
+
+        if (diasRestantes <= 10 && diasRestantes > 0) {
+            mostrarCartelCálidoVencimiento(diasRestantes);
+        } else if (diasRestantes <= 0) {
+            bloquearAccesoVidriera();
+        }
+    }
+
+    function mostrarCartelCálidoVencimiento(dias) {
+        const bannerAlerta = document.getElementById("bannerAlertaVencimiento");
+        if (bannerAlerta) {
+            bannerAlerta.innerHTML = `
+                <div style="background-color: #fff3cd; padding: 15px; border-radius: 8px; border-left: 5px solid #ffc107; margin-bottom: 20px;">
+                    <h4 style="margin: 0 0 5px 0; color: #856404;">✨ ¡Tu mes Premium en V.E.A. está llegando a su etapa final!</h4>
+                    <p style="margin: 0 0 10px 0; color: #664d03;">
+                        Te quedan <b>${dias} días</b> de tu prueba gratuita. No pierdas el acceso a esta fantástica vidriera y seguí conectando con tus clientes. Elegí tu plan y abonalo antes de que se cumpla el plazo para mantener tu espacio siempre activo.
+                    </p>
+                    <button class="btn btn-primary" onclick="abrirOpcionesDePago()">Elegir mi plan ahora</button>
+                </div>
+            `;
+            bannerAlerta.style.display = "block";
+        }
+    }
+
+    function bloquearAccesoVidriera() {
+        console.log("El periodo de prueba ha finalizado. La vidriera se encuentra inactiva hasta registrar un pago.");
+    }
+</script>
+const aviso = document.getElementById("avisoUbicaciones");
+    if (aviso) {
+        aviso.className = "status-box status-ok";
+        aviso.textContant = "Mapa sincronizado con éxito.";
+    }
+});
+</script> <!-- ACÁ CIERRA EL SCRIPT ORIGINAL -->
+
+<script>
+    // --- SISTEMA DE AVISO CÁLIDO Y CONTROL DE VENCIMIENTO ---
+    function verificarAlertaVencimiento(fechaRegistroComercio) {
+        if (!fechaRegistroComercio) return;
+
+        const fechaInicio = new Date(fechaRegistroComercio);
+        const fechaActual = new Date();
+        
+        const diferenciaTiempo = fechaActual - fechaInicio;
+        const diasTranscurridos = Math.floor(diferenciaTiempo / (1000 * 60 * 60 * 24));
+        const diasRestantes = 30 - diasTranscurridos;
+
+        if (diasRestantes <= 10 && diasRestantes > 0) {
+            mostrarCartelCálidoVencimiento(diasRestantes);
+        } else if (diasRestantes <= 0) {
+            bloquearAccesoVidriera();
+        }
+    }
+
+    function mostrarCartelCálidoVencimiento(dias) {
+        const bannerAlerta = document.getElementById("bannerAlertaVencimiento");
+        if (bannerAlerta) {
+            bannerAlerta.innerHTML = `
+                <div style="background-color: #fff3cd; padding: 15px; border-radius: 8px; border-left: 5px solid #ffc107; margin-bottom: 20px;">
+                    <h4 style="margin: 0 0 5px 0; color: #856404;">✨ ¡Tu mes Premium en V.E.A. está llegando a su etapa final!</h4>
+                    <p style="margin: 0 0 10px 0; color: #664d03;">
+                        Te quedan <b>${dias} días</b> de tu prueba gratuita. No pierdas el acceso a esta fantástica vidriera y seguí conectando con tus clientes. Elegí tu plan y abonalo antes de que se cumpla el plazo para mantener tu espacio siempre activo.
+                    </p>
+                    <button class="btn btn-primary" onclick="abrirOpcionesDePago()">Elegir mi plan ahora</button>
+                </div>
+            `;
+            bannerAlerta.style.display = "block";
+        }
+    }
+
+    function bloquearAccesoVidriera() {
+        console.log("El periodo de prueba ha finalizado. La vidriera se encuentra inactiva hasta registrar un pago.");
+    }
+</script>
+
+</body>
+const aviso = document.getElementById("avisoUbicaciones");
+    if (aviso) {
+        aviso.className = "status-box status-ok";
+        aviso.textContant = "Mapa sincronizado con éxito.";
+    }
+});
+</script> <!-- ACÁ CIERRA EL SCRIPT ORIGINAL -->
+
+<script>
+    // --- SISTEMA DE AVISO CÁLIDO Y CONTROL DE VENCIMIENTO ---
+    function verificarAlertaVencimiento(fechaRegistroComercio) {
+        if (!fechaRegistroComercio) return;
+
+        const fechaInicio = new Date(fechaRegistroComercio);
+        const fechaActual = new Date();
+        
+        const diferenciaTiempo = fechaActual - fechaInicio;
+        const diasTranscurridos = Math.floor(diferenciaTiempo / (1000 * 60 * 60 * 24));
+        const diasRestantes = 30 - diasTranscurridos;
+
+        if (diasRestantes <= 10 && diasRestantes > 0) {
+            mostrarCartelCálidoVencimiento(diasRestantes);
+        } else if (diasRestantes <= 0) {
+            bloquearAccesoVidriera();
+        }
+    }
+
+    function mostrarCartelCálidoVencimiento(dias) {
+        const bannerAlerta = document.getElementById("bannerAlertaVencimiento");
+        if (bannerAlerta) {
+            bannerAlerta.innerHTML = `
+                <div style="background-color: #fff3cd; padding: 15px; border-radius: 8px; border-left: 5px solid #ffc107; margin-bottom: 20px;">
+                    <h4 style="margin: 0 0 5px 0; color: #856404;">✨ ¡Tu mes Premium en V.E.A. está llegando a su etapa final!</h4>
+                    <p style="margin: 0 0 10px 0; color: #664d03;">
+                        Te quedan <b>${dias} días</b> de tu prueba gratuita. No pierdas el acceso a esta fantástica vidriera y seguí conectando con tus clientes. Elegí tu plan y abonalo antes de que se cumpla el plazo para mantener tu espacio siempre activo.
+                    </p>
+                    <button class="btn btn-primary" onclick="abrirOpcionesDePago()">Elegir mi plan ahora</button>
+                </div>
+            `;
+            bannerAlerta.style.display = "block";
+        }
+    }
+
+    function bloquearAccesoVidriera() {
+        console.log("El periodo de prueba ha finalizado. La vidriera se encuentra inactiva hasta registrar un pago.");
+    }
+</script>
+const aviso = document.getElementById("avisoUbicaciones");
+    if (aviso) {
+        aviso.className = "status-box status-ok";
+        aviso.textContant = "Mapa sincronizado con éxito.";
+    }
+});
+
+// --- SISTEMA DE AVISO CÁLIDO Y CONTROL DE VENCIMIENTO ---
+function verificarAlertaVencimiento(fechaRegistroComercio) {
+    if (!fechaRegistroComercio) return;
+
+    const fechaInicio = new Date(fechaRegistroComercio);
+    const fechaActual = new Date();
+    
+    const diferenciaTiempo = fechaActual - fechaInicio;
+    const diasTranscurridos = Math.floor(diferenciaTiempo / (1000 * 60 * 60 * 24));
+    const diasRestantes = 30 - diasTranscurridos;
+
+    if (diasRestantes <= 10 && diasRestantes > 0) {
+        mostrarCartelCálidoVencimiento(diasRestantes);
+    } else if (diasRestantes <= 0) {
+        bloquearAccesoVidriera();
+    }
+}
+
+function mostrarCartelCálidoVencimiento(dias) {
+    const bannerAlerta = document.getElementById("bannerAlertaVencimiento");
+    if (bannerAlerta) {
+        bannerAlerta.innerHTML = `
+            <div style="background-color: #fff3cd; padding: 15px; border-radius: 8px; border-left: 5px solid #ffc107; margin-bottom: 20px;">
+                <h4 style="margin: 0 0 5px 0; color: #856404;">✨ ¡Tu mes Premium en V.E.A. está llegando a su etapa final!</h4>
+                <p style="margin: 0 0 10px 0; color: #664d03;">
+                    Te quedan <b>${dias} días</b> de tu prueba gratuita. No pierdas el acceso a esta fantástica vidriera y seguí conectando con tus clientes. Elegí tu plan y abonalo antes de que se cumpla el plazo para mantener tu espacio siempre activo.
+                </p>
+                <button class="btn btn-primary" onclick="abrirOpcionesDePago()">Elegir mi plan ahora</button>
+            </div>
+        `;
+        bannerAlerta.style.display = "block";
+    }
+}
+
+function bloquearAccesoVidriera() {
+    console.log("El periodo de prueba ha finalizado. La vidriera se encuentra inactiva hasta registrar un pago.");
+}
 </script>
 </body>
 </html>
