@@ -2280,7 +2280,7 @@ function obtenerIconoPorRubro(rubro, nombre = "") {
 
     function actualizarVista(filtro) {
         filtroActual = filtro;
-        if (!map) return;
+        //
 
         marcadoresMapa.forEach(m => map.removeLayer(m));
         marcadoresMapa = [];
@@ -2335,7 +2335,7 @@ function obtenerIconoPorRubro(rubro, nombre = "") {
                 comercio.lat = -34.65;
                 comercio.lng = -58.58;
             }
-
+if (map && comercio.lat && comercio.lng) {
             const pin = L.marker([comercio.lat, comercio.lng], { icon: crearMarcadorPersonalizado(comercio) }).addTo(map);
             pin.bindPopup(`
                 <div style="min-width:180px;text-align:center">
@@ -2346,6 +2346,7 @@ function obtenerIconoPorRubro(rubro, nombre = "") {
                     <button class="btn btn-primary" style="margin-top:2px;padding:6px;" onclick="abrirDetalleComercio('${comercio.id}')">Ver vidriera</button>
                 </div>`);
             marcadoresMapa.push(pin);
+}
 
             const iconoClase = obtenerIconoPorRubro(comercio.rubro, comercio.nombre);
             const tarjeta = document.createElement("article");
