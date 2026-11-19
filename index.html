@@ -1792,7 +1792,8 @@ function obtenerIconoPorRubro(rubro, nombre = "") {
 
     function agregarPublicacionConFoto() {
         const planClave = usuarioActual && usuarioActual.suscripcionActiva ? usuarioActual.suscripcionActiva : 'basico';
-        const maxPubsPermitidas = LIMITES_PLANES[planClave].maxPubs;
+        const limitesPlan = (typeof LIMITES_PLANES !== "undefined" && LIMITES_PLANES && (LIMITES_PLANES[planClave] || LIMITES_PLANES.basico)) || { maxPubs: 5, maxVideoSec: 15 };
+const maxPubsPermitidas = limitesPlan.maxPubs ?? 5;
 
         if (publicacionesPanelTemp.length >= maxPubsPermitidas) {
             alert(`⚠️ Alcanzaste el límite de publicaciones de tu ${planClave.toUpperCase()} (${maxPubsPermitidas} publicaciones/fotos máximo).`);
@@ -1849,8 +1850,8 @@ function obtenerIconoPorRubro(rubro, nombre = "") {
     function renderizarListasPanelComercial() {
         const divCupones = document.getElementById("listaCuponesPanel");
         const divPubs = document.getElementById("listaPublicacionesPanel");
-        const planClave = usuarioActual && usuarioActual.suscripcionActiva ? usuarioActual.suscripcionActiva : 'basico';
-        const maxPubs = LIMITES_PLANES[planClave].maxPubs;
+       const limitesPlan = (typeof LIMITES_PLANES !== "undefined" && LIMITES_PLANES && (LIMITES_PLANES[planClave] || LIMITES_PLANES.basico)) || { maxPubs: 5, maxVideoSec: 15 };
+const maxPubs = limitesPlan.maxPubs ?? 5;
 
         document.getElementById("labelPublicacionesPlan").textContent = `🖼️ Subir Publicaciones / Fotos (${publicacionesPanelTemp.length} / ${maxPubs} máx)`;
 
@@ -2051,8 +2052,9 @@ async function cerrarSesion() {
     function actualizarInterfazPanelComercial() {
         if (!usuarioActual) return;
         const plan = usuarioActual.suscripcionActiva || 'basico';
-        const limites = LIMITES_PLANES[plan];
-        document.getElementById("badgePlanActualPanel").textContent = `PLAN: ${plan.toUpperCase()} (Máx. ${limites.maxPubs} pubs, Video ${limites.maxVideoSec}s)`;
+        const limites = (typeof LIMITES_PLANES !== "undefined" && LIMITES_PLANES && (LIMITES_PLANES[plan] || LIMITES_PLANES.basico)) || { maxPubs: 5, maxVideoSec: 15 };
+document.getElementById("badgePlanActualPanel").textContent = `PLAN: ${String(plan).toUpperCase()} (Máx. ${limites.maxPubs ?? 5} pubs, Video ${limites.maxVideoSec ?? 15}s)`;
+        
         document.getElementById("panelComercialAutogestion").classList.remove("hidden");
         renderizarListasPanelComercial();
     }
