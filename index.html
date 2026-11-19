@@ -2036,7 +2036,8 @@ document.getElementById("badgePlanActualPanel").textContent = `PLAN: ${String(pl
         })) : [{titulo: "Promoción Principal", desc: "Consultá nuestros productos", icono: "🔥", promo: "Destacado", imagen: null}];
 
         const idComercioDoc = usuarioActual.email.replace(/[@\.]/g, '_');
-
+const comercioPrevio = comerciosVEA.find(c => c.id === idComercioDoc) || {};
+const waGuardado = comercioPrevio.whatsappDueño || comercioPrevio.whatsapp || comercioPrevio.telefono || (usuarioActual && (usuarioActual.whatsappDueño || usuarioActual.whatsapp || usuarioActual.telefono)) || "";
         const datosComercio = {
             id: idComercioDoc,
             emailDueño: usuarioActual.email,
