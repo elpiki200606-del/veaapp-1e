@@ -1275,38 +1275,8 @@
         }
     }
 
-    async function procesarLogin() {
-        const email = document.getElementById("loginEmail").value.trim().toLowerCase();
-        const password = document.getElementById("loginPassword").value;
-        const errorBox = document.getElementById("errorLogin");
-
-        try {
-            // Consultamos la base de datos en la nube
-            let usuariosActuales = await obtenerUsuariosDBCloud();
-            const encontrado = usuariosActuales.find(u => u.email.toLowerCase() === email && u.password === password);
-
-            if (!encontrado) {
-                errorBox.textContent = "Usuario no existe o contraseña incorrecta.";
-                errorBox.style.display = "block";
-                return;
-            }
-
-            errorBox.style.display = "none";
-            usuarioActual = encontrado;
-            sesionActivaGlobal = encontrado;
-
-            actualizarEstadoSesionUI();
-            cerrarModalLogin();
-            actualizarInterfazPanelComercial();
-
-            alert("¡Bienvenido nuevamente, " + encontrado.nombre + "!");
-        } catch (error) {
-            console.error("Error en login con Firebase:", error);
-            errorBox.textContent = "Error al conectar con la base de datos.";
-            errorBox.style.display = "block";
-        }
-    }
-
+    
+    
     function cerrarSesion() {
         usuarioActual = null;
         sesionActivaGlobal = null;
@@ -1333,39 +1303,6 @@
     }
 
     
-
-    async function procesarLogin() {
-        const email = document.getElementById("loginEmail").value.trim().toLowerCase();
-        const password = document.getElementById("loginPassword").value;
-        const errorBox = document.getElementById("errorLogin");
-
-        try {
-            // Consultamos la base de datos en la nube
-            let usuariosActuales = await obtenerUsuariosDBCloud();
-            const encontrado = usuariosActuales.find(u => u.email.toLowerCase() === email && u.password === password);
-
-            if (!encontrado) {
-                errorBox.textContent = "Usuario no existe o contraseña incorrecta.";
-                errorBox.style.display = "block";
-                return;
-            }
-
-            errorBox.style.display = "none";
-            usuarioActual = encontrado;
-            sesionActivaGlobal = encontrado;
-
-            actualizarEstadoSesionUI();
-            cerrarModalLogin();
-            actualizarInterfazPanelComercial();
-
-            alert("¡Bienvenido nuevamente, " + encontrado.nombre + "!");
-        } catch (error) {
-            console.error("Error en login con Firebase:", error);
-            errorBox.textContent = "Error al conectar con la base de datos.";
-            errorBox.style.display = "block";
-        }
-    }
-
     function cerrarSesion() {
         usuarioActual = null;
         sesionActivaGlobal = null;
@@ -1720,7 +1657,7 @@ function obtenerIconoPorRubro(rubro, nombre = "") {
 
     let indiceBannerPremium = 0;
     function inicializarBannerRotativoPremium() {
-       const comerciosPremium = comerciosVEA.filter(c => c.esPremium || c.estadoSuscripcion === "trial_premium" || c.plan === "Premium");
+       const comerciosPremium = comerciosVEA.filter(c => c.esPremium || c.estadoSuscripcion === "premium" || c.plan === "Premium");
         if (comerciosPremium.length === 0) return;
 
         function actualizarBanner() {
@@ -1850,6 +1787,7 @@ const maxPubsPermitidas = limitesPlan.maxPubs ?? 5;
     function renderizarListasPanelComercial() {
         const divCupones = document.getElementById("listaCuponesPanel");
         const divPubs = document.getElementById("listaPublicacionesPanel");
+        const planClave = usuarioActual && usuarioActual.suscripcionActiva ? usuarioActual.suscripcionActiva : 'basico';
        const limitesPlan = (typeof LIMITES_PLANES !== "undefined" && LIMITES_PLANES && (LIMITES_PLANES[planClave] || LIMITES_PLANES.basico)) || { maxPubs: 5, maxVideoSec: 15 };
 const maxPubs = limitesPlan.maxPubs ?? 5;
 
@@ -1922,8 +1860,8 @@ async function guardarNuevoRegistro() {
             email: email,
             whatsappDueño: whatsapp,
             tipo: "comercio",
-            suscripcionActiva: "trial_premium",
-            estadoSuscripcion: "trial_premium",
+            suscripcionActiva: "premium",
+            estadoSuscripcion: "premium",
             fechaRegistro: new Date().toISOString()
         };
 
@@ -1936,7 +1874,7 @@ async function guardarNuevoRegistro() {
             whatsappDueño: whatsapp,
             plan: "PREMIUM",
             esPremium: true,
-            estadoSuscripcion: "trial_premium",
+            estadoSuscripcion: "premium",
             activo: true
         }, { merge: true });
 
@@ -2025,29 +1963,7 @@ async function cerrarSesion() {
         document.getElementById("modalLogin").classList.add("hidden");
     }
 
-    function procesarLogin() {
-        const email = document.getElementById("loginEmail").value.trim().toLowerCase();
-        const password = document.getElementById("loginPassword").value;
-        const errorBox = document.getElementById("errorLogin");
-
-        const encontrado = usuariosRegistrados.find(u => u.email.toLowerCase() === email && u.password === password);
-
-        if (!encontrado) {
-            errorBox.textContent = "Usuario no existe o contraseña incorrecta.";
-            errorBox.style.display = "block";
-            return;
-        }
-
-        errorBox.style.display = "none";
-        usuarioActual = encontrado;
-        guardarSesionActiva(usuarioActual);
-
-        actualizarEstadoSesionUI();
-        cerrarModalLogin();
-        actualizarInterfazPanelComercial();
-
-        alert("¡Bienvenido nuevamente, " + encontrado.nombre + "!");
-    }
+    
 
     function actualizarInterfazPanelComercial() {
         if (!usuarioActual) return;
@@ -2134,7 +2050,7 @@ document.getElementById("badgePlanActualPanel").textContent = `PLAN: ${String(pl
             icono: iconoFinal,
             plan: planActual,
             esPremium: esPrem,
-            cupones: [primerCupone],
+           cupones: cuponesPanelTemp.length ? cuponesPanelTemp : [primerCupone],
             productos: listaProductos,
             fechaActualizacion: new Date().toISOString()
         };
@@ -2440,12 +2356,15 @@ if (map && comercio.lat && comercio.lng) {
         comerciosVEA.forEach(c => {
             const ubicacionFormateada = formatearUbicacionComercio(c);
             const filaCupon = document.createElement("div");
+            const primerCupon = Array.isArray(c.cupones) && c.cupones.length ? c.cupones[0] : null;
+const textoOferta = (primerCupon && primerCupon.titulo) || c.oferta || "Descuento";
+const textoCodigo = (primerCupon && primerCupon.codigo) || c.codigoCupon || "VEA-OFF";
             filaCupon.className = "card-cupon-exclusivo";
             filaCupon.innerHTML = `
                 <div class="cupon-info">
                     <h4>${escaparHTML(c.nombre)}</h4>
-                    <p>${escaparHTML(c.oferta || "Descuento")} · ${escaparHTML(ubicacionFormateada)}</p>
-                    <span class="codigo-tag">${escaparHTML(c.codigoCupon || "VEA-OFF")}</span>
+                    <p>${escaparHTML(textoOferta)} · ${escaparHTML(ubicacionFormateada)}</p>
+<span class="codigo-tag">${escaparHTML(textoCodigo)}</span>
                 </div>
                 <a class="btn btn-wa" target="_blank" rel="noopener" href="${enlaceWhatsApp(c)}">Consultar</a>`;
             cupones.appendChild(filaCupon);
