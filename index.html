@@ -1332,57 +1332,7 @@
         return usuariosDBGlobal;
     }
 
-    async function guardarNuevoRegistro() {
-        const nombre = document.getElementById("regNombre").value.trim();
-        const email = document.getElementById("regEmail").value.trim().toLowerCase();
-        const password = document.getElementById("regPassword").value;
-        const errorBox = document.getElementById("errorRegistro");
-
-        if (!nombre || !email || !password) {
-            errorBox.textContent = "Por favor, completá todos los campos.";
-            errorBox.style.display = "block";
-            return;
-        }
-
-        try {
-            // Verificamos en la nube si ya existe el email
-            let usuariosActuales = await obtenerUsuariosDBCloud();
-            const emailYaExiste = usuariosActuales.some(u => u.email.toLowerCase() === email);
-            
-            if (emailYaExiste) {
-                errorBox.textContent = "Este correo electrónico ya se encuentra registrado. Iniciá sesión.";
-                errorBox.style.display = "block";
-                return;
-            }
-
-            errorBox.style.display = "none";
-
-            const nuevoUsuario = { 
-                nombre: nombre, 
-                email: email, 
-                password: password, 
-                tipo: "comercio", 
-                suscripcionActiva: "basico"
-            };
-
-            // ID limpio para el documento en Firebase basado en el email
-            const idDocUsuario = email.replace(/[@\.]/g, '_');
-            await db.collection("usuariosVEA").doc(idDocUsuario).set(nuevoUsuario);
-            
-            usuarioActual = nuevoUsuario;
-            sesionActivaGlobal = nuevoUsuario;
-
-            actualizarEstadoSesionUI();
-            cerrarModalRegistro();
-            actualizarInterfazPanelComercial();
-            
-            alert("¡Cuenta registrada en la nube e iniciada con éxito, " + nombre + "!");
-        } catch (error) {
-            console.error("Error al registrar en Firebase:", error);
-            errorBox.textContent = "Error al conectar con la base de datos.";
-            errorBox.style.display = "block";
-        }
-    }
+    
 
     async function procesarLogin() {
         const email = document.getElementById("loginEmail").value.trim().toLowerCase();
@@ -1440,13 +1390,38 @@ if (!firebase.apps.length) {
 }
 const db = firebase.firestore();
 // Observador de sesión (Blindaje contra F5)
-firebase.auth().onAuthStateChanged((user) => {
+// Observador de sesión (Blindaje contra F5)
+firebase.auth().onAuthStateChanged(async (user) => {
     if (user) {
         console.log("Sesión activa en la nube:", user.email);
-        usuarioActual = user; // Actualizamos la variable global de usuario si ya la usás en la app
+        try {
+            const idDoc = (user.email || "").toLowerCase().replace(/[@\.]/g, '_');
+            let docSnap = await db.collection("usuariosVEA").doc(user.uid).get();
+            if (!docSnap.exists && idDoc) {
+                docSnap = await db.collection("usuariosVEA").doc(idDoc).get();
+            }
+            const datos = docSnap.exists ? docSnap.data() : {};
+            usuarioActual = {
+                uid: user.uid,
+                email: user.email,
+                nombre: datos.nombre || datos.nombreComercio || user.email,
+                whatsappDueño: datos.whatsappDueño || datos.whatsapp || "",
+                suscripcionActiva: datos.suscripcionActiva || datos.estadoSuscripcion || "basico",
+                ...datos
+            };
+            sesionActivaGlobal = usuarioActual;
+        } catch (err) {
+            console.error("Error al recuperar usuario tras F5:", err);
+            usuarioActual = user;
+            sesionActivaGlobal = user;
+        }
     } else {
         console.log("No hay usuario autenticado.");
         usuarioActual = null;
+        sesionActivaGlobal = null;
+    }
+    if (typeof actualizarEstadoSesionUI === "function") {
+        actualizarEstadoSesionUI();
     }
 });
     const telefonoWhatsAppBase = "5491100000000";
@@ -1905,74 +1880,142 @@ function obtenerIconoPorRubro(rubro, nombre = "") {
         document.getElementById("modalRegistro").classList.add("hidden");
     }
 
-    async function guardarNuevoRegistro() {
+    async function obtenerUsuariosDBCloud() {
+    try {
+        const snapshot = await db.collection("usuariosVEA").get();
+        const usuariosRemotos = [];
+        snapshot.forEach(doc => {
+            usuariosRemotos.push({ id: doc.id, ...doc.data() });
+        });
+        if (usuariosRemotos.length > 0) {
+            return usuariosRemotos;
+        }
+    } catch (e) {
+        console.error("Error al obtener usuarios de Firebase:", e);
+    }
+    return usuariosDBGlobal;
+}
+
+async function guardarNuevoRegistro() {
     const nombre = document.getElementById("regNombre").value.trim();
     const email = document.getElementById("regEmail").value.trim().toLowerCase();
-    const password = document.getElementById("regPassword").value.trim();
-    const whatsapp = document.getElementById("regWhatsapp") ? document.getElementById("regWhatsapp").value.trim() : ""; // Asegurate de tener este input en tu HTML
+    const password = document.getElementById("regPassword").value;
+    const whatsapp = document.getElementById("regWhatsapp") ? document.getElementById("regWhatsapp").value.trim() : "";
     const errorBox = document.getElementById("errorRegistro");
 
-    if (!nombre || !email || !password || !whatsapp) {
-        errorBox.textContent = "Por favor, completá todos los campos, incluyendo el WhatsApp.";
+    if (!nombre || !email || !password) {
+        errorBox.textContent = "Por favor, completá todos los campos.";
         errorBox.style.display = "block";
         return;
     }
 
     try {
-        // 1. Crear usuario en Firebase Auth
-        const userCredential = await firebase.auth().createUserWithEmailAndPassword(email, password);
-        const user = userCredential.user;
+        const cred = await firebase.auth().createUserWithEmailAndPassword(email, password);
+        const user = cred.user;
+        try { await user.sendEmailVerification(); } catch (_) {}
 
-        // 2. Enviar correo de verificación obligatorio
-        await user.sendEmailVerification();
-
-        // 3. Guardar datos en Firestore con el mes de prueba Premium y el WhatsApp
-        const fechaActual = new Date().toISOString();
-        await firebase.firestore().collection("comerciosVEA").doc(user.uid).set({
+        const nuevoUsuario = {
+            uid: user.uid,
+            nombre: nombre,
             nombreComercio: nombre,
-            emailDueño: email,
+            email: email,
             whatsappDueño: whatsapp,
-            fechaRegistro: fechaActual,
-            estadoSuscripcion: "trial_premium", // 1 mes gratis de regalo
-            emailVerificado: false,
-            activo: true
-        });
-
-        alert("¡Registro exitoso! Te enviamos un correo de verificación. Validá tu mail para activar tu panel y disfrutar tu mes Premium.");
-        
-        // Cerrar modal de registro si lo tenés implementado
-        cerrarModalRegistro();
-
-    } catch (error) {
-        console.error("Error en el registro:", error);
-        errorBox.textContent = "Error al registrarse: " + error.message;
-        errorBox.style.display = "block";
-    }
-
-
-        errorBox.style.display = "none";
-
-        const nuevoUsuario = { 
-            nombre: nombre, 
-            email: email, 
-            password: password, 
-            tipo: "comercio", 
-            suscripcionActiva: "basico"
+            tipo: "comercio",
+            suscripcionActiva: "trial_premium",
+            estadoSuscripcion: "trial_premium",
+            fechaRegistro: new Date().toISOString()
         };
 
-        usuariosRegistrados.push(nuevoUsuario);
-        guardarUsuariosDB(usuariosRegistrados);
-        
+        await db.collection("usuariosVEA").doc(user.uid).set(nuevoUsuario, { merge: true });
+        await db.collection("comerciosVEA").doc(user.uid).set({
+            id: user.uid,
+            emailDueño: email,
+            nombre: nombre,
+            nombreComercio: nombre,
+            whatsappDueño: whatsapp,
+            plan: "PREMIUM",
+            esPremium: true,
+            estadoSuscripcion: "trial_premium",
+            activo: true
+        }, { merge: true });
+
+        errorBox.style.display = "none";
         usuarioActual = nuevoUsuario;
-        guardarSesionActiva(usuarioActual);
+        sesionActivaGlobal = nuevoUsuario;
 
         actualizarEstadoSesionUI();
         cerrarModalRegistro();
         actualizarInterfazPanelComercial();
-        
-        alert("¡Cuenta registrada e iniciada con éxito, " + nombre + "!");
+        alert("¡Cuenta registrada en la nube e iniciada con éxito, " + nombre + "!");
+    } catch (error) {
+        console.error("Error al registrar:", error);
+        if (error.code === "auth/email-already-in-use") {
+            errorBox.textContent = "Este correo electrónico ya se encuentra registrado. Iniciá sesión.";
+        } else {
+            errorBox.textContent = error.message || "Error al registrar en la base de datos.";
+        }
+        errorBox.style.display = "block";
+    }
+}
+
+async function procesarLogin() {
+    const email = document.getElementById("loginEmail").value.trim().toLowerCase();
+    const password = document.getElementById("loginPassword").value;
+    const errorBox = document.getElementById("errorLogin");
+
+    if (!email || !password) {
+        errorBox.textContent = "Ingresá correo y contraseña.";
+        errorBox.style.display = "block";
+        return;
     }
 
+    try {
+        const cred = await firebase.auth().signInWithEmailAndPassword(email, password);
+        const user = cred.user;
+        const docSnap = await db.collection("usuariosVEA").doc(user.uid).get();
+        const datos = docSnap.exists ? docSnap.data() : {};
+
+        errorBox.style.display = "none";
+        usuarioActual = {
+            uid: user.uid,
+            email: user.email,
+            nombre: datos.nombre || datos.nombreComercio || user.email,
+            whatsappDueño: datos.whatsappDueño || datos.whatsapp || "",
+            suscripcionActiva: datos.suscripcionActiva || datos.estadoSuscripcion || "basico",
+            ...datos
+        };
+        sesionActivaGlobal = usuarioActual;
+
+        actualizarEstadoSesionUI();
+        cerrarModalLogin();
+        actualizarInterfazPanelComercial();
+        alert("¡Bienvenido nuevamente, " + usuarioActual.nombre + "!");
+    } catch (error) {
+        console.error("Error en login:", error);
+        if (
+            error.code === "auth/user-not-found" ||
+            error.code === "auth/wrong-password" ||
+            error.code === "auth/invalid-credential" ||
+            error.code === "auth/invalid-email"
+        ) {
+            errorBox.textContent = "Usuario no existe o contraseña incorrecta.";
+        } else {
+            errorBox.textContent = error.message || "Error al iniciar sesión.";
+        }
+        errorBox.style.display = "block";
+    }
+}
+
+async function cerrarSesion() {
+    try {
+        await firebase.auth().signOut();
+    } catch (_) {}
+    usuarioActual = null;
+    sesionActivaGlobal = null;
+    document.getElementById("panelComercialAutogestion").classList.add("hidden");
+    actualizarEstadoSesionUI();
+    alert("Sesión cerrada correctamente.");
+}
     function abrirModalLogin() {
         document.getElementById("modalLogin").classList.remove("hidden");
     }
@@ -2143,10 +2186,14 @@ function obtenerIconoPorRubro(rubro, nombre = "") {
     }
 
    function enlaceWhatsApp(comercio, mensaje) {
-        const numeroBruto = (comercio && (comercio.whatsappDueño || comercio.whatsapp || comercio.telefono)) || telefonoWhatsAppBase;
-        const numeroLimpio = String(numeroBruto).replace(/\D/g, "");
-        return "https://wa.me/" + numeroLimpio + "?text=" + encodeURIComponent(mensaje || comercio.mensajeWA || "");
+    const numeroBruto = (comercio && (comercio.whatsappDueño || comercio.whatsapp || comercio.telefono)) || telefonoWhatsAppBase;
+    let numeroLimpio = String(numeroBruto).replace(/\D/g, "");
+    if (numeroLimpio.length === 10) {
+        numeroLimpio = "549" + numeroLimpio;
     }
+    const texto = mensaje || (comercio && comercio.mensajeWA) || "";
+    return "https://wa.me/" + numeroLimpio + "?text=" + encodeURIComponent(texto);
+}
 
     function obtenerVisitasReales(id) {
         return 22 + (typeof id === 'number' ? id : 5) * 7 + (new Date().getMinutes() % 15);
