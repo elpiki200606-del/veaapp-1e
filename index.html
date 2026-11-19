@@ -2143,8 +2143,9 @@ function obtenerIconoPorRubro(rubro, nombre = "") {
     }
 
     function enlaceWhatsApp(comercio, mensaje) {
-        return "https://wa.me/" + telefonoWhatsAppBase + "?text=" + encodeURIComponent(mensaje || comercio.mensajeWA);
-    }
+       const numeroBruto = (comercio && (comercio.whatsappDueño || comercio.whatsapp || comercio.telefono)) || telefonoWhatsAppBase;
+    const numeroLimpio = String(numeroBruto).replace(/\D/g, "");
+    return "https://wa.me/" + numeroLimpio + "?text=" + encodeURIComponent(mensaje || comercio.mensajeWA || "");
 
     function obtenerVisitasReales(id) {
         return 22 + (typeof id === 'number' ? id : 5) * 7 + (new Date().getMinutes() % 15);
@@ -2609,7 +2610,7 @@ function obtenerIconoPorRubro(rubro, nombre = "") {
             aviso.className = "status-box status-ok";
             aviso.textContent = "Mapa sincronizado con éxito.";
         }
-    });
+});
 </script>
 </body>
 </html>
