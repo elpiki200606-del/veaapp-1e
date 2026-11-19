@@ -2142,10 +2142,11 @@ function obtenerIconoPorRubro(rubro, nombre = "") {
         return "https://www.google.com/maps/search/?api=1&query=" + encodeURIComponent(comercio.direccion + (comercio.galeria ? " " + comercio.galeria : ""));
     }
 
-    function enlaceWhatsApp(comercio, mensaje) {
-       const numeroBruto = (comercio && (comercio.whatsappDueño || comercio.whatsapp || comercio.telefono)) || telefonoWhatsAppBase;
-    const numeroLimpio = String(numeroBruto).replace(/\D/g, "");
-    return "https://wa.me/" + numeroLimpio + "?text=" + encodeURIComponent(mensaje || comercio.mensajeWA || "");
+   function enlaceWhatsApp(comercio, mensaje) {
+        const numeroBruto = (comercio && (comercio.whatsappDueño || comercio.whatsapp || comercio.telefono)) || telefonoWhatsAppBase;
+        const numeroLimpio = String(numeroBruto).replace(/\D/g, "");
+        return "https://wa.me/" + numeroLimpio + "?text=" + encodeURIComponent(mensaje || comercio.mensajeWA || "");
+    }
 
     function obtenerVisitasReales(id) {
         return 22 + (typeof id === 'number' ? id : 5) * 7 + (new Date().getMinutes() % 15);
@@ -2610,7 +2611,7 @@ if (map && comercio.lat && comercio.lng) {
             aviso.className = "status-box status-ok";
             aviso.textContent = "Mapa sincronizado con éxito.";
         }
-});}
+});
 </script>
 </body>
 </html>
