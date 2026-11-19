@@ -1,38 +1,6 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <head>
-<style>
-    :root {
-        --verde: #062e22;
-        --verde2: #0b4533;
-        --dorado: #d4af37;
-        --fondo: #f4f7f5;
-        --texto: #173c30;
-        --muted: #62776e;
-        --borde: #d1ded7;
-        --blanco: #fff;
-        --azul: #2563eb;
-        --whatsapp: #16a34a;
-        --rojo: #dc2626;
-    }
-    *, *::before, *::after {
-        box-sizing: border-box;
-        margin: 0;
-        padding: 0;
-    }
-    body {
-        font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
-        color: var(--texto);
-        background: var(--fondo);
-        min-height: 100vh;
-        padding-bottom: 75px;
-    }
-</style>
-
-<script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-auth-compat.js"></script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>V.E.A. | Vidrieras Electrónicas Argentinas</title>
@@ -42,37 +10,22 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
 <!-- Firebase App (Core) -->
 <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
+<!-- Firebase Firestore (Base de datos) -->
 <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-auth-compat.js"></script>
-        
-:root {
-    --verde: #062e22;
-    --verde2: #0b4533;
-    --dorado: #d4af37;
-    --fondo: #f4f7f5;
-    --texto: #173c30;
-    --muted: #62776e;
-    --borde: #d1ded7;
-    --blanco: #fff;
-    --azul: #2563eb;
-    --whatsapp: #16a34a;
-    --rojo: #dc2626;
-}
-
-*, *::before, *::after {
-    box-sizing: border-box;
-    margin: 0;
-    padding: 0;
-}
-
-body {
-    font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
-    color: var(--texto);
-    background: var(--fondo);
-    min-height: 100vh;
-    padding-bottom: 75px;
-}
-</style>
+    <style>
+        :root {
+            --verde: #062e22;
+            --verde2: #0b4533;
+            --dorado: #d4af37;
+            --fondo: #f4f7f5;
+            --texto: #173c30;
+            --muted: #62776e;
+            --borde: #d1ded7;
+            --blanco: #fff;
+            --azul: #2563eb;
+            --whatsapp: #16a34a;
+            --rojo: #dc2626;
+        }
 
         *, *::before, *::after {
             box-sizing: border-box;
@@ -1171,10 +1124,7 @@ body {
                     <label for="regPassword">Contraseña</label>
                     <input type="password" id="regPassword" placeholder="Mínimo 6 caracteres">
                 </div>
-                <div class="form-group">
-                <label for="regWhatsapp">WhatsApp del comercio (para clientes y avisos)</label>
-                <input type="tel" id="regWhatsapp" placeholder="Ej: 1123456789" autocomplete="off">
-            </div>
+                
                 <p id="errorRegistro" style="color:#b91c1c;font-size:.75rem;margin-bottom:6px;display:none;"></p>
             </div>
             <div class="modal-footer">
@@ -2655,131 +2605,6 @@ function obtenerIconoPorRubro(rubro, nombre = "") {
             aviso.textContent = "Mapa sincronizado con éxito.";
         }
     });
-</script>
-const aviso = document.getElementById("avisoUbicaciones");
-    if (aviso) {
-        aviso.className = "status-box status-ok";
-        aviso.textContant = "Mapa sincronizado con éxito.";
-    }
-});
-</script> <!-- ACÁ CIERRA EL SCRIPT ORIGINAL -->
-
-<script>
-    // --- SISTEMA DE AVISO CÁLIDO Y CONTROL DE VENCIMIENTO ---
-    function verificarAlertaVencimiento(fechaRegistroComercio) {
-        if (!fechaRegistroComercio) return;
-
-        const fechaInicio = new Date(fechaRegistroComercio);
-        const fechaActual = new Date();
-        
-        const diferenciaTiempo = fechaActual - fechaInicio;
-        const diasTranscurridos = Math.floor(diferenciaTiempo / (1000 * 60 * 60 * 24));
-        const diasRestantes = 30 - diasTranscurridos;
-
-        if (diasRestantes <= 10 && diasRestantes > 0) {
-            mostrarCartelCálidoVencimiento(diasRestantes);
-        } else if (diasRestantes <= 0) {
-            bloquearAccesoVidriera();
-        }
-    }
-
-    function mostrarCartelCálidoVencimiento(dias) {
-        const bannerAlerta = document.getElementById("bannerAlertaVencimiento");
-        if (bannerAlerta) {
-            bannerAlerta.innerHTML = `
-                <div style="background-color: #fff3cd; padding: 15px; border-radius: 8px; border-left: 5px solid #ffc107; margin-bottom: 20px;">
-                    <h4 style="margin: 0 0 5px 0; color: #856404;">✨ ¡Tu mes Premium en V.E.A. está llegando a su etapa final!</h4>
-                    <p style="margin: 0 0 10px 0; color: #664d03;">
-                        Te quedan <b>${dias} días</b> de tu prueba gratuita. No pierdas el acceso a esta fantástica vidriera y seguí conectando con tus clientes. Elegí tu plan y abonalo antes de que se cumpla el plazo para mantener tu espacio siempre activo.
-                    </p>
-                    <button class="btn btn-primary" onclick="abrirOpcionesDePago()">Elegir mi plan ahora</button>
-                </div>
-            `;
-            bannerAlerta.style.display = "block";
-        }
-    }
-
-    function bloquearAccesoVidriera() {
-        console.log("El periodo de prueba ha finalizado. La vidriera se encuentra inactiva hasta registrar un pago.");
-    }
-</script>
-const aviso = document.getElementById("avisoUbicaciones");
-    if (aviso) {
-        aviso.className = "status-box status-ok";
-        aviso.textContant = "Mapa sincronizado con éxito.";
-    }
-});
-</script> <!-- ACÁ CIERRA EL SCRIPT ORIGINAL -->
-
-<script>
-    // --- SISTEMA DE AVISO CÁLIDO Y CONTROL DE VENCIMIENTO ---
-    function verificarAlertaVencimiento(fechaRegistroComercio) {
-        if (!fechaRegistroComercio) return;
-
-        const fechaInicio = new Date(fechaRegistroComercio);
-        const fechaActual = new Date();
-        
-        const diferenciaTiempo = fechaActual - fechaInicio;
-        const diasTranscurridos = Math.floor(diferenciaTiempo / (1000 * 60 * 60 * 24));
-        const diasRestantes = 30 - diasTranscurridos;
-
-        if (diasRestantes <= 10 && diasRestantes > 0) {
-            mostrarCartelCálidoVencimiento(diasRestantes);
-        } else if (diasRestantes <= 0) {
-            bloquearAccesoVidriera();
-        }
-    }
-
-    function mostrarCartelCálidoVencimiento(dias) {
-        const bannerAlerta = document.getElementById("bannerAlertaVencimiento");
-        if (bannerAlerta) {
-            bannerAlerta.innerHTML = `
-                <div style="background-color: #fff3cd; padding: 15px; border-radius: 8px; border-left: 5px solid #ffc107; margin-bottom: 20px;">
-                    <h4 style="margin: 0 0 5px 0; color: #856404;">✨ ¡Tu mes Premium en V.E.A. está llegando a su etapa final!</h4>
-                    <p style="margin: 0 0 10px 0; color: #664d03;">
-                        Te quedan <b>${dias} días</b> de tu prueba gratuita. No pierdas el acceso a esta fantástica vidriera y seguí conectando con tus clientes. Elegí tu plan y abonalo antes de que se cumpla el plazo para mantener tu espacio siempre activo.
-                    </p>
-                    <button class="btn btn-primary" onclick="abrirOpcionesDePago()">Elegir mi plan ahora</button>
-                </div>
-            `;
-            bannerAlerta.style.display = "block";
-        }
-    }
-
-    function bloquearAccesoVidriera() {
-        console.log("El periodo de prueba ha finalizado. La vidriera se encuentra inactiva hasta registrar un pago.");
-    }
-</script>
-
-</body>
-const aviso = document.getElementById("avisoUbicaciones");
-    if (aviso) {
-        aviso.className = "status-box status-ok";
-        aviso.textContant = "Mapa sincronizado con éxito.";
-    }
-});
-</script> <!-- ACÁ CIERRA EL SCRIPT ORIGINAL -->
-
-<script>
-    // --- SISTEMA DE AVISO CÁLIDO Y CONTROL DE VENCIMIENTO ---
-    function verificarAlertaVencimiento(fechaRegistroComercio) {
-        if (!fechaRegistroComercio) return;
-
-        const fechaInicio = new Date(fechaRegistroComercio);
-        const fechaActual = new Date();
-        
-        const diferenciaTiempo = fechaActual - fechaInicio;
-        const diasTranscurridos = Math.floor(diferenciaTiempo / (1000 * 60 * 60 * 24));
-        const diasRestantes = 30 - diasTranscurridos;
-
-        if (diasRestantes <= 10 && diasRestantes > 0) {
-            mostrarCartelCálidoVencimiento(diasRestantes);
-        } else if (diasRestantes <= 0) {
-            bloquearAccesoVidriera();
-        }
-    }
-
-
 </script>
 </body>
 </html>
