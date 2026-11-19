@@ -1745,7 +1745,7 @@ function obtenerIconoPorRubro(rubro, nombre = "") {
 
     let indiceBannerPremium = 0;
     function inicializarBannerRotativoPremium() {
-        const comerciosPremium = comerciosVEA.filter(c => c.esPremium);
+       const comerciosPremium = comerciosVEA.filter(c => c.esPremium || c.estadoSuscripcion === "trial_premium" || c.plan === "Premium");
         if (comerciosPremium.length === 0) return;
 
         function actualizarBanner() {
