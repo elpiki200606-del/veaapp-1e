@@ -976,3 +976,215 @@ auth.onAuthStateChanged((user) => {
     mostrarVista(null);
   }
 });
+// 8. Pantalla principal pública: mapa, buscador, grilla y detalle de vidriera
+const inputBuscarComercio = document.getElementById("buscar-comercio");
+const btnLimpiarBusqueda = document.getElementById("btn-limpiar-busqueda");
+const contadorComercios = document.getElementById("contador-comercios");
+const listaComerciosPublicos = document.getElementById("lista-comercios-publicos");
+const detalleComercioPublico = document.getElementById("detalle-comercio-publico");
+const contenidoDetalleComercio = document.getElementById("contenido-detalle-comercio");
+const btnCerrarDetalleComercio = document.getElementById("btn-cerrar-detalle-comercio");
+
+let comerciosCargados = [];
+let mapaPrincipal = null;
+let capaMarcadoresPrincipal = null;
+
+function inicializarMapaPrincipal() {
+  const cont = document.getElementById("mapa-principal");
+  if (!cont || typeof L === "undefined") return;
+
+  if (!mapaPrincipal) {
+    mapaPrincipal = L.map("mapa-principal").setView([-34.6434, -58.6231], 13);
+    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+      attribution: "&copy; OpenStreetMap"
+    }).addTo(mapaPrincipal);
+    capaMarcadoresPrincipal = L.layerGroup().addTo(mapaPrincipal);
+  }
+  setTimeout(() => mapaPrincipal.invalidateSize(), 180);
+}
+
+function construirHtmlVidrieraPublica(datos) {
+  const telefonoVisible = (datos.telefono || "").trim();
+  const waUrl = datos.whatsappUrl || formatearWhatsAppUrl(telefonoVisible);
+  const badgeWhatsAppSvg = `<svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" style="flex:0 0 auto;"><circle cx="12" cy="12" r="12" fill="#25D366"/><path fill="#ffffff" d="M17.47 14.38c-.28-.14-1.65-.81-1.91-.9-.26-.1-.44-.14-.63.14-.19.28-.72.9-.88 1.09-.16.19-.32.21-.6.07-.28-.14-1.18-.44-2.25-1.39-.83-.74-1.39-1.66-1.56-1.94-.16-.28-.02-.43.12-.57.13-.13.28-.32.42-.48.14-.16.19-.28.28-.47.09-.19.05-.35-.02-.49-.07-.14-.63-1.52-.86-2.08-.23-.55-.46-.47-.63-.48h-.54c-.19 0-.49.07-.75.35-.26.28-.98.96-.98 2.34s1 2.71 1.14 2.9c.14.19 1.97 3.01 4.78 4.22.67.29 1.19.46 1.6.59.67.21 1.28.18 1.76.11.54-.08 1.65-.67 1.88-1.32.23-.65.23-1.21.16-1.32-.07-.12-.26-.19-.54-.33z"/></svg>`;
+
+  const contactoWhatsAppHtml = telefonoVisible
+    ? `<div style="display:inline-flex; align-items:center; gap:8px; flex-wrap:wrap; margin:6px 0 10px; padding:8px 12px; border-radius:10px; background:#f0fdf4; border:1px solid #86efac; color:#14532d; font-size:0.9rem;">
+        ${badgeWhatsAppSvg}
+        <span>Consultas al WhatsApp:</span>
+        ${waUrl
+          ? `<a href="${escaparHTML(waUrl)}" target="_blank" rel="noopener" style="font-weight:700; color:#15803d; text-decoration:underline;">${escaparHTML(telefonoVisible)}</a>`
+          : `<strong>${escaparHTML(telefonoVisible)}</strong>`}
+      </div>`
+    : `<p class="subtexto">Consultas al WhatsApp: número no cargado.</p>`;
+
+  const fachadaHtml = datos.fotoFachada
+    ? `<img src="${datos.fotoFachada}" alt="Fachada" style="width:100%; max-height:200px; object-fit:cover; border-radius:8px; margin-bottom:10px;">`
+    : "";
+
+  const videoHtml = datos.videoVertical
+    ? `<video controls playsinline src="${datos.videoVertical}" style="width:150px; max-height:260px; border-radius:8px; background:#000; display:block; margin:10px 0;"></video>`
+    : "";
+
+  const cuponesHtml = (datos.cupones || []).length
+    ? `<ul>${datos.cupones.map((c) => `<li>🎟️ <strong>${escaparHTML(c.titulo)}</strong> — Código: <code>${escaparHTML(c.codigo)}</code></li>`).join("")}</ul>`
+    : `<p class="subtexto">Sin cupones activos.</p>`;
+
+  const pubsHtml = (datos.publicaciones || []).length
+    ? `<div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(170px, 1fr)); gap:8px; margin-top:8px;">
+        ${datos.publicaciones.map((p) => `
+          <div style="border:1px solid #cbd5e1; border-radius:8px; padding:8px; background:#fff;">
+            ${p.foto ? `<img src="${p.foto}" alt="" style="width:100%; height:110px; object-fit:cover; border-radius:6px; margin-bottom:4px;">` : ""}
+            <strong>${escaparHTML(p.titulo)}</strong>
+            <p class="subtexto" style="margin:2px 0 0;">${escaparHTML(p.descripcion)}</p>
+          </div>
+        `).join("")}
+      </div>`
+    : `<p class="subtexto">Sin publicaciones cargadas.</p>`;
+
+  return `
+    ${fachadaHtml}
+    <h4>${escaparHTML(datos.nombreComercio)}</h4>
+    <p class="subtexto">📍 ${escaparHTML(datos.direccion || "")}</p>
+    ${contactoWhatsAppHtml}
+    ${videoHtml}
+    <strong>Cupones vigentes</strong>
+    ${cuponesHtml}
+    <strong style="display:block; margin-top:8px;">Publicaciones</strong>
+    ${pubsHtml}
+  `;
+}
+
+function abrirDetalleComercio(comercio) {
+  if (!detalleComercioPublico || !contenidoDetalleComercio || !comercio) return;
+  contenidoDetalleComercio.innerHTML = construirHtmlVidrieraPublica(comercio);
+  detalleComercioPublico.classList.remove("hidden");
+  if (mapaPrincipal && Number.isFinite(comercio.lat) && Number.isFinite(comercio.lng)) {
+    mapaPrincipal.setView([comercio.lat, comercio.lng], 16);
+  }
+  detalleComercioPublico.scrollIntoView({ behavior: "smooth", block: "nearest" });
+}
+
+function renderizarComerciosPublicos(lista) {
+  inicializarMapaPrincipal();
+  if (capaMarcadoresPrincipal) {
+    capaMarcadoresPrincipal.clearLayers();
+  }
+
+  if (contadorComercios) {
+    contadorComercios.textContent = lista.length === 1
+      ? "1 comercio encontrado."
+      : `${lista.length} comercios encontrados.`;
+  }
+
+  if (!listaComerciosPublicos) return;
+  listaComerciosPublicos.innerHTML = "";
+
+  if (!lista.length) {
+    listaComerciosPublicos.innerHTML = `<p class="subtexto">No hay comercios que coincidan con la búsqueda.</p>`;
+    return;
+  }
+
+  const limites = [];
+
+  lista.forEach((com) => {
+    if (Number.isFinite(com.lat) && Number.isFinite(com.lng) && capaMarcadoresPrincipal) {
+      const marker = L.marker([com.lat, com.lng]).addTo(capaMarcadoresPrincipal);
+      marker.bindPopup(`<strong>${escaparHTML(com.nombreComercio)}</strong><br>${escaparHTML(com.direccion || "")}`);
+      marker.on("click", () => abrirDetalleComercio(com));
+      limites.push([com.lat, com.lng]);
+    }
+
+    const cantCupones = Array.isArray(com.cupones) ? com.cupones.length : 0;
+    const cantPubs = Array.isArray(com.publicaciones) ? com.publicaciones.length : 0;
+    const waUrl = com.whatsappUrl || formatearWhatsAppUrl(com.telefono || "");
+
+    const card = document.createElement("article");
+    card.className = "comercio-card";
+    card.innerHTML = `
+      <div>
+        ${com.fotoFachada
+          ? `<img src="${com.fotoFachada}" alt="${escaparHTML(com.nombreComercio)}" class="comercio-card-img">`
+          : `<div class="comercio-card-img" style="display:flex; align-items:center; justify-content:center; color:#f3d56b; font-weight:700;">VEA APP</div>`}
+        <div class="comercio-card-body">
+          <h4 class="comercio-card-titulo">${escaparHTML(com.nombreComercio)}</h4>
+          <p class="subtexto">📍 ${escaparHTML(com.direccion || "")}</p>
+          ${com.telefono ? `<p class="subtexto">📱 WhatsApp: <strong>${escaparHTML(com.telefono)}</strong></p>` : ""}
+          <div class="comercio-badges">
+            <span class="badge-vea">🎟️ ${cantCupones} cupón${cantCupones === 1 ? "" : "es"}</span>
+            <span class="badge-vea">📰 ${cantPubs} pub${cantPubs === 1 ? "" : "s"}</span>
+          </div>
+        </div>
+      </div>
+      <div class="comercio-card-acciones">
+        <button type="button" class="btn-ver-vidriera">Ver vidriera</button>
+        ${waUrl ? `<a href="${escaparHTML(waUrl)}" target="_blank" rel="noopener" style="display:inline-flex; align-items:center; padding:8px 12px; border-radius:8px; background:#16a34a; color:#fff; font-weight:700; text-decoration:none; font-size:0.85rem;">WhatsApp</a>` : ""}
+      </div>
+    `;
+
+    const btnVer = card.querySelector(".btn-ver-vidriera");
+    if (btnVer) {
+      btnVer.addEventListener("click", () => abrirDetalleComercio(com));
+    }
+
+    listaComerciosPublicos.appendChild(card);
+  });
+
+  if (mapaPrincipal && limites.length > 1) {
+    mapaPrincipal.fitBounds(limites, { padding: [24, 24], maxZoom: 15 });
+  } else if (mapaPrincipal && limites.length === 1) {
+    mapaPrincipal.setView(limites[0], 15);
+  }
+}
+
+function filtrarComercios() {
+  const termino = (inputBuscarComercio ? inputBuscarComercio.value : "").trim().toLowerCase();
+  if (!termino) {
+    renderizarComerciosPublicos(comerciosCargados);
+    return;
+  }
+
+  const filtrados = comerciosCargados.filter((com) => {
+    const textoCupones = (com.cupones || []).map((c) => `${c.titulo || ""} ${c.codigo || ""}`).join(" ");
+    const textoPubs = (com.publicaciones || []).map((p) => `${p.titulo || ""} ${p.descripcion || ""}`).join(" ");
+    const campoCompleto = `${com.nombreComercio || ""} ${com.direccion || ""} ${com.telefono || ""} ${textoCupones} ${textoPubs}`.toLowerCase();
+    return campoCompleto.includes(termino);
+  });
+
+  renderizarComerciosPublicos(filtrados);
+}
+
+if (inputBuscarComercio) {
+  inputBuscarComercio.addEventListener("input", filtrarComercios);
+}
+
+if (btnLimpiarBusqueda) {
+  btnLimpiarBusqueda.addEventListener("click", () => {
+    if (inputBuscarComercio) inputBuscarComercio.value = "";
+    renderizarComerciosPublicos(comerciosCargados);
+  });
+}
+
+if (btnCerrarDetalleComercio && detalleComercioPublico) {
+  btnCerrarDetalleComercio.addEventListener("click", () => {
+    detalleComercioPublico.classList.add("hidden");
+  });
+}
+
+db.collection("comercios").onSnapshot((snapshot) => {
+  comerciosCargados = [];
+  snapshot.forEach((doc) => {
+    const data = doc.data() || {};
+    if (data.nombreComercio) {
+      comerciosCargados.push({ id: doc.id, ...data });
+    }
+  });
+  filtrarComercios();
+}, (err) => {
+  console.error("Error leyendo comercios públicos:", err);
+  if (contadorComercios) {
+    contadorComercios.textContent = "No se pudieron cargar los comercios.";
+  }
+});
+
+inicializarMapaPrincipal();
