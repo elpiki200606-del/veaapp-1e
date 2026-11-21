@@ -201,6 +201,32 @@
       gap: 5px;
     }
 
+    .rubros-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(145px, 1fr));
+      gap: 8px;
+      max-height: 62vh;
+      overflow-y: auto;
+      padding-right: 4px;
+    }
+
+    .btn-rubro-item {
+      background: #fff;
+      color: var(--verde);
+      border: 1px solid var(--borde);
+      border-radius: 8px;
+      padding: 8px 10px;
+      font-size: 0.78rem;
+      font-weight: 700;
+      text-align: left;
+    }
+
+    .btn-rubro-item:hover, .btn-rubro-item.activo {
+      background: var(--verde);
+      color: var(--dorado);
+      border-color: var(--dorado);
+    }
+
     .main-container {
       display: flex;
       height: calc(100vh - 118px);
@@ -593,18 +619,19 @@
 
     <section id="vista-rubros" class="card vista-completa hidden">
       <div style="display:flex; justify-content:space-between; align-items:center; gap:8px; margin-bottom:8px;">
-        <h2 style="margin:0;">🏷️ Buscar por rubro</h2>
+        <h2 style="margin:0;">🏷️ Elegí un rubro</h2>
         <button type="button" class="btn" id="btn-volver-rubros">← Volver al inicio</button>
       </div>
-      <p class="subtexto" style="margin-bottom:10px;">Listo para cargar tu lista de rubros y reflejarlos en el mapa y las vidrieras.</p>
-      <div id="lista-rubros-dinamica" class="fila-input">
+      <p class="subtexto" style="margin-bottom:10px;">Tocá un rubro para mostrar solo esos comercios en el mapa y las vidrieras.</p>
+      <div class="fila-input">
         <button type="button" class="btn" id="btn-rubro-todos">Todos los rubros</button>
       </div>
+      <div id="lista-rubros-dinamica" class="rubros-grid"></div>
     </section>
 
     <section id="vista-cupones-prioridad" class="card vista-completa hidden">
       <div style="display:flex; justify-content:space-between; align-items:center; gap:8px; margin-bottom:8px;">
-        <h2 style="margin:0;">🎟️ Cupones por jerarquía (Premium · Estándar · Básico)</h2>
+        <h2 style="margin:0;">🎟️ Cupones (Premium · Estándar · Básico)</h2>
         <button type="button" class="btn" id="btn-volver-cupones">← Volver al inicio</button>
       </div>
       <p class="subtexto" style="margin-bottom:12px;">Ordenados por nivel de plan comercial.</p>
@@ -875,13 +902,120 @@
   <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
   <script src="app.js"></script>
   <script>
+    const RUBROS_INDIVIDUALES = [
+      "Carnicería", "Pollería", "Granja", "Pescadería", "Fiambrería", "Verdulería",
+      "Almacén", "Kiosco", "Maxikiosco", "Panadería", "Pastelería", "Confitería",
+      "Heladería", "Cafetería", "Bar", "Cervecería", "Restaurante", "Parrilla",
+      "Pizzería", "Rotisería", "Dietética", "Vinoteca", "Ferretería", "Corralón",
+      "Pinturería", "Sanitario", "Electricidad", "Bulonera", "Aberturas", "Maderas",
+      "Zapatería", "Tienda de ropa", "Indumentaria deportiva", "Lencería", "Mercería",
+      "Joyería", "Relojería", "Óptica", "Perfumería", "Peluquería", "Barbería",
+      "Estética", "Spa", "Farmacia", "Veterinaria", "Pet shop", "Librería",
+      "Juguetería", "Regalería", "Bazar", "Mueblería", "Colchonería", "Electrodomésticos",
+      "Celulares", "Computación", "Electrónica", "Gomería", "LUBRICENTRO", "Taller mecánico",
+      "Chapa y pintura", "Lavadero de autos", "Repuestos automotor", "Concesionaria",
+      "Bicicletería", "Motos", "Inmobiliaria", "Aseguradora", "Gestoría", "Imprenta",
+      "Gráfica", "Fotografía", "Floristería", "Vivero", "Limpieza", "Cotillón"
+    ];
+
     const vistaPrincipalEl = document.getElementById("vista-principal");
     const chromeInicioEl = document.getElementById("chrome-inicio");
     const vistaRubrosEl = document.getElementById("vista-rubros");
+    const listaRubrosDinamicaEl = document.getElementById("lista-rubros-dinamica");
     const vistaCuponesPrioridadEl = document.getElementById("vista-cupones-prioridad");
     const listaCuponesPrioridadEl = document.getElementById("lista-cupones-prioridad");
     const btnAccesoHeaderEl = document.getElementById("btn-acceso-header");
     let rubroActivo = "";
+
+    function construirListadoRubros() {
+      if (!listaRubrosDinamicaEl) return;
+      const unicos = Array.from(new Set(
+        RUBROS_INDIVIDUALES.map((r) => r.trim()).filter(Boolean)
+      )).sort((a, b) => a.localeCompare(b, "es"));
+
+      listaRubrosDinamicaEl.innerHTML = unicos.map((rubro) => {
+        const activa = rubroActivo.toLowerCase() === rubro.toLowerCase() ? "activo" : "";
+        return `<button type="button" class="btn-rubro-item ${activa}" data-rubro="${rubro.replace(/"/g, "&quot;")}">${rubro}</button>`;
+      }).join("");
+
+      listaRubrosDinamicaEl.querySelectorAll("[data-rubro]").forEach((btn) => {
+        btn.addEventListener("click", () => {
+          const elegido = btn.getAttribute("data-rubro") || "";
+          window.aplicarFiltroRubro(elegido);
+          irAInicioLimpio();
+        });
+      });
+    }
+
+    function obtenerComerciosVisibles() {
+      const base = (typeof comerciosCargados !== "undefined" && Array.isArray(comerciosCargados))
+        ? comerciosCargados
+        : [];
+      const term = (document.getElementById("buscar-comercio")?.value || "").trim().toLowerCase();
+
+      return base.filter((c) => {
+        const textoComercio = [
+          c.rubro, c.categoria, c.nombreComercio, c.direccion,
+          Array.isArray(c.cupones) ? c.cupones.map((x) => `${x.titulo} ${x.codigo}`).join(" ") : "",
+          Array.isArray(c.publicaciones) ? c.publicaciones.map((p) => `${p.titulo} ${p.descripcion}`).join(" ") : ""
+        ].join(" ").toLowerCase();
+
+        const pasaRubro = !rubroActivo || textoComercio.includes(rubroActivo.toLowerCase());
+        const pasaBusqueda = !term || textoComercio.includes(term);
+        return pasaRubro && pasaBusqueda;
+      });
+    }
+
+    function sincronizarMapaConFiltro() {
+      const visibles = obtenerComerciosVisibles();
+      const tieneFiltro = Boolean(rubroActivo || (document.getElementById("buscar-comercio")?.value || "").trim());
+
+      if (typeof renderizarComerciosPublicos === "function") {
+        renderizarComerciosPublicos(visibles);
+      }
+
+      if (typeof mapaPrincipal !== "undefined" && mapaPrincipal && typeof L !== "undefined") {
+        if (!window._veaMarcadoresFiltrados) {
+          window._veaMarcadoresFiltrados = L.layerGroup().addTo(mapaPrincipal);
+        }
+        window._veaMarcadoresFiltrados.clearLayers();
+
+        // Para no saturar el mapa cuando hay muchos comercios sin filtro, solo muestra si hay filtro o pocos comercios
+        const aMostrarEnMapa = tieneFiltro ? visibles : visibles.slice(0, 6);
+
+        aMostrarEnMapa.forEach((com) => {
+          const lat = Number(com.lat ?? com.latitude);
+          const lng = Number(com.lng ?? com.longitude);
+          if (!Number.isFinite(lat) || !Number.isFinite(lng)) return;
+
+          const marcador = L.marker([lat, lng]).addTo(window._veaMarcadoresFiltrados);
+          const esc = typeof escaparHTML === "function" ? escaparHTML : (s) => String(s ?? "");
+          const nombre = esc(com.nombreComercio || "Comercio");
+          const idAttr = esc(com.id || "");
+
+          marcador.bindPopup(`
+            <div style="text-align:center; min-width:130px;">
+              <strong>${nombre}</strong><br>
+              <button type="button" class="btn" style="margin-top:6px; padding:5px 10px; font-size:0.74rem;" data-popup-vidriera-id="${idAttr}">Ver vidriera</button>
+            </div>
+          `);
+
+          marcador.on("popupopen", (ev) => {
+            const cont = ev.popup.getElement();
+            const btn = cont?.querySelector("[data-popup-vidriera-id]");
+            btn?.addEventListener("click", () => {
+              const targetId = btn.getAttribute("data-popup-vidriera-id");
+              const encontrada = (typeof comerciosCargados !== "undefined" ? comerciosCargados : [])
+                .find((item) => String(item.id || "") === String(targetId));
+              if (encontrada && typeof abrirDetalleComercio === "function") {
+                abrirDetalleComercio(encontrada);
+                document.getElementById("detalle-comercio-publico")?.scrollIntoView({ behavior: "smooth", block: "nearest" });
+              }
+            });
+          });
+        });
+      }
+    }
 
     window.aplicarFiltroRubro = function aplicarFiltroRubro(nombreRubro) {
       rubroActivo = String(nombreRubro || "").trim();
@@ -889,20 +1023,8 @@
       if (estadoEl) {
         estadoEl.textContent = rubroActivo ? `Rubro: ${rubroActivo}` : "Todos los rubros";
       }
-      if (typeof comerciosCargados !== "undefined" && Array.isArray(comerciosCargados)) {
-        const filtrados = !rubroActivo
-          ? comerciosCargados
-          : comerciosCargados.filter((c) => {
-              const texto = `${c.rubro || ""} ${c.categoria || ""} ${c.nombreComercio || ""} ${c.direccion || ""}`.toLowerCase();
-              return texto.includes(rubroActivo.toLowerCase());
-            });
-        if (typeof renderizarComerciosPublicos === "function") {
-          renderizarComerciosPublicos(filtrados);
-        }
-        if (typeof renderizarMarcadoresMapa === "function") {
-          renderizarMarcadoresMapa(filtrados);
-        }
-      }
+      construirListadoRubros();
+      sincronizarMapaConFiltro();
     };
 
     function pesoJerarquiaPlan(plan) {
@@ -943,7 +1065,7 @@
               <div>
                 <span class="badge-plan">${esc(nivel)}</span>
                 <strong style="margin-left:6px; color:var(--verde);">${esc(com.nombreComercio || "Comercio")}</strong>
-                <div style="margin-top:4px; font-size:0.86rem;">🎟️ <strong>${esc(cup.titulo || "")}</strong> — Código: <code>${esc(cup.codigo || "")}</code></div>
+                <div style="margin-top:4px; font-size:0.86rem;">🎟️ <strong>${esc(cup.titulo || cup.nombre || "")}</strong> — Código: <code>${esc(cup.codigo || cup.code || "")}</code></div>
                 <p class="subtexto">📍 ${esc(com.direccion || "")}</p>
               </div>
               <div style="display:flex; gap:6px; flex-wrap:wrap;">
@@ -956,7 +1078,7 @@
       });
 
       if (!filas.length) {
-        listaCuponesPrioridadEl.innerHTML = `<p class="subtexto">Todavía no hay cupones cargados en los comercios.</p>`;
+        listaCuponesPrioridadEl.innerHTML = `<p class="subtexto">No se encontraron cupones cargados en los comercios.</p>`;
       } else {
         listaCuponesPrioridadEl.innerHTML = filas.join("");
         listaCuponesPrioridadEl.querySelectorAll("[data-ver-comercio-id]").forEach((btn) => {
@@ -986,6 +1108,7 @@
       }
       if (vistaPrincipalEl) vistaPrincipalEl.classList.remove("hidden");
       if (chromeInicioEl) chromeInicioEl.classList.remove("hidden");
+      sincronizarMapaConFiltro();
       if (typeof mapaPrincipal !== "undefined" && mapaPrincipal) {
         setTimeout(() => mapaPrincipal.invalidateSize(), 180);
       }
@@ -1001,6 +1124,7 @@
 
       if (tipo === "rubros") {
         if (typeof mostrarVista === "function") mostrarVista(null);
+        construirListadoRubros();
         vistaRubrosEl?.classList.remove("hidden");
         return;
       }
@@ -1043,6 +1167,17 @@
       window.aplicarFiltroRubro("");
       irAInicioLimpio();
     });
+    document.getElementById("buscar-comercio")?.addEventListener("input", () => {
+      sincronizarMapaConFiltro();
+    });
+    document.getElementById("btn-limpiar-busqueda")?.addEventListener("click", () => {
+      const inp = document.getElementById("buscar-comercio");
+      if (inp) inp.value = "";
+      rubroActivo = "";
+      const estadoEl = document.getElementById("estado-filtro-rubro");
+      if (estadoEl) estadoEl.textContent = "Todos los rubros";
+      sincronizarMapaConFiltro();
+    });
     document.getElementById("btn-menu-registrarse")?.addEventListener("click", () => {
       document.getElementById("dropdown-usuario")?.classList.add("hidden");
       abrirVistaAislada("registro");
@@ -1076,6 +1211,8 @@
       }
     });
 
+    construirListadoRubros();
+
     const obsAuthAcceso = setInterval(() => {
       if (typeof auth !== "undefined" && auth && typeof auth.onAuthStateChanged === "function") {
         clearInterval(obsAuthAcceso);
@@ -1089,6 +1226,8 @@
         });
       }
     }, 100);
+
+    setTimeout(() => sincronizarMapaConFiltro(), 800);
   </script>
 </body>
 </html>
