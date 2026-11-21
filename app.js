@@ -1,10 +1,4 @@
-// 1. Configuración de Firebase
-// Import the functions you need from the SDKs you need
-import { initializeApp } from "firebase/app";
-// TODO: Add SDKs for Firebase products that you want to use
-// https://firebase.google.com/docs/web/setup#available-libraries
-
-// Your web app's Firebase configuration
+// 1. Configuración de Firebase (SDK Compat)
 const firebaseConfig = {
   apiKey: "AIzaSyA8GnmmlGoSeaC5JaOAjcZDS0ZQBpUYUIM",
   authDomain: "app-vea-2.firebaseapp.com",
@@ -13,9 +7,6 @@ const firebaseConfig = {
   messagingSenderId: "43679100188",
   appId: "1:43679100188:web:bb006e0a238f5b37035ed9"
 };
-
-// Initialize Firebase
-const app = initializeApp(firebaseConfig);
 
 firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore();
@@ -66,7 +57,8 @@ db.collection("pruebas").orderBy("creadoEn", "desc").limit(10)
   }, (err) => {
     console.error("Error leyendo Firestore:", err);
   });
-  // 6. Registro de usuarios en Firebase Auth + Firestore
+
+// 6. Registro de usuarios en Firebase Auth + Firestore
 const formRegistro = document.getElementById("form-registro");
 const regNombre = document.getElementById("reg-nombre");
 const regDireccion = document.getElementById("reg-direccion");
@@ -126,7 +118,8 @@ if (formRegistro) {
       });
   });
 }
-  // 7. Menú desplegable, vistas y estado de sesión en la nube
+
+// 7. Menú desplegable, vistas y estado de sesión en la nube
 const btnTriggerMenu = document.getElementById("btn-trigger-menu");
 const dropdownUsuario = document.getElementById("dropdown-usuario");
 const avatarUsuario = document.getElementById("avatar-usuario");
@@ -189,6 +182,8 @@ if (btnCerrarSesion) {
 
 auth.onAuthStateChanged((user) => {
   if (user) {
+    if (seccionRegistro) seccionRegistro.classList.add("hidden");
+
     const inicial = (user.email || "U").charAt(0).toUpperCase();
     if (avatarUsuario) avatarUsuario.textContent = inicial;
     if (textoUsuarioHeader) textoUsuarioHeader.textContent = user.email;
@@ -212,6 +207,8 @@ auth.onAuthStateChanged((user) => {
         console.error("Error leyendo perfil en Firestore:", err);
       });
   } else {
+    if (seccionRegistro) seccionRegistro.classList.remove("hidden");
+
     if (avatarUsuario) avatarUsuario.textContent = "V";
     if (textoUsuarioHeader) textoUsuarioHeader.textContent = "Sin sesión";
     if (menuNombreUsuario) menuNombreUsuario.textContent = "Invitado";
