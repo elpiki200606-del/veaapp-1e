@@ -307,6 +307,43 @@
       color: #fff;
     }
 
+    .planes-box {
+      margin-top: 16px;
+      padding: 14px;
+      border-radius: 10px;
+      background: #f8faf9;
+      border: 1px solid var(--dorado);
+    }
+
+    .planes-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 10px;
+      margin-top: 10px;
+    }
+
+    .plan-card {
+      background: #fff;
+      border: 1px solid var(--borde);
+      border-radius: 8px;
+      padding: 12px;
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      gap: 8px;
+    }
+
+    .plan-card.destacado {
+      border: 2px solid var(--dorado);
+    }
+
+    .plan-precio {
+      font-size: 1.15rem;
+      font-weight: 900;
+      color: var(--verde);
+    }
+
     .form-grid {
       display: flex;
       flex-direction: column;
@@ -478,7 +515,10 @@
         <strong style="color:var(--dorado); font-size:.82rem;">¿Tenés un comercio o emprendimiento?</strong>
         <p style="font-size: .72rem; color: #c2dcd1;">Cargá tu vidriera, cupones, video vertical y WhatsApp.</p>
       </div>
-      <button type="button" class="btn" id="btn-abrir-vidriera-home">⭐ Mi Vidriera</button>
+      <div style="display:flex; gap:6px; flex-wrap:wrap;">
+        <button type="button" class="btn" id="btn-abrir-planes-home">💳 Suscripciones</button>
+        <button type="button" class="btn" id="btn-abrir-vidriera-home">⭐ Mi Vidriera</button>
+      </div>
     </div>
   </div>
 
@@ -581,7 +621,10 @@
     <section id="vista-perfil" class="card vista-completa hidden">
       <div style="display:flex; justify-content:space-between; align-items:center; gap:8px; margin-bottom:6px;">
         <h2 style="margin:0;">Editar perfil</h2>
-        <button type="button" class="btn" id="btn-cerrar-perfil">← Volver al inicio</button>
+        <div style="display:flex; gap:6px; flex-wrap:wrap;">
+          <button type="button" class="btn" id="btn-ir-planes-perfil">💳 Suscripciones</button>
+          <button type="button" class="btn" id="btn-cerrar-perfil">← Volver al inicio</button>
+        </div>
       </div>
       <p id="datos-perfil-nube" class="subtexto">Iniciá sesión para editar tu perfil guardado en la nube.</p>
 
@@ -621,8 +664,9 @@
     <section id="vista-vidriera" class="card vista-completa hidden">
       <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; margin-bottom:10px;">
         <h2 style="margin:0;">Mi Vidriera Comercial</h2>
-        <div style="display:flex; align-items:center; gap:8px;">
+        <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
           <span id="badge-plan-vidriera" class="badge-plan">Plan activo: BÁSICO</span>
+          <button type="button" class="btn" id="btn-ir-planes-vidriera">💳 Suscripciones</button>
           <button type="button" class="btn" id="btn-cerrar-vidriera">← Volver al inicio</button>
         </div>
       </div>
@@ -695,6 +739,42 @@
 
       <p id="mensaje-vidriera" class="mensaje-estado" aria-live="polite"></p>
 
+      <div id="bloque-suscripciones-vidriera" class="planes-box">
+        <h3 style="color:var(--verde); margin-bottom:4px;">💳 Suscripciones V.E.A. (Básica, Estándar y Premium)</h3>
+        <p class="subtexto">Elegí tu plan para ampliar el límite de publicaciones y duración de video vertical.</p>
+        <div class="planes-grid">
+          <div class="plan-card">
+            <div>
+              <span class="badge-plan">BÁSICA</span>
+              <h4 style="margin-top:6px;">Plan Básico</h4>
+              <div class="plan-precio">USD 5</div>
+              <p class="subtexto">Hasta 10 publicaciones · Video hasta 10s</p>
+            </div>
+            <a href="https://mpago.la/2S79kb4" target="_blank" rel="noopener" class="btn">Suscribirse Básica</a>
+          </div>
+
+          <div class="plan-card destacado">
+            <div>
+              <span class="badge-plan">ESTÁNDAR</span>
+              <h4 style="margin-top:6px;">Plan Estándar</h4>
+              <div class="plan-precio">USD 10</div>
+              <p class="subtexto">Hasta 20 publicaciones · Video hasta 20s</p>
+            </div>
+            <a href="https://mpago.la/1qQYKhJ" target="_blank" rel="noopener" class="btn">Suscribirse Estándar</a>
+          </div>
+
+          <div class="plan-card">
+            <div>
+              <span class="badge-plan">PREMIUM</span>
+              <h4 style="margin-top:6px;">Plan Premium</h4>
+              <div class="plan-precio">USD 15</div>
+              <p class="subtexto">Hasta 40 publicaciones · Video hasta 60s</p>
+            </div>
+            <a href="https://mpago.la/2uckMU3" target="_blank" rel="noopener" class="btn">Suscribirse Premium</a>
+          </div>
+        </div>
+      </div>
+
       <div id="vidriera-reflejo-vivo" style="margin-top:16px; border-top:2px solid #e2e8f0; padding-top:12px;">
         <h3>Así se ve tu vidriera publicada</h3>
         <div id="vidriera-reflejo-contenido" class="subtexto">Guardá tu vidriera para verla reflejada acá.</div>
@@ -727,75 +807,90 @@
     const chromeInicioEl = document.getElementById("chrome-inicio");
     const btnAccesoHeaderEl = document.getElementById("btn-acceso-header");
 
-    function sincronizarVisibilidadInicio(nombreVista) {
-      const enInicio = !nombreVista;
-      if (vistaPrincipalEl) vistaPrincipalEl.classList.toggle("hidden", !enInicio);
-      if (chromeInicioEl) chromeInicioEl.classList.toggle("hidden", !enInicio);
-      if (enInicio && typeof mapaPrincipal !== "undefined" && mapaPrincipal) {
+    function irAInicioLimpio() {
+      document.getElementById("seccion-login")?.classList.add("hidden");
+      document.getElementById("seccion-registro")?.classList.add("hidden");
+      if (typeof mostrarVista === "function") {
+        mostrarVista(null);
+      } else {
+        document.getElementById("vista-perfil")?.classList.add("hidden");
+        document.getElementById("vista-vidriera")?.classList.add("hidden");
+      }
+      if (vistaPrincipalEl) vistaPrincipalEl.classList.remove("hidden");
+      if (chromeInicioEl) chromeInicioEl.classList.remove("hidden");
+      if (typeof mapaPrincipal !== "undefined" && mapaPrincipal) {
         setTimeout(() => mapaPrincipal.invalidateSize(), 180);
       }
     }
 
-    function abrirAccesoUsuario(mostrarRegistro = false) {
-      sincronizarVisibilidadInicio("auth");
-      if (typeof alternarAuth === "function") {
-        alternarAuth(!mostrarRegistro);
-      } else {
-        document.getElementById("seccion-login")?.classList.toggle("hidden", mostrarRegistro);
-        document.getElementById("seccion-registro")?.classList.toggle("hidden", !mostrarRegistro);
+    function abrirVistaAislada(tipo) {
+      if (vistaPrincipalEl) vistaPrincipalEl.classList.add("hidden");
+      if (chromeInicioEl) chromeInicioEl.classList.add("hidden");
+      document.getElementById("seccion-login")?.classList.add("hidden");
+      document.getElementById("seccion-registro")?.classList.add("hidden");
+
+      if (tipo === "login" || tipo === "registro") {
+        if (typeof mostrarVista === "function") mostrarVista(null);
+        const esLogin = tipo === "login";
+        document.getElementById("seccion-login")?.classList.toggle("hidden", !esLogin);
+        document.getElementById("seccion-registro")?.classList.toggle("hidden", esLogin);
+        return;
+      }
+
+      if (typeof mostrarVista === "function") {
+        mostrarVista(tipo);
       }
     }
 
-    btnAccesoHeaderEl?.addEventListener("click", () => abrirAccesoUsuario(false));
-    document.getElementById("btn-volver-login")?.addEventListener("click", () => {
-      document.getElementById("seccion-login")?.classList.add("hidden");
-      sincronizarVisibilidadInicio(null);
-    });
-    document.getElementById("btn-volver-registro")?.addEventListener("click", () => {
-      document.getElementById("seccion-registro")?.classList.add("hidden");
-      sincronizarVisibilidadInicio(null);
+    function irASuscripciones() {
+      if (!usuarioActual) {
+        abrirVistaAislada("login");
+        return;
+      }
+      abrirVistaAislada("vidriera");
+      setTimeout(() => {
+        document.getElementById("bloque-suscripciones-vidriera")?.scrollIntoView({ behavior: "smooth", block: "center" });
+      }, 120);
+    }
+
+    btnAccesoHeaderEl?.addEventListener("click", () => abrirVistaAislada("login"));
+    document.getElementById("btn-volver-login")?.addEventListener("click", irAInicioLimpio);
+    document.getElementById("btn-volver-registro")?.addEventListener("click", irAInicioLimpio);
+    document.getElementById("btn-cerrar-perfil")?.addEventListener("click", irAInicioLimpio);
+    document.getElementById("btn-cerrar-vidriera")?.addEventListener("click", irAInicioLimpio);
+    document.getElementById("btn-cerrar-sesion")?.addEventListener("click", irAInicioLimpio);
+
+    document.getElementById("btn-abrir-planes-home")?.addEventListener("click", irASuscripciones);
+    document.getElementById("btn-ir-planes-perfil")?.addEventListener("click", irASuscripciones);
+    document.getElementById("btn-ir-planes-vidriera")?.addEventListener("click", () => {
+      document.getElementById("bloque-suscripciones-vidriera")?.scrollIntoView({ behavior: "smooth", block: "center" });
     });
 
     document.getElementById("btn-abrir-vidriera-home")?.addEventListener("click", () => {
       if (!usuarioActual) {
-        abrirAccesoUsuario(false);
+        abrirVistaAislada("login");
         return;
       }
-      sincronizarVisibilidadInicio("vidriera");
-      mostrarVista("vidriera");
+      abrirVistaAislada("vidriera");
     });
 
     document.getElementById("btnAbrirVidrieraNav")?.addEventListener("click", () => {
       if (!usuarioActual) {
-        abrirAccesoUsuario(false);
+        abrirVistaAislada("login");
         return;
       }
-      sincronizarVisibilidadInicio("vidriera");
-      mostrarVista("vidriera");
+      abrirVistaAislada("vidriera");
     });
 
     document.querySelectorAll(".dropdown-item[data-vista]").forEach((btn) => {
       btn.addEventListener("click", () => {
-        sincronizarVisibilidadInicio(btn.dataset.vista);
+        abrirVistaAislada(btn.dataset.vista);
       });
     });
 
-    document.getElementById("btn-cerrar-perfil")?.addEventListener("click", () => sincronizarVisibilidadInicio(null));
-    document.getElementById("btn-cerrar-vidriera")?.addEventListener("click", () => sincronizarVisibilidadInicio(null));
-    document.getElementById("btn-cerrar-sesion")?.addEventListener("click", () => sincronizarVisibilidadInicio(null));
-
-    document.getElementById("btnNavHome")?.addEventListener("click", () => {
-      document.getElementById("seccion-login")?.classList.add("hidden");
-      document.getElementById("seccion-registro")?.classList.add("hidden");
-      mostrarVista(null);
-      sincronizarVisibilidadInicio(null);
-    });
-
+    document.getElementById("btnNavHome")?.addEventListener("click", irAInicioLimpio);
     document.getElementById("btnCentrarMapaNav")?.addEventListener("click", () => {
-      document.getElementById("seccion-login")?.classList.add("hidden");
-      document.getElementById("seccion-registro")?.classList.add("hidden");
-      mostrarVista(null);
-      sincronizarVisibilidadInicio(null);
+      irAInicioLimpio();
       if (typeof mapaPrincipal !== "undefined" && mapaPrincipal) {
         mapaPrincipal.setView([-34.6434, -58.6231], 13);
         setTimeout(() => mapaPrincipal.invalidateSize(), 150);
@@ -810,7 +905,7 @@
             btnAccesoHeaderEl.classList.toggle("hidden", Boolean(u));
           }
           if (!u) {
-            sincronizarVisibilidadInicio(null);
+            irAInicioLimpio();
           }
         });
       }
