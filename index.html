@@ -32,7 +32,7 @@
       color: var(--texto);
       background: var(--fondo);
       min-height: 100vh;
-      padding-bottom: 72px;
+      padding-bottom: 68px;
     }
 
     button, input, select, textarea {
@@ -58,8 +58,15 @@
     .app-header-brand h1 {
       color: var(--dorado);
       letter-spacing: 2px;
-      font-size: 1.25rem;
-      line-height: 1.1;
+      font-size: 1.2rem;
+      line-height: 1.05;
+    }
+
+    .app-header-brand p {
+      font-size: 0.58rem;
+      letter-spacing: 0.8px;
+      color: #c2dcd1;
+      margin-top: 2px;
     }
 
     #estado-app, #detalle-conexion {
@@ -67,24 +74,27 @@
     }
 
     .header-search {
-      flex: 1;
-      min-width: 170px;
-      max-width: 340px;
+      flex: 0 1 210px;
+      min-width: 135px;
       display: flex;
       align-items: center;
       background: #fff;
       border: 1.5px solid var(--dorado);
       border-radius: 999px;
       overflow: hidden;
-      padding-left: 10px;
+      padding-left: 8px;
+    }
+
+    .header-search span {
+      font-size: 0.72rem;
     }
 
     .header-search input {
       flex: 1;
       min-width: 0;
       border: 0;
-      padding: 5px 6px;
-      font-size: 0.8rem;
+      padding: 4px 6px;
+      font-size: 0.74rem;
       outline: none;
       background: transparent;
       color: var(--texto);
@@ -94,9 +104,9 @@
       background: var(--dorado);
       color: var(--verde);
       border: 0;
-      padding: 5px 10px;
+      padding: 4px 8px;
       font-weight: 800;
-      font-size: 0.78rem;
+      font-size: 0.7rem;
     }
 
     .header-acciones {
@@ -110,20 +120,20 @@
       color: var(--verde);
       border: 1px solid #fef08a;
       border-radius: 999px;
-      padding: 5px 11px;
-      font-size: 0.75rem;
+      padding: 5px 10px;
+      font-size: 0.74rem;
       font-weight: 800;
       white-space: nowrap;
     }
 
     .barra-red-susc {
-      margin: 6px 12px;
-      padding: 6px 10px;
-      border-radius: 8px;
+      margin: 3px 12px;
+      padding: 4px 8px;
+      border-radius: 7px;
       background: var(--verde);
       color: #fef08a;
       border: 1px solid var(--dorado);
-      font-size: 0.74rem;
+      font-size: 0.7rem;
       display: flex;
       align-items: center;
       justify-content: space-between;
@@ -136,15 +146,15 @@
       color: var(--verde);
       border: 0;
       border-radius: 6px;
-      padding: 4px 10px;
-      font-size: 0.72rem;
+      padding: 3px 8px;
+      font-size: 0.68rem;
       font-weight: 800;
       white-space: nowrap;
     }
 
     .main-container {
       display: flex;
-      height: calc(100vh - 135px);
+      height: calc(100vh - 122px);
       min-height: 420px;
     }
 
@@ -196,6 +206,20 @@
       max-width: 780px;
       margin: 16px auto;
       padding: 18px;
+    }
+
+    .cupon-item {
+      border: 1px solid var(--borde);
+      border-left: 4px solid var(--dorado);
+      border-radius: 10px;
+      padding: 10px 12px;
+      margin-bottom: 10px;
+      background: #fff;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
     }
 
     .card-vidriera {
@@ -380,6 +404,7 @@
       display: flex;
       flex-direction: column;
       align-items: center;
+      gap: 1px;
       font-size: 0.65rem;
       color: var(--muted);
     }
@@ -399,6 +424,11 @@
       align-items: center;
       justify-content: center;
       margin-top: -16px;
+    }
+
+    .nav-floating-btn svg {
+      width: 22px;
+      height: 22px;
     }
 
     .hidden {
@@ -429,6 +459,7 @@
   <header class="app-header">
     <div class="app-header-brand">
       <h1>V.E.A.</h1>
+      <p>VIDRIERAS ELECTRÓNICAS ARGENTINAS</p>
       <span id="estado-app"></span>
       <small id="detalle-conexion"></small>
     </div>
@@ -489,6 +520,15 @@
 
         <div id="lista-comercios-publicos" class="grid-vidrieras"></div>
       </div>
+    </section>
+
+    <section id="vista-cupones-prioridad" class="card vista-completa hidden">
+      <div style="display:flex; justify-content:space-between; align-items:center; gap:8px; margin-bottom:8px;">
+        <h2 style="margin:0;">🎟️ Cupones por jerarquía (Premium · Estándar · Básico)</h2>
+        <button type="button" class="btn" id="btn-volver-cupones">← Volver al inicio</button>
+      </div>
+      <p class="subtexto" style="margin-bottom:12px;">Ordenados por nivel de plan comercial.</p>
+      <div id="lista-cupones-prioridad"></div>
     </section>
 
     <section id="seccion-login" class="card vista-completa hidden">
@@ -740,7 +780,13 @@
 
   <nav class="bottom-nav">
     <button type="button" class="nav-item active" id="btnNavHome"><span>🏠</span><span>Inicio</span></button>
-    <button type="button" class="nav-floating-btn" id="btnCentrarMapaNav" title="Centrar mapa">📍</button>
+    <button type="button" class="nav-floating-btn" id="btnCentrarMapaNav" title="Centrar mapa" aria-label="Centrar mapa">
+      <svg viewBox="0 0 100 100">
+        <path d="M50 15 C33 15 20 28 20 45 C20 68 50 88 50 88 C50 88 80 68 80 45 C80 28 67 15 50 15 Z" fill="#182333" />
+        <circle cx="50" cy="42" r="11" fill="#cda12f" />
+      </svg>
+    </button>
+    <button type="button" class="nav-item" id="btnCuponesNav"><span>🎟️</span><span>Cupones</span></button>
   </nav>
 
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
@@ -751,11 +797,82 @@
   <script>
     const vistaPrincipalEl = document.getElementById("vista-principal");
     const chromeInicioEl = document.getElementById("chrome-inicio");
+    const vistaCuponesPrioridadEl = document.getElementById("vista-cupones-prioridad");
+    const listaCuponesPrioridadEl = document.getElementById("lista-cupones-prioridad");
     const btnAccesoHeaderEl = document.getElementById("btn-acceso-header");
+
+    function pesoJerarquiaPlan(plan) {
+      const p = String(plan || "basico").toLowerCase();
+      if (p.includes("premium")) return 3;
+      if (p.includes("estandar") || p.includes("estándar") || p.includes("intermedio")) return 2;
+      return 1;
+    }
+
+    function etiquetaJerarquiaPlan(plan) {
+      const peso = pesoJerarquiaPlan(plan);
+      if (peso === 3) return "PREMIUM";
+      if (peso === 2) return "ESTÁNDAR";
+      return "BÁSICO";
+    }
+
+    function renderizarCuponesJerarquia() {
+      if (!listaCuponesPrioridadEl) return;
+      const baseComercios = (typeof comerciosCargados !== "undefined" && Array.isArray(comerciosCargados))
+        ? comerciosCargados
+        : [];
+
+      const ordenados = [...baseComercios].sort(
+        (a, b) => pesoJerarquiaPlan(b.plan) - pesoJerarquiaPlan(a.plan)
+      );
+
+      const filas = [];
+      ordenados.forEach((com) => {
+        const cupones = Array.isArray(com.cupones) ? com.cupones : [];
+        if (!cupones.length) return;
+        const nivel = etiquetaJerarquiaPlan(com.plan);
+        const waUrl = com.whatsappUrl || (typeof formatearWhatsAppUrl === "function" ? formatearWhatsAppUrl(com.telefono || "") : "");
+        const esc = typeof escaparHTML === "function" ? escaparHTML : (s) => String(s ?? "");
+
+        cupones.forEach((cup) => {
+          filas.push(`
+            <div class="cupon-item">
+              <div>
+                <span class="badge-plan">${esc(nivel)}</span>
+                <strong style="margin-left:6px; color:var(--verde);">${esc(com.nombreComercio || "Comercio")}</strong>
+                <div style="margin-top:4px; font-size:0.86rem;">🎟️ <strong>${esc(cup.titulo || "")}</strong> — Código: <code>${esc(cup.codigo || "")}</code></div>
+                <p class="subtexto">📍 ${esc(com.direccion || "")}</p>
+              </div>
+              <div style="display:flex; gap:6px; flex-wrap:wrap;">
+                <button type="button" class="btn" data-ver-comercio-id="${esc(com.id || "")}">Ver vidriera</button>
+                ${waUrl ? `<a href="${esc(waUrl)}" target="_blank" rel="noopener" class="btn" style="background:#16a34a; color:#fff;">WhatsApp</a>` : ""}
+              </div>
+            </div>
+          `);
+        });
+      });
+
+      if (!filas.length) {
+        listaCuponesPrioridadEl.innerHTML = `<p class="subtexto">Todavía no hay cupones cargados en los comercios.</p>`;
+      } else {
+        listaCuponesPrioridadEl.innerHTML = filas.join("");
+        listaCuponesPrioridadEl.querySelectorAll("[data-ver-comercio-id]").forEach((btn) => {
+          btn.addEventListener("click", () => {
+            const idBuscado = btn.getAttribute("data-ver-comercio-id");
+            const encontrada = (typeof comerciosCargados !== "undefined" ? comerciosCargados : [])
+              .find((c) => String(c.id || "") === String(idBuscado));
+            irAInicioLimpio();
+            if (encontrada && typeof abrirDetalleComercio === "function") {
+              abrirDetalleComercio(encontrada);
+            }
+          });
+        });
+      }
+    }
 
     function irAInicioLimpio() {
       document.getElementById("seccion-login")?.classList.add("hidden");
       document.getElementById("seccion-registro")?.classList.add("hidden");
+      vistaCuponesPrioridadEl?.classList.add("hidden");
       if (typeof mostrarVista === "function") {
         mostrarVista(null);
       } else {
@@ -774,6 +891,14 @@
       if (chromeInicioEl) chromeInicioEl.classList.add("hidden");
       document.getElementById("seccion-login")?.classList.add("hidden");
       document.getElementById("seccion-registro")?.classList.add("hidden");
+      vistaCuponesPrioridadEl?.classList.add("hidden");
+
+      if (tipo === "cupones") {
+        if (typeof mostrarVista === "function") mostrarVista(null);
+        renderizarCuponesJerarquia();
+        vistaCuponesPrioridadEl?.classList.remove("hidden");
+        return;
+      }
 
       if (tipo === "login" || tipo === "registro") {
         if (typeof mostrarVista === "function") mostrarVista(null);
@@ -806,6 +931,7 @@
     });
     document.getElementById("btn-volver-login")?.addEventListener("click", irAInicioLimpio);
     document.getElementById("btn-volver-registro")?.addEventListener("click", irAInicioLimpio);
+    document.getElementById("btn-volver-cupones")?.addEventListener("click", irAInicioLimpio);
     document.getElementById("btn-cerrar-perfil")?.addEventListener("click", irAInicioLimpio);
     document.getElementById("btn-cerrar-vidriera")?.addEventListener("click", irAInicioLimpio);
     document.getElementById("btn-cerrar-sesion")?.addEventListener("click", irAInicioLimpio);
@@ -823,6 +949,7 @@
     });
 
     document.getElementById("btnNavHome")?.addEventListener("click", irAInicioLimpio);
+    document.getElementById("btnCuponesNav")?.addEventListener("click", () => abrirVistaAislada("cupones"));
     document.getElementById("btnCentrarMapaNav")?.addEventListener("click", () => {
       irAInicioLimpio();
       if (typeof mapaPrincipal !== "undefined" && mapaPrincipal) {
