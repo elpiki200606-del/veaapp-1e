@@ -1,12 +1,21 @@
 // 1. Configuración de Firebase
+// Import the functions you need from the SDKs you need
+import { initializeApp } from "firebase/app";
+// TODO: Add SDKs for Firebase products that you want to use
+// https://firebase.google.com/docs/web/setup#available-libraries
+
+// Your web app's Firebase configuration
 const firebaseConfig = {
-  apiKey: "AIzaSyA8GnnmlGoSeaC5JaOajcZDS0ZQBpUYUIM",
+  apiKey: "AIzaSyA8GnmmlGoSeaC5JaOAjcZDS0ZQBpUYUIM",
   authDomain: "app-vea-2.firebaseapp.com",
   projectId: "app-vea-2",
   storageBucket: "app-vea-2.firebasestorage.app",
   messagingSenderId: "43679100188",
   appId: "1:43679100188:web:bb006e0a238f5b37035ed9"
 };
+
+// Initialize Firebase
+const app = initializeApp(firebaseConfig);
 
 firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore();
@@ -57,7 +66,7 @@ db.collection("pruebas").orderBy("creadoEn", "desc").limit(10)
   }, (err) => {
     console.error("Error leyendo Firestore:", err);
   });
-// 6. Registro de usuarios en Firebase Auth + Firestore
+  // 6. Registro de usuarios en Firebase Auth + Firestore
 const formRegistro = document.getElementById("form-registro");
 const regNombre = document.getElementById("reg-nombre");
 const regDireccion = document.getElementById("reg-direccion");
