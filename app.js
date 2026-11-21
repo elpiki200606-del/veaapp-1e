@@ -57,3 +57,99 @@ db.collection("pruebas").orderBy("creadoEn", "desc").limit(10)
   }, (err) => {
     console.error("Error leyendo Firestore:", err);
   });
+  // 7. Menú desplegable, vistas y estado de sesión en la nube
+const btnTriggerMenu = document.getElementById("btn-trigger-menu");
+const dropdownUsuario = document.getElementById("dropdown-usuario");
+const avatarUsuario = document.getElementById("avatar-usuario");
+const textoUsuarioHeader = document.getElementById("texto-usuario-header");
+const menuNombreUsuario = document.getElementById("menu-nombre-usuario");
+const menuEmailUsuario = document.getElementById("menu-email-usuario");
+const btnCerrarSesion = document.getElementById("btn-cerrar-sesion");
+const datosPerfilNube = document.getElementById("datos-perfil-nube");
+
+const vistasMenu = {
+  perfil: document.getElementById("vista-perfil"),
+  vidriera: document.getElementById("vista-vidriera"),
+  cargar: document.getElementById("vista-cargar")
+};
+
+function mostrarVista(nombreVista) {
+  Object.values(vistasMenu).forEach((sec) => {
+    if (sec) sec.classList.add("hidden");
+  });
+  if (vistasMenu[nombreVista]) {
+    vistasMenu[nombreVista].classList.remove("hidden");
+  }
+  if (dropdownUsuario) {
+    dropdownUsuario.classList.add("hidden");
+  }
+  if (btnTriggerMenu) {
+    btnTriggerMenu.setAttribute("aria-expanded", "false");
+  }
+}
+
+if (btnTriggerMenu && dropdownUsuario) {
+  btnTriggerMenu.addEventListener("click", (e) => {
+    e.stopPropagation();
+    const seraVisible = dropdownUsuario.classList.contains("hidden");
+    dropdownUsuario.classList.toggle("hidden", !seraVisible);
+    btnTriggerMenu.setAttribute("aria-expanded", String(seraVisible));
+  });
+
+  document.addEventListener("click", (e) => {
+    if (!dropdownUsuario.contains(e.target) && !btnTriggerMenu.contains(e.target)) {
+      dropdownUsuario.classList.add("hidden");
+      btnTriggerMenu.setAttribute("aria-expanded", "false");
+    }
+  });
+}
+
+document.querySelectorAll(".dropdown-item[data-vista]").forEach((btn) => {
+  btn.addEventListener("click", () => {
+    mostrarVista(btn.dataset.vista);
+  });
+});
+
+if (btnCerrarSesion) {
+  btnCerrarSesion.addEventListener("click", () => {
+    auth.signOut().then(() => {
+      mostrarVista(null);
+    });
+  });
+}
+
+auth.onAuthStateChanged((user) => {
+  if (user) {
+    const inicial = (user.email || "U").charAt(0).toUpperCase();
+    if (avatarUsuario) avatarUsuario.textContent = inicial;
+    if (textoUsuarioHeader) textoUsuarioHeader.textContent = user.email;
+    if (menuEmailUsuario) menuEmailUsuario.textContent = user.email;
+
+    db.collection("usuarios").doc(user.uid).get()
+      .then((doc) => {
+        const datos = doc.exists ? doc.data() : {};
+        const nombre = datos.nombreApellido || "Usuario";
+        if (menuNombreUsuario) menuNombreUsuario.textContent = nombre;
+        if (textoUsuarioHeader) textoUsuarioHeader.textContent = nombre;
+        if (datosPerfilNube) {
+          datosPerfilNube.textContent =
+            "Nombre: " + nombre +
+            " | Dirección: " + (datos.direccion || "-") +
+            " | Teléfono: " + (datos.telefono || "-") +
+            " | Email: " + user.email;
+        }
+      })
+      .catch((err) => {
+        console.error("Error leyendo perfil en Firestore:", err);
+      });
+  } else {
+    if (avatarUsuario) avatarUsuario.textContent = "V";
+    if (textoUsuarioHeader) textoUsuarioHeader.textContent = "Sin sesión";
+    if (menuNombreUsuario) menuNombreUsuario.textContent = "Invitado";
+    if (menuEmailUsuario) menuEmailUsuario.textContent = "";
+    if (datosPerfilNube) {
+      datosPerfilNube.textContent = "Iniciá sesión para ver tu perfil guardado en la nube.";
+    }
+    mostrarVista(null);
+  }
+});
