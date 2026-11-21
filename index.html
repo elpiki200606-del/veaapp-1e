@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="es">
 <head>
   <meta charset="UTF-8">
@@ -79,8 +79,41 @@
     </section>
 
     <section id="vista-perfil" class="card hidden">
-      <h2>Perfil</h2>
-      <p id="datos-perfil-nube" class="subtexto">Iniciá sesión para ver tu perfil guardado en la nube.</p>
+      <h2>Editar perfil</h2>
+      <p id="datos-perfil-nube" class="subtexto">Iniciá sesión para editar tu perfil guardado en la nube.</p>
+
+      <form id="form-perfil" class="form-grid" novalidate>
+        <div class="campo">
+          <label for="perfil-foto-input">Foto de perfil</label>
+          <div class="fila-input">
+            <img id="preview-foto-perfil" alt="Vista previa de perfil" class="hidden" style="width: 64px; height: 64px; border-radius: 50%; object-fit: cover;">
+            <input type="file" id="perfil-foto-input" accept="image/*">
+            <button type="button" id="btn-quitar-foto">Quitar foto</button>
+          </div>
+        </div>
+
+        <div class="campo">
+          <label for="perfil-nombre">Nombre y apellido</label>
+          <input type="text" id="perfil-nombre" required>
+        </div>
+
+        <div class="campo">
+          <label for="perfil-direccion">Dirección</label>
+          <input type="text" id="perfil-direccion" required>
+        </div>
+
+        <div class="campo">
+          <label for="perfil-telefono">Teléfono</label>
+          <input type="tel" id="perfil-telefono" required>
+        </div>
+
+        <div class="acciones-form">
+          <button type="submit" id="btn-guardar-perfil">Guardar cambios</button>
+          <button type="button" id="btn-cerrar-perfil">Cerrar</button>
+        </div>
+      </form>
+
+      <p id="mensaje-perfil" class="mensaje-estado" aria-live="polite"></p>
     </section>
 
     <section id="vista-vidriera" class="card hidden">

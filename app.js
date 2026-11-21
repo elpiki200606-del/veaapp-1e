@@ -119,7 +119,7 @@ if (formRegistro) {
   });
 }
 
-// 7. Menú desplegable, vistas y estado de sesión en la nube
+// 7. Menú desplegable, vistas, edición de perfil y estado de sesión en la nube
 const btnTriggerMenu = document.getElementById("btn-trigger-menu");
 const dropdownUsuario = document.getElementById("dropdown-usuario");
 const avatarUsuario = document.getElementById("avatar-usuario");
@@ -128,6 +128,19 @@ const menuNombreUsuario = document.getElementById("menu-nombre-usuario");
 const menuEmailUsuario = document.getElementById("menu-email-usuario");
 const btnCerrarSesion = document.getElementById("btn-cerrar-sesion");
 const datosPerfilNube = document.getElementById("datos-perfil-nube");
+
+const formPerfil = document.getElementById("form-perfil");
+const perfilFotoInput = document.getElementById("perfil-foto-input");
+const previewFotoPerfil = document.getElementById("preview-foto-perfil");
+const btnQuitarFoto = document.getElementById("btn-quitar-foto");
+const perfilNombre = document.getElementById("perfil-nombre");
+const perfilDireccion = document.getElementById("perfil-direccion");
+const perfilTelefono = document.getElementById("perfil-telefono");
+const btnCerrarPerfil = document.getElementById("btn-cerrar-perfil");
+const mensajePerfil = document.getElementById("mensaje-perfil");
+
+let fotoPerfilActual = "";
+let usuarioActual = null;
 
 const vistasMenu = {
   perfil: document.getElementById("vista-perfil"),
@@ -150,6 +163,144 @@ function mostrarVista(nombreVista) {
   }
 }
 
+function renderizarAvatarHeader(fotoBase64, fallbackTexto) {
+  if (!avatarUsuario) return;
+  if (fotoBase64) {
+    avatarUsuario.innerHTML = `<img src="${fotoBase64}" alt="Avatar" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover; display: block;">`;
+  } else {
+    avatarUsuario.textContent = fallbackTexto;
+  }
+}
+
+function renderizarPreviewFoto(fotoBase64) {
+  if (!previewFotoPerfil) return;
+  if (fotoBase64) {
+    previewFotoPerfil.src = fotoBase64;
+    previewFotoPerfil.classList.remove("hidden");
+  } else {
+    previewFotoPerfil.removeAttribute("src");
+    previewFotoPerfil.classList.add("hidden");
+  }
+}
+
+function comprimirImagenAvatar(file, maxSize = 240, quality = 0.78) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onerror = () => reject(new Error("No se pudo leer el archivo."));
+    reader.onload = () => {
+      const img = new Image();
+      img.onerror = () => reject(new Error("El archivo seleccionado no es una imagen válida."));
+      img.onload = () => {
+        const canvas = document.createElement("canvas");
+        let width = img.width;
+        let height = img.height;
+
+        if (width > height) {
+          if (width > maxSize) {
+            height = Math.round((height * maxSize) / width);
+            width = maxSize;
+          }
+        } else {
+          if (height > maxSize) {
+            width = Math.round((width * maxSize) / height);
+            height = maxSize;
+          }
+        }
+
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext("2d");
+        ctx.drawImage(img, 0, 0, width, height);
+        resolve(canvas.toDataURL("image/jpeg", quality));
+      };
+      img.src = reader.result;
+    };
+    reader.readAsDataURL(file);
+  });
+}
+
+if (perfilFotoInput) {
+  perfilFotoInput.addEventListener("change", (e) => {
+    const file = e.target.files && e.target.files[0];
+    if (!file) return;
+
+    comprimirImagenAvatar(file)
+      .then((dataUrl) => {
+        fotoPerfilActual = dataUrl;
+        renderizarPreviewFoto(fotoPerfilActual);
+        if (mensajePerfil) mensajePerfil.textContent = "Foto cargada. Tocá 'Guardar cambios' para guardar en la nube.";
+      })
+      .catch((err) => {
+        console.error("Error procesando foto:", err);
+        if (mensajePerfil) mensajePerfil.textContent = "Error: " + err.message;
+      });
+  });
+}
+
+if (btnQuitarFoto) {
+  btnQuitarFoto.addEventListener("click", () => {
+    fotoPerfilActual = "";
+    if (perfilFotoInput) perfilFotoInput.value = "";
+    renderizarPreviewFoto("");
+    if (mensajePerfil) mensajePerfil.textContent = "Foto quitada. Tocá 'Guardar cambios' para confirmar.";
+  });
+}
+
+if (formPerfil) {
+  formPerfil.addEventListener("submit", (e) => {
+    e.preventDefault();
+    if (!usuarioActual) {
+      if (mensajePerfil) mensajePerfil.textContent = "Tenés que iniciar sesión primero.";
+      return;
+    }
+
+    const nombreApellido = (perfilNombre ? perfilNombre.value : "").trim();
+    const direccion = (perfilDireccion ? perfilDireccion.value : "").trim();
+    const telefono = (perfilTelefono ? perfilTelefono.value : "").trim();
+
+    if (!nombreApellido || !direccion || !telefono) {
+      if (mensajePerfil) mensajePerfil.textContent = "Completá nombre, dirección y teléfono.";
+      return;
+    }
+
+    if (mensajePerfil) mensajePerfil.textContent = "Guardando cambios...";
+
+    const payload = {
+      nombreApellido: nombreApellido,
+      direccion: direccion,
+      telefono: telefono,
+      fotoPerfil: fotoPerfilActual,
+      actualizadoEn: firebase.firestore.FieldValue.serverTimestamp()
+    };
+
+    db.collection("usuarios").doc(usuarioActual.uid).set(payload, { merge: true })
+      .then(() => {
+        const inicial = (usuarioActual.email || "U").charAt(0).toUpperCase();
+        renderizarAvatarHeader(fotoPerfilActual, inicial);
+        if (menuNombreUsuario) menuNombreUsuario.textContent = nombreApellido;
+        if (textoUsuarioHeader) textoUsuarioHeader.textContent = nombreApellido;
+        if (datosPerfilNube) {
+          datosPerfilNube.textContent =
+            "Nombre: " + nombreApellido +
+            " | Dirección: " + direccion +
+            " | Teléfono: " + telefono +
+            " | Email: " + usuarioActual.email;
+        }
+        if (mensajePerfil) mensajePerfil.textContent = "Perfil actualizado en la nube.";
+      })
+      .catch((err) => {
+        console.error("Error guardando perfil:", err);
+        if (mensajePerfil) mensajePerfil.textContent = "Error al guardar: " + err.message;
+      });
+  });
+}
+
+if (btnCerrarPerfil) {
+  btnCerrarPerfil.addEventListener("click", () => {
+    mostrarVista(null);
+  });
+}
+
 if (btnTriggerMenu && dropdownUsuario) {
   btnTriggerMenu.addEventListener("click", (e) => {
     e.stopPropagation();
@@ -168,6 +319,7 @@ if (btnTriggerMenu && dropdownUsuario) {
 
 document.querySelectorAll(".dropdown-item[data-vista]").forEach((btn) => {
   btn.addEventListener("click", () => {
+    if (mensajePerfil) mensajePerfil.textContent = "";
     mostrarVista(btn.dataset.vista);
   });
 });
@@ -181,11 +333,13 @@ if (btnCerrarSesion) {
 }
 
 auth.onAuthStateChanged((user) => {
+  usuarioActual = user || null;
+
   if (user) {
     if (seccionRegistro) seccionRegistro.classList.add("hidden");
 
     const inicial = (user.email || "U").charAt(0).toUpperCase();
-    if (avatarUsuario) avatarUsuario.textContent = inicial;
+    renderizarAvatarHeader("", inicial);
     if (textoUsuarioHeader) textoUsuarioHeader.textContent = user.email;
     if (menuEmailUsuario) menuEmailUsuario.textContent = user.email;
 
@@ -193,13 +347,24 @@ auth.onAuthStateChanged((user) => {
       .then((doc) => {
         const datos = doc.exists ? doc.data() : {};
         const nombre = datos.nombreApellido || "Usuario";
+        const direccion = datos.direccion || "";
+        const telefono = datos.telefono || "";
+        fotoPerfilActual = datos.fotoPerfil || "";
+
+        renderizarAvatarHeader(fotoPerfilActual, inicial);
+        renderizarPreviewFoto(fotoPerfilActual);
+
         if (menuNombreUsuario) menuNombreUsuario.textContent = nombre;
         if (textoUsuarioHeader) textoUsuarioHeader.textContent = nombre;
+        if (perfilNombre) perfilNombre.value = nombre === "Usuario" ? "" : nombre;
+        if (perfilDireccion) perfilDireccion.value = direccion;
+        if (perfilTelefono) perfilTelefono.value = telefono;
+
         if (datosPerfilNube) {
           datosPerfilNube.textContent =
             "Nombre: " + nombre +
-            " | Dirección: " + (datos.direccion || "-") +
-            " | Teléfono: " + (datos.telefono || "-") +
+            " | Dirección: " + (direccion || "-") +
+            " | Teléfono: " + (telefono || "-") +
             " | Email: " + user.email;
         }
       })
@@ -209,10 +374,15 @@ auth.onAuthStateChanged((user) => {
   } else {
     if (seccionRegistro) seccionRegistro.classList.remove("hidden");
 
-    if (avatarUsuario) avatarUsuario.textContent = "V";
+    fotoPerfilActual = "";
+    renderizarAvatarHeader("", "V");
+    renderizarPreviewFoto("");
     if (textoUsuarioHeader) textoUsuarioHeader.textContent = "Sin sesión";
     if (menuNombreUsuario) menuNombreUsuario.textContent = "Invitado";
     if (menuEmailUsuario) menuEmailUsuario.textContent = "";
+    if (perfilNombre) perfilNombre.value = "";
+    if (perfilDireccion) perfilDireccion.value = "";
+    if (perfilTelefono) perfilTelefono.value = "";
     if (datosPerfilNube) {
       datosPerfilNube.textContent = "Iniciá sesión para ver tu perfil guardado en la nube.";
     }
