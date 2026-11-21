@@ -3,15 +3,447 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>VEA App</title>
+  <title>V.E.A. | Vidrieras Electrónicas Argentinas</title>
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <link rel="stylesheet" href="style.css">
+  <style>
+    :root {
+      --verde: #062e22;
+      --verde2: #0b4533;
+      --dorado: #d4af37;
+      --fondo: #f4f7f5;
+      --texto: #173c30;
+      --muted: #62776e;
+      --borde: #d1ded7;
+      --blanco: #fff;
+      --whatsapp: #16a34a;
+      --rojo: #dc2626;
+    }
+
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+      color: var(--texto);
+      background: var(--fondo);
+      min-height: 100vh;
+      padding-bottom: 76px;
+    }
+
+    button, input, select, textarea {
+      font: inherit;
+    }
+
+    button {
+      cursor: pointer;
+    }
+
+    .app-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      background: linear-gradient(135deg, var(--verde), var(--verde2));
+      color: #fff;
+      padding: 10px 14px;
+      border-bottom: 2px solid var(--dorado);
+    }
+
+    .app-header-brand {
+      text-align: left;
+    }
+
+    .app-header h1 {
+      color: var(--dorado);
+      letter-spacing: 3px;
+      font-size: 1.35rem;
+      line-height: 1.1;
+    }
+
+    .app-header p {
+      font-size: 0.65rem;
+      letter-spacing: 1px;
+      color: #c2dcd1;
+      margin-top: 2px;
+    }
+
+    #detalle-conexion {
+      font-size: 0.68rem;
+      color: #fef08a;
+    }
+
+    .search-bar-container {
+      margin: 8px 12px 4px;
+      display: flex;
+      background: #fff;
+      border: 2px solid var(--dorado);
+      border-radius: 10px;
+      overflow: hidden;
+      box-shadow: 0 2px 8px rgba(6, 46, 34, 0.08);
+    }
+
+    .search-bar-container input {
+      flex: 1;
+      border: 0;
+      padding: 9px 12px;
+      font-size: 0.85rem;
+      outline: none;
+      background: transparent;
+      color: var(--texto);
+    }
+
+    .search-bar-container button {
+      background: var(--verde);
+      color: var(--dorado);
+      border: 0;
+      padding: 0 14px;
+      font-weight: 800;
+      font-size: 0.95rem;
+    }
+
+    .banner {
+      margin: 4px 12px;
+      padding: 6px 10px;
+      text-align: center;
+      border-radius: 8px;
+      background: var(--verde);
+      color: #fef08a;
+      border: 1px solid var(--dorado);
+      font-size: 0.75rem;
+    }
+
+    .banner-premium-rotativo {
+      margin: 4px 12px;
+      padding: 8px 12px;
+      background: linear-gradient(135deg, #182333, #0b131d);
+      border: 1px solid var(--dorado);
+      border-radius: 10px;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      box-shadow: 0 2px 8px rgba(212, 175, 55, 0.15);
+    }
+
+    .banner-premium-info h4 {
+      color: var(--dorado);
+      font-size: 0.85rem;
+      margin-top: 2px;
+    }
+
+    .banner-premium-info p {
+      font-size: 0.72rem;
+      color: #cbd5e1;
+    }
+
+    .cupones-top {
+      display: block;
+      margin: 4px 12px;
+      padding: 8px;
+      background: linear-gradient(135deg, var(--verde), var(--verde2));
+      color: var(--dorado);
+      border: 1px solid var(--dorado);
+      border-radius: 10px;
+      font-weight: 800;
+      width: calc(100% - 24px);
+      font-size: 0.78rem;
+      text-align: center;
+    }
+
+    .banner-suscripcion-home {
+      margin: 4px 12px;
+      padding: 8px 12px;
+      background: linear-gradient(135deg, var(--verde), var(--verde2));
+      border: 1px solid var(--dorado);
+      border-radius: 10px;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+    }
+
+    .categories {
+      display: flex;
+      gap: 6px;
+      overflow-x: auto;
+      padding: 6px 12px 8px;
+    }
+
+    .cat-pill {
+      flex: none;
+      border: 1px solid var(--borde);
+      border-radius: 20px;
+      padding: 5px 12px;
+      background: #fff;
+      color: var(--verde);
+      font-size: 0.75rem;
+      font-weight: 650;
+    }
+
+    .cat-pill.active, .cat-pill:hover {
+      background: var(--verde);
+      color: var(--dorado);
+      border-color: var(--dorado);
+    }
+
+    .main-container {
+      display: flex;
+      height: calc(100vh - 255px);
+      min-height: 400px;
+    }
+
+    .map-column {
+      width: 50%;
+      height: 100%;
+      position: relative;
+      border-right: 1px solid var(--borde);
+    }
+
+    #mapa-principal, #map {
+      width: 100%;
+      height: 100%;
+      z-index: 1;
+    }
+
+    .showcase-column {
+      width: 50%;
+      overflow-y: auto;
+      padding: 12px;
+    }
+
+    .section-title {
+      font-size: 0.95rem;
+      font-weight: 800;
+      margin-bottom: 10px;
+      color: var(--verde);
+    }
+
+    .grid-vidrieras, .comercios-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(185px, 1fr));
+      gap: 12px;
+    }
+
+    .card, .card-vidriera {
+      background: #fff;
+      border: 1px solid var(--borde);
+      border-radius: 12px;
+      overflow: hidden;
+    }
+
+    .card {
+      padding: 16px;
+      margin: 12px;
+    }
+
+    .card-vidriera {
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      box-shadow: 0 2px 6px rgba(6, 46, 34, 0.06);
+    }
+
+    .card-vidriera:hover {
+      border-color: var(--dorado);
+    }
+
+    .card-img-container {
+      height: 115px;
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: linear-gradient(135deg, var(--verde2), var(--verde));
+      color: var(--dorado);
+      font-size: 2rem;
+      overflow: hidden;
+    }
+
+    .card-img-container img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+    .badge-plan, .badge-discount, .badge-vea {
+      position: static;
+      display: inline-block;
+      font-size: 0.65rem;
+      font-weight: 800;
+      padding: 2px 7px;
+      border-radius: 6px;
+      background: var(--verde);
+      color: var(--dorado);
+      border: 1px solid var(--dorado);
+    }
+
+    .card-body {
+      padding: 10px;
+      display: flex;
+      flex: 1;
+      flex-direction: column;
+      gap: 6px;
+      text-align: center;
+    }
+
+    .card-body h3, .comercio-card-titulo {
+      font-size: 0.9rem;
+      color: var(--verde);
+    }
+
+    .card-body p, .subtexto, .muted {
+      font-size: 0.75rem;
+      color: var(--muted);
+    }
+
+    .btn {
+      display: inline-block;
+      border: 0;
+      border-radius: 6px;
+      padding: 7px 10px;
+      text-align: center;
+      text-decoration: none;
+      font-size: 0.75rem;
+      font-weight: 750;
+      background: var(--verde);
+      color: var(--dorado);
+    }
+
+    .btn-wa {
+      background: var(--whatsapp);
+      color: #fff;
+    }
+
+    .form-grid {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      margin-top: 10px;
+    }
+
+    .campo {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .campo label {
+      font-size: 0.8rem;
+      font-weight: 700;
+      color: var(--verde);
+    }
+
+    .campo input, .campo textarea {
+      width: 100%;
+      padding: 8px 10px;
+      border: 1px solid var(--borde);
+      border-radius: 6px;
+      background: #fff;
+      color: var(--texto);
+    }
+
+    .fila-input {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      align-items: center;
+      margin-bottom: 8px;
+    }
+
+    .acciones-form {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-top: 8px;
+    }
+
+    .mensaje-estado {
+      margin-top: 8px;
+      font-size: 0.8rem;
+      font-weight: 700;
+      color: var(--verde2);
+    }
+
+    .bottom-nav {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 58px;
+      display: flex;
+      justify-content: space-around;
+      align-items: center;
+      background: #fff;
+      border-top: 1px solid var(--borde);
+      box-shadow: 0 -2px 8px rgba(6, 46, 34, 0.08);
+      z-index: 2000;
+    }
+
+    .nav-item {
+      background: none;
+      border: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      font-size: 0.65rem;
+      color: var(--muted);
+    }
+
+    .nav-item.active {
+      color: var(--verde);
+      font-weight: 800;
+    }
+
+    .nav-floating-btn {
+      border: 3px solid #fff;
+      background: linear-gradient(135deg, #cda12f, #bf9324);
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-top: -16px;
+    }
+
+    .hidden {
+      display: none !important;
+    }
+
+    @media (max-width: 768px) {
+      .main-container {
+        height: auto;
+        min-height: 0;
+        flex-direction: column;
+      }
+
+      .map-column {
+        width: 100%;
+        height: 320px;
+        border-right: 0;
+        border-bottom: 2px solid var(--dorado);
+      }
+
+      .showcase-column {
+        width: 100%;
+      }
+    }
+  </style>
 </head>
 <body>
-  <header class="topbar">
-    <div class="topbar-brand">
-      <h1 id="estado-app">VEA App - Conectando...</h1>
-      <p id="detalle-conexion"></p>
+  <header class="app-header">
+    <div class="app-header-brand">
+      <h1 id="estado-app">V.E.A.</h1>
+      <p>VIDRIERAS ELECTRÓNICAS ARGENTINAS</p>
+      <small id="detalle-conexion"></small>
     </div>
 
     <div id="menu-usuario-wrap" class="menu-usuario-wrap">
@@ -34,8 +466,54 @@
     </div>
   </header>
 
+  <div class="search-bar-container">
+    <input type="text" id="buscar-comercio" placeholder="🔍 Buscá por comercio, dirección, cupón o publicación...">
+    <button type="button" id="btn-limpiar-busqueda">Todos</button>
+  </div>
+
+  <div class="banner">
+    ✨ Red Comercial Geolocalizada — Sumate a la red V.E.A. desde <strong>USD 5</strong> mensuales.
+  </div>
+
+  <div class="banner-premium-rotativo" id="bannerRotativoPremium">
+    <div class="banner-premium-info">
+      <span style="background:var(--dorado);color:var(--verde);font-size:.6rem;font-weight:800;padding:2px 5px;border-radius:4px">⭐ DESTACADO PREMIUM V.E.A.</span>
+      <h4 id="premRotativoNombre">Vidrieras locales activas</h4>
+      <p id="premRotativoOferta">Explorá comercios, cupones y contacto directo por WhatsApp.</p>
+    </div>
+  </div>
+
+  <div class="banner-suscripcion-home">
+    <div style="text-align: left;">
+      <strong style="color:var(--dorado); font-size:.82rem;">¿Tenés un comercio o emprendimiento?</strong>
+      <p style="font-size: .72rem; color: #c2dcd1;">Cargá tu vidriera, cupones, video vertical y WhatsApp.</p>
+    </div>
+    <button type="button" class="btn" id="btn-abrir-vidriera-home">⭐ Mi Vidriera</button>
+  </div>
+
   <main>
-    <section id="seccion-login" class="card">
+    <section id="vista-principal" class="main-container">
+      <div class="map-column">
+        <div id="mapa-principal"></div>
+      </div>
+
+      <div class="showcase-column">
+        <h2 class="section-title">📍 Vidriera cerca tuyo</h2>
+        <p id="contador-comercios" class="subtexto" style="margin-bottom:8px;">Cargando comercios...</p>
+
+        <div id="detalle-comercio-publico" class="card hidden" style="margin:0 0 12px; border:2px solid var(--dorado);">
+          <div style="display:flex; justify-content:space-between; align-items:center; gap:8px; margin-bottom:8px;">
+            <h3 style="margin:0;">Vidriera del comercio</h3>
+            <button type="button" class="btn" id="btn-cerrar-detalle-comercio">Cerrar</button>
+          </div>
+          <div id="contenido-detalle-comercio"></div>
+        </div>
+
+        <div id="lista-comercios-publicos" class="grid-vidrieras"></div>
+      </div>
+    </section>
+
+    <section id="seccion-login" class="card hidden">
       <h2>Iniciar sesión</h2>
       <p class="subtexto">Ingresá con tu correo y contraseña para recuperar tu perfil y tu vidriera.</p>
 
@@ -51,8 +529,8 @@
         </div>
 
         <div class="acciones-form">
-          <button type="submit" id="btn-iniciar-sesion">Iniciar sesión</button>
-          <button type="button" id="btn-ir-registro">Crear cuenta nueva</button>
+          <button type="submit" id="btn-iniciar-sesion" class="btn">Iniciar sesión</button>
+          <button type="button" id="btn-ir-registro" class="btn">Crear cuenta nueva</button>
         </div>
       </form>
 
@@ -95,8 +573,8 @@
         </div>
 
         <div class="acciones-form">
-          <button type="submit" id="btn-registrar">Registrarme</button>
-          <button type="button" id="btn-ir-login">Ya tengo cuenta</button>
+          <button type="submit" id="btn-registrar" class="btn">Registrarme</button>
+          <button type="button" id="btn-ir-login" class="btn">Ya tengo cuenta</button>
         </div>
       </form>
 
@@ -113,7 +591,7 @@
           <div class="fila-input">
             <img id="preview-foto-perfil" alt="Vista previa de perfil" class="hidden" style="width: 64px; height: 64px; border-radius: 50%; object-fit: cover;">
             <input type="file" id="perfil-foto-input" accept="image/*">
-            <button type="button" id="btn-quitar-foto">Quitar foto</button>
+            <button type="button" id="btn-quitar-foto" class="btn">Quitar foto</button>
           </div>
         </div>
 
@@ -133,8 +611,8 @@
         </div>
 
         <div class="acciones-form">
-          <button type="submit" id="btn-guardar-perfil">Guardar cambios</button>
-          <button type="button" id="btn-cerrar-perfil">Cerrar</button>
+          <button type="submit" id="btn-guardar-perfil" class="btn">Guardar cambios</button>
+          <button type="button" id="btn-cerrar-perfil" class="btn">Cerrar</button>
         </div>
       </form>
 
@@ -144,15 +622,12 @@
     <section id="vista-vidriera" class="card hidden">
       <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; margin-bottom:10px;">
         <h2 style="margin:0;">Mi Vidriera Comercial</h2>
-        <span id="badge-plan-vidriera" style="padding:4px 10px; border-radius:20px; background:#062e22; color:#d4af37; font-weight:700; font-size:0.8rem;">
-          Plan activo: BÁSICO
-        </span>
+        <span id="badge-plan-vidriera" class="badge-plan">Plan activo: BÁSICO</span>
       </div>
 
       <p id="estado-plan-detalle" class="subtexto">Límites de tu plan: hasta 10 publicaciones y video vertical de hasta 10s.</p>
 
       <form id="form-vidriera" class="form-grid" novalidate>
-        <!-- Datos básicos y dirección real en Argentina -->
         <div class="campo">
           <label for="vid-nombre-comercio">Nombre del comercio</label>
           <input type="text" id="vid-nombre-comercio" placeholder="Ej. Cervecería El Tordo" required>
@@ -161,108 +636,102 @@
         <div class="campo" style="position:relative;">
           <label for="vid-direccion">Dirección real en Argentina (calle, altura y localidad)</label>
           <input type="text" id="vid-direccion" placeholder="Ej. Pueyrredón 867, Ramos Mejía" autocomplete="off" required>
-          <div id="vid-sugerencias-direccion" class="hidden" style="position:absolute; top:100%; left:0; right:0; background:#fff; border:1px solid #cbd5e1; border-radius:8px; max-height:180px; overflow-y:auto; z-index:1000; box-shadow:0 4px 12px rgba(0,0,0,0.12);"></div>
+          <div id="vid-sugerencias-direccion" class="hidden" style="position:absolute; top:100%; left:0; right:0; background:#fff; border:1px solid #cbd5e1; border-radius:8px; max-height:180px; overflow-y:auto; z-index:1000;"></div>
         </div>
 
-        <!-- Mapa geolocalizado -->
+        <div class="campo">
+          <label for="vid-telefono">Teléfono / WhatsApp del comercio</label>
+          <input type="tel" id="vid-telefono" placeholder="Ej. 11 5555-5555">
+        </div>
+
         <div class="campo">
           <label>Ubicación en el mapa</label>
           <div id="vidriera-mapa" style="width:100%; height:220px; border-radius:8px; border:1px solid #cbd5e1; z-index:1;"></div>
           <small id="vid-coords-texto" class="subtexto">Seleccioná una dirección sugerida para fijar el pin exacto.</small>
         </div>
 
-        <!-- Foto de fachada -->
         <div class="campo">
           <label for="vid-fachada-input">Foto de fachada del comercio</label>
           <div class="fila-input">
             <img id="vid-preview-fachada" alt="Vista previa fachada" class="hidden" style="width:96px; height:64px; border-radius:8px; object-fit:cover;">
             <input type="file" id="vid-fachada-input" accept="image/*">
-            <button type="button" id="btn-quitar-fachada">Quitar fachada</button>
+            <button type="button" id="btn-quitar-fachada" class="btn">Quitar fachada</button>
           </div>
         </div>
 
-        <!-- Video vertical según plan -->
         <div class="campo">
           <label for="vid-video-input" id="label-video-vidriera">Video promocional (formato vertical obligatorio)</label>
           <input type="file" id="vid-video-input" accept="video/*">
           <small id="vid-video-estado" class="subtexto">Solo formato vertical (alto mayor que ancho). Máximo según tu plan.</small>
           <video id="vid-preview-video" controls playsinline class="hidden" style="width:140px; max-height:240px; border-radius:8px; background:#000; margin-top:6px;"></video>
-          <button type="button" id="btn-quitar-video" class="hidden" style="margin-top:4px;">Quitar video</button>
+          <button type="button" id="btn-quitar-video" class="btn hidden" style="margin-top:4px;">Quitar video</button>
         </div>
 
-        <!-- Cupones con código -->
         <div class="campo" style="border-top:1px solid #e2e8f0; padding-top:10px;">
           <label>Cupones con código</label>
           <div class="fila-input">
             <input type="text" id="vid-cupon-titulo" placeholder="Ej. 2x1 en Pintas IPA">
             <input type="text" id="vid-cupon-codigo" placeholder="Código (Ej. VEA-IPA)">
-            <button type="button" id="btn-agregar-cupon">+ Cupón</button>
+            <button type="button" id="btn-agregar-cupon" class="btn">+ Cupón</button>
           </div>
           <ul id="vid-lista-cupones"></ul>
         </div>
 
-        <!-- Publicaciones con límite por plan -->
         <div class="campo" style="border-top:1px solid #e2e8f0; padding-top:10px;">
           <label id="label-publicaciones-vidriera">Publicaciones (0 / 10 máx.)</label>
           <input type="file" id="vid-pub-foto" accept="image/*">
           <input type="text" id="vid-pub-titulo" placeholder="Título de la publicación">
           <textarea id="vid-pub-descripcion" rows="2" placeholder="Descripción de la publicación"></textarea>
-          <button type="button" id="btn-agregar-publicacion">+ Agregar publicación</button>
+          <button type="button" id="btn-agregar-publicacion" class="btn">+ Agregar publicación</button>
           <div id="vid-lista-publicaciones" style="margin-top:8px;"></div>
         </div>
 
         <div class="acciones-form">
-          <button type="submit" id="btn-guardar-vidriera">Guardar y actualizar vidriera</button>
-          <button type="button" id="btn-cerrar-vidriera">Cerrar</button>
+          <button type="submit" id="btn-guardar-vidriera" class="btn">Guardar y actualizar vidriera</button>
+          <button type="button" id="btn-cerrar-vidriera" class="btn">Cerrar</button>
         </div>
       </form>
 
       <p id="mensaje-vidriera" class="mensaje-estado" aria-live="polite"></p>
 
-      <!-- Vista previa en vivo reflejada -->
       <div id="vidriera-reflejo-vivo" style="margin-top:16px; border-top:2px solid #e2e8f0; padding-top:12px;">
         <h3>Así se ve tu vidriera publicada</h3>
         <div id="vidriera-reflejo-contenido" class="subtexto">Guardá tu vidriera para verla reflejada acá.</div>
       </div>
-
-      <!-- 3 opciones de plan al final de la vidriera -->
-      <div style="margin-top:20px; border-top:2px solid #e2e8f0; padding-top:14px;">
-        <h3>Planes de suscripción V.E.A.</h3>
-        <p class="subtexto">Elegí tu plan para ampliar tus publicaciones y duración de video vertical.</p>
-        <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(170px, 1fr)); gap:10px; margin-top:10px;">
-          <div style="border:1px solid #cbd5e1; border-radius:10px; padding:12px;">
-            <strong>Plan Básico</strong>
-            <p class="subtexto">Hasta 10 publicaciones · Video vertical hasta 10s</p>
-            <a href="https://mpago.la/2S79kb4" target="_blank" rel="noopener">Suscribirse (Mercado Pago)</a>
-          </div>
-          <div style="border:2px solid #d4af37; border-radius:10px; padding:12px;">
-            <strong>Plan Estándar</strong>
-            <p class="subtexto">Hasta 20 publicaciones · Video vertical hasta 20s</p>
-            <a href="https://mpago.la/1qQYKhJ" target="_blank" rel="noopener">Suscribirse (Mercado Pago)</a>
-          </div>
-          <div style="border:1px solid #cbd5e1; border-radius:10px; padding:12px;">
-            <strong>Plan Premium</strong>
-            <p class="subtexto">Hasta 40 publicaciones · Video vertical hasta 60s</p>
-            <a href="https://mpago.la/2uckMU3" target="_blank" rel="noopener">Suscribirse (Mercado Pago)</a>
-          </div>
-        </div>
-      </div>
     </section>
 
-    <section id="seccion-prueba" class="card">
+    <section id="seccion-prueba" class="card hidden">
       <h2>Prueba de Firestore</h2>
       <div class="fila-input">
         <input type="text" id="texto-prueba" placeholder="Escribí algo de prueba...">
-        <button id="btn-guardar">Guardar</button>
+        <button id="btn-guardar" class="btn">Guardar</button>
       </div>
       <ul id="lista-prueba"></ul>
     </section>
   </main>
+
+  <nav class="bottom-nav">
+    <button type="button" class="nav-item active" id="btnNavHome"><span>🏠</span><span>Inicio</span></button>
+    <button type="button" class="nav-floating-btn" id="btnCentrarMapaNav" title="Centrar mapa">📍</button>
+    <button type="button" class="nav-item" id="btnAbrirVidrieraNav"><span>🏪</span><span>Mi Vidriera</span></button>
+  </nav>
 
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
   <script src="app.js"></script>
+  <script>
+    document.getElementById("btn-abrir-vidriera-home")?.addEventListener("click", () => mostrarVista("vidriera"));
+    document.getElementById("btnAbrirVidrieraNav")?.addEventListener("click", () => mostrarVista("vidriera"));
+    document.getElementById("btnNavHome")?.addEventListener("click", () => mostrarVista(null));
+    document.getElementById("btnCentrarMapaNav")?.addEventListener("click", () => {
+      mostrarVista(null);
+      if (typeof mapaPrincipal !== "undefined" && mapaPrincipal) {
+        mapaPrincipal.setView([-34.6434, -58.6231], 13);
+        setTimeout(() => mapaPrincipal.invalidateSize(), 150);
+      }
+    });
+  </script>
 </body>
 </html>
