@@ -45,61 +45,83 @@
 
     .app-header {
       display: flex;
-      justify-content: space-between;
-      align-items: center;
-      gap: 8px;
+      flex-direction: column;
+      gap: 6px;
       background: linear-gradient(135deg, var(--verde), var(--verde2));
       color: #fff;
-      padding: 8px 12px;
+      padding: 7px 10px 8px;
       border-bottom: 2px solid var(--dorado);
+    }
+
+    .header-top-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 8px;
+      width: 100%;
     }
 
     .app-header-brand {
       text-align: left;
-      flex-shrink: 0;
     }
 
     .app-header-brand h1 {
       color: var(--dorado);
       letter-spacing: 2px;
-      font-size: 1.18rem;
-      line-height: 1.05;
+      font-size: 1.42rem;
+      line-height: 1;
     }
 
     .app-header-brand p {
       font-size: 0.56rem;
-      letter-spacing: 0.6px;
+      letter-spacing: 0.7px;
+      line-height: 1.15;
       color: #c2dcd1;
-      margin-top: 2px;
+      margin-top: 3px;
     }
 
     #estado-app, #detalle-conexion {
       display: none;
     }
 
+    .header-acciones {
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      margin-left: auto;
+      flex-shrink: 0;
+    }
+
+    .header-bottom-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      width: 100%;
+    }
+
     .header-search {
-      flex: 1;
+      flex: 0 1 175px;
       min-width: 115px;
-      max-width: 240px;
       display: flex;
       align-items: center;
       background: #fff;
       border: 1.5px solid var(--dorado);
       border-radius: 999px;
       overflow: hidden;
-      padding-left: 8px;
+      padding-left: 7px;
     }
 
     .header-search span {
-      font-size: 0.72rem;
+      font-size: 0.68rem;
     }
 
     .header-search input {
       flex: 1;
       min-width: 0;
       border: 0;
-      padding: 4px 6px;
-      font-size: 0.74rem;
+      padding: 3px 5px;
+      font-size: 0.72rem;
       outline: none;
       background: transparent;
       color: var(--texto);
@@ -109,18 +131,9 @@
       background: var(--dorado);
       color: var(--verde);
       border: 0;
-      padding: 4px 8px;
+      padding: 3px 7px;
       font-weight: 800;
-      font-size: 0.68rem;
-    }
-
-    .header-acciones {
-      display: flex;
-      align-items: center;
-      justify-content: flex-end;
-      gap: 6px;
-      flex-shrink: 0;
-      margin-left: auto;
+      font-size: 0.66rem;
     }
 
     .btn-acceso-header {
@@ -128,24 +141,29 @@
       color: var(--verde);
       border: 1px solid #fef08a;
       border-radius: 999px;
-      padding: 4px 9px;
+      padding: 4px 10px;
       font-size: 0.7rem;
       font-weight: 800;
       white-space: nowrap;
+      flex-shrink: 0;
     }
 
     .barra-red-susc {
-      margin: 4px 10px 6px;
-      padding: 5px 10px;
-      border-radius: 8px;
+      margin: 4px 10px;
+      padding: 4px 8px;
+      border-radius: 7px;
       background: linear-gradient(135deg, var(--verde), var(--verde2));
       color: #fef08a;
       border: 1px solid var(--dorado);
-      font-size: 0.68rem;
+      font-size: 0.65rem;
       display: flex;
       align-items: center;
       justify-content: space-between;
-      gap: 8px;
+      gap: 6px;
+    }
+
+    .barra-red-susc span {
+      line-height: 1.2;
     }
 
     .barra-red-susc button {
@@ -153,24 +171,55 @@
       color: var(--verde);
       border: 0;
       border-radius: 6px;
-      padding: 4px 9px;
-      font-size: 0.68rem;
+      padding: 3px 8px;
+      font-size: 0.66rem;
       font-weight: 800;
       white-space: nowrap;
       flex-shrink: 0;
     }
 
+    .mapa-top-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      padding: 5px 8px;
+      background: #fff;
+      border-bottom: 1px solid var(--borde);
+    }
+
+    .btn-rubros-mapa {
+      background: var(--verde);
+      color: var(--dorado);
+      border: 1px solid var(--dorado);
+      border-radius: 7px;
+      padding: 4px 10px;
+      font-size: 0.72rem;
+      font-weight: 800;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+    }
+
     .main-container {
       display: flex;
-      height: calc(100vh - 114px);
+      height: calc(100vh - 118px);
       min-height: 440px;
     }
 
     .map-column {
       width: 56%;
       height: 100%;
+      display: flex;
+      flex-direction: column;
       position: relative;
       border-right: 2px solid var(--dorado);
+    }
+
+    .mapa-canvas-wrap {
+      flex: 1;
+      min-height: 0;
+      position: relative;
     }
 
     #mapa-principal, #map {
@@ -444,42 +493,6 @@
     }
 
     @media (max-width: 768px) {
-      .app-header {
-        flex-wrap: wrap;
-        padding: 7px 10px;
-        gap: 6px;
-      }
-
-      .app-header-brand h1 {
-        font-size: 1.08rem;
-      }
-
-      .app-header-brand p {
-        font-size: 0.52rem;
-      }
-
-      .header-acciones {
-        gap: 5px;
-      }
-
-      .btn-acceso-header {
-        padding: 4px 8px;
-        font-size: 0.66rem;
-      }
-
-      .header-search {
-        order: 3;
-        flex: 1 1 100%;
-        max-width: 100%;
-        margin-top: 2px;
-      }
-
-      .barra-red-susc {
-        margin: 4px 10px;
-        padding: 4px 8px;
-        font-size: 0.65rem;
-      }
-
       .main-container {
         height: auto;
         min-height: 0;
@@ -488,8 +501,8 @@
 
       .map-column {
         width: 100%;
-        height: 54vh;
-        min-height: 360px;
+        height: 56vh;
+        min-height: 370px;
         border-right: 0;
         border-bottom: 2px solid var(--dorado);
       }
@@ -503,41 +516,45 @@
 </head>
 <body>
   <header class="app-header">
-    <div class="app-header-brand">
-      <h1>V.E.A.</h1>
-      <p>VIDRIERAS ELECTRÓNICAS ARGENTINAS</p>
-      <span id="estado-app"></span>
-      <small id="detalle-conexion"></small>
-    </div>
+    <div class="header-top-row">
+      <div class="app-header-brand">
+        <h1>V.E.A.</h1>
+        <p>VIDRIERAS ELECTRÓNICAS<br>ARGENTINAS</p>
+        <span id="estado-app"></span>
+        <small id="detalle-conexion"></small>
+      </div>
 
-    <div class="header-acciones">
-      <button type="button" id="btn-acceso-header" class="btn-acceso-header">Iniciar sesión</button>
+      <div class="header-acciones">
+        <div id="menu-usuario-wrap" class="menu-usuario-wrap">
+          <button type="button" id="btn-trigger-menu" class="usuario-trigger" aria-expanded="false">
+            <span id="avatar-usuario" class="avatar-circulo">V</span>
+            <span id="texto-usuario-header">Sin sesión</span>
+            <span class="flecha-menu">▾</span>
+          </button>
 
-      <div id="menu-usuario-wrap" class="menu-usuario-wrap">
-        <button type="button" id="btn-trigger-menu" class="usuario-trigger" aria-expanded="false">
-          <span id="avatar-usuario" class="avatar-circulo">V</span>
-          <span id="texto-usuario-header">Sin sesión</span>
-          <span class="flecha-menu">▾</span>
-        </button>
-
-        <div id="dropdown-usuario" class="dropdown-menu hidden">
-          <div class="dropdown-cabecera">
-            <strong id="menu-nombre-usuario">Invitado</strong>
-            <small id="menu-email-usuario"></small>
+          <div id="dropdown-usuario" class="dropdown-menu hidden">
+            <div class="dropdown-cabecera">
+              <strong id="menu-nombre-usuario">Invitado</strong>
+              <small id="menu-email-usuario"></small>
+            </div>
+            <button type="button" id="btn-menu-registrarse" class="dropdown-item">Registrarse</button>
+            <button type="button" class="dropdown-item" data-vista="perfil">Perfil</button>
+            <button type="button" class="dropdown-item" data-vista="vidriera">Vidriera</button>
+            <hr class="dropdown-divisor">
+            <button type="button" id="btn-cerrar-sesion" class="dropdown-item dropdown-salir">Cerrar sesión</button>
           </div>
-          <button type="button" id="btn-menu-registrarse" class="dropdown-item">Registrarse</button>
-          <button type="button" class="dropdown-item" data-vista="perfil">Perfil</button>
-          <button type="button" class="dropdown-item" data-vista="vidriera">Vidriera</button>
-          <hr class="dropdown-divisor">
-          <button type="button" id="btn-cerrar-sesion" class="dropdown-item dropdown-salir">Cerrar sesión</button>
         </div>
       </div>
     </div>
 
-    <div class="header-search">
-      <span>🔍</span>
-      <input type="text" id="buscar-comercio" placeholder="Buscar...">
-      <button type="button" id="btn-limpiar-busqueda">Todos</button>
+    <div class="header-bottom-row">
+      <div class="header-search">
+        <span>🔍</span>
+        <input type="text" id="buscar-comercio" placeholder="Buscar...">
+        <button type="button" id="btn-limpiar-busqueda">Todos</button>
+      </div>
+
+      <button type="button" id="btn-acceso-header" class="btn-acceso-header">Iniciar sesión</button>
     </div>
   </header>
 
@@ -549,7 +566,13 @@
   <main>
     <section id="vista-principal" class="main-container">
       <div class="map-column">
-        <div id="mapa-principal"></div>
+        <div class="mapa-top-bar">
+          <button type="button" id="btn-abrir-rubros-mapa" class="btn-rubros-mapa">🏷️ Rubros</button>
+          <span id="estado-filtro-rubro" class="subtexto">Todos los rubros</span>
+        </div>
+        <div class="mapa-canvas-wrap">
+          <div id="mapa-principal"></div>
+        </div>
       </div>
 
       <div class="showcase-column">
@@ -565,6 +588,17 @@
         </div>
 
         <div id="lista-comercios-publicos" class="grid-vidrieras"></div>
+      </div>
+    </section>
+
+    <section id="vista-rubros" class="card vista-completa hidden">
+      <div style="display:flex; justify-content:space-between; align-items:center; gap:8px; margin-bottom:8px;">
+        <h2 style="margin:0;">🏷️ Buscar por rubro</h2>
+        <button type="button" class="btn" id="btn-volver-rubros">← Volver al inicio</button>
+      </div>
+      <p class="subtexto" style="margin-bottom:10px;">Listo para cargar tu lista de rubros y reflejarlos en el mapa y las vidrieras.</p>
+      <div id="lista-rubros-dinamica" class="fila-input">
+        <button type="button" class="btn" id="btn-rubro-todos">Todos los rubros</button>
       </div>
     </section>
 
@@ -843,9 +877,33 @@
   <script>
     const vistaPrincipalEl = document.getElementById("vista-principal");
     const chromeInicioEl = document.getElementById("chrome-inicio");
+    const vistaRubrosEl = document.getElementById("vista-rubros");
     const vistaCuponesPrioridadEl = document.getElementById("vista-cupones-prioridad");
     const listaCuponesPrioridadEl = document.getElementById("lista-cupones-prioridad");
     const btnAccesoHeaderEl = document.getElementById("btn-acceso-header");
+    let rubroActivo = "";
+
+    window.aplicarFiltroRubro = function aplicarFiltroRubro(nombreRubro) {
+      rubroActivo = String(nombreRubro || "").trim();
+      const estadoEl = document.getElementById("estado-filtro-rubro");
+      if (estadoEl) {
+        estadoEl.textContent = rubroActivo ? `Rubro: ${rubroActivo}` : "Todos los rubros";
+      }
+      if (typeof comerciosCargados !== "undefined" && Array.isArray(comerciosCargados)) {
+        const filtrados = !rubroActivo
+          ? comerciosCargados
+          : comerciosCargados.filter((c) => {
+              const texto = `${c.rubro || ""} ${c.categoria || ""} ${c.nombreComercio || ""} ${c.direccion || ""}`.toLowerCase();
+              return texto.includes(rubroActivo.toLowerCase());
+            });
+        if (typeof renderizarComerciosPublicos === "function") {
+          renderizarComerciosPublicos(filtrados);
+        }
+        if (typeof renderizarMarcadoresMapa === "function") {
+          renderizarMarcadoresMapa(filtrados);
+        }
+      }
+    };
 
     function pesoJerarquiaPlan(plan) {
       const p = String(plan || "basico").toLowerCase();
@@ -918,6 +976,7 @@
     function irAInicioLimpio() {
       document.getElementById("seccion-login")?.classList.add("hidden");
       document.getElementById("seccion-registro")?.classList.add("hidden");
+      vistaRubrosEl?.classList.add("hidden");
       vistaCuponesPrioridadEl?.classList.add("hidden");
       if (typeof mostrarVista === "function") {
         mostrarVista(null);
@@ -937,7 +996,14 @@
       if (chromeInicioEl) chromeInicioEl.classList.add("hidden");
       document.getElementById("seccion-login")?.classList.add("hidden");
       document.getElementById("seccion-registro")?.classList.add("hidden");
+      vistaRubrosEl?.classList.add("hidden");
       vistaCuponesPrioridadEl?.classList.add("hidden");
+
+      if (tipo === "rubros") {
+        if (typeof mostrarVista === "function") mostrarVista(null);
+        vistaRubrosEl?.classList.remove("hidden");
+        return;
+      }
 
       if (tipo === "cupones") {
         if (typeof mostrarVista === "function") mostrarVista(null);
@@ -971,6 +1037,12 @@
     }
 
     btnAccesoHeaderEl?.addEventListener("click", () => abrirVistaAislada("login"));
+    document.getElementById("btn-abrir-rubros-mapa")?.addEventListener("click", () => abrirVistaAislada("rubros"));
+    document.getElementById("btn-volver-rubros")?.addEventListener("click", irAInicioLimpio);
+    document.getElementById("btn-rubro-todos")?.addEventListener("click", () => {
+      window.aplicarFiltroRubro("");
+      irAInicioLimpio();
+    });
     document.getElementById("btn-menu-registrarse")?.addEventListener("click", () => {
       document.getElementById("dropdown-usuario")?.classList.add("hidden");
       abrirVistaAislada("registro");
