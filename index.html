@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>VEA App</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -27,7 +28,6 @@
         </div>
         <button type="button" class="dropdown-item" data-vista="perfil">Perfil</button>
         <button type="button" class="dropdown-item" data-vista="vidriera">Vidriera</button>
-        <button type="button" class="dropdown-item" data-vista="cargar">Cargar</button>
         <hr class="dropdown-divisor">
         <button type="button" id="btn-cerrar-sesion" class="dropdown-item dropdown-salir">Cerrar sesión</button>
       </div>
@@ -117,13 +117,111 @@
     </section>
 
     <section id="vista-vidriera" class="card hidden">
-      <h2>Vidriera</h2>
-      <p class="subtexto">Espacio de vidriera listo para armar el siguiente módulo.</p>
-    </section>
+      <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; margin-bottom:10px;">
+        <h2 style="margin:0;">Mi Vidriera Comercial</h2>
+        <span id="badge-plan-vidriera" style="padding:4px 10px; border-radius:20px; background:#062e22; color:#d4af37; font-weight:700; font-size:0.8rem;">
+          Plan activo: BÁSICO
+        </span>
+      </div>
 
-    <section id="vista-cargar" class="card hidden">
-      <h2>Cargar</h2>
-      <p class="subtexto">Espacio de carga listo para armar el siguiente módulo.</p>
+      <p id="estado-plan-detalle" class="subtexto">Límites de tu plan: hasta 10 publicaciones y video vertical de hasta 10s.</p>
+
+      <form id="form-vidriera" class="form-grid" novalidate>
+        <!-- Datos básicos y dirección real en Argentina -->
+        <div class="campo">
+          <label for="vid-nombre-comercio">Nombre del comercio</label>
+          <input type="text" id="vid-nombre-comercio" placeholder="Ej. Cervecería El Tordo" required>
+        </div>
+
+        <div class="campo" style="position:relative;">
+          <label for="vid-direccion">Dirección real en Argentina (calle, altura y localidad)</label>
+          <input type="text" id="vid-direccion" placeholder="Ej. Pueyrredón 867, Ramos Mejía" autocomplete="off" required>
+          <div id="vid-sugerencias-direccion" class="hidden" style="position:absolute; top:100%; left:0; right:0; background:#fff; border:1px solid #cbd5e1; border-radius:8px; max-height:180px; overflow-y:auto; z-index:1000; box-shadow:0 4px 12px rgba(0,0,0,0.12);"></div>
+        </div>
+
+        <!-- Mapa geolocalizado -->
+        <div class="campo">
+          <label>Ubicación en el mapa</label>
+          <div id="vidriera-mapa" style="width:100%; height:220px; border-radius:8px; border:1px solid #cbd5e1; z-index:1;"></div>
+          <small id="vid-coords-texto" class="subtexto">Seleccioná una dirección sugerida para fijar el pin exacto.</small>
+        </div>
+
+        <!-- Foto de fachada -->
+        <div class="campo">
+          <label for="vid-fachada-input">Foto de fachada del comercio</label>
+          <div class="fila-input">
+            <img id="vid-preview-fachada" alt="Vista previa fachada" class="hidden" style="width:96px; height:64px; border-radius:8px; object-fit:cover;">
+            <input type="file" id="vid-fachada-input" accept="image/*">
+            <button type="button" id="btn-quitar-fachada">Quitar fachada</button>
+          </div>
+        </div>
+
+        <!-- Video vertical según plan -->
+        <div class="campo">
+          <label for="vid-video-input" id="label-video-vidriera">Video promocional (formato vertical obligatorio)</label>
+          <input type="file" id="vid-video-input" accept="video/*">
+          <small id="vid-video-estado" class="subtexto">Solo formato vertical (alto mayor que ancho). Máximo según tu plan.</small>
+          <video id="vid-preview-video" controls playsinline class="hidden" style="width:140px; max-height:240px; border-radius:8px; background:#000; margin-top:6px;"></video>
+          <button type="button" id="btn-quitar-video" class="hidden" style="margin-top:4px;">Quitar video</button>
+        </div>
+
+        <!-- Cupones con código -->
+        <div class="campo" style="border-top:1px solid #e2e8f0; padding-top:10px;">
+          <label>Cupones con código</label>
+          <div class="fila-input">
+            <input type="text" id="vid-cupon-titulo" placeholder="Ej. 2x1 en Pintas IPA">
+            <input type="text" id="vid-cupon-codigo" placeholder="Código (Ej. VEA-IPA)">
+            <button type="button" id="btn-agregar-cupon">+ Cupón</button>
+          </div>
+          <ul id="vid-lista-cupones"></ul>
+        </div>
+
+        <!-- Publicaciones con límite por plan -->
+        <div class="campo" style="border-top:1px solid #e2e8f0; padding-top:10px;">
+          <label id="label-publicaciones-vidriera">Publicaciones (0 / 10 máx.)</label>
+          <input type="file" id="vid-pub-foto" accept="image/*">
+          <input type="text" id="vid-pub-titulo" placeholder="Título de la publicación">
+          <textarea id="vid-pub-descripcion" rows="2" placeholder="Descripción de la publicación"></textarea>
+          <button type="button" id="btn-agregar-publicacion">+ Agregar publicación</button>
+          <div id="vid-lista-publicaciones" style="margin-top:8px;"></div>
+        </div>
+
+        <div class="acciones-form">
+          <button type="submit" id="btn-guardar-vidriera">Guardar y actualizar vidriera</button>
+          <button type="button" id="btn-cerrar-vidriera">Cerrar</button>
+        </div>
+      </form>
+
+      <p id="mensaje-vidriera" class="mensaje-estado" aria-live="polite"></p>
+
+      <!-- Vista previa en vivo reflejada -->
+      <div id="vidriera-reflejo-vivo" style="margin-top:16px; border-top:2px solid #e2e8f0; padding-top:12px;">
+        <h3>Así se ve tu vidriera publicada</h3>
+        <div id="vidriera-reflejo-contenido" class="subtexto">Guardá tu vidriera para verla reflejada acá.</div>
+      </div>
+
+      <!-- 3 opciones de plan al final de la vidriera -->
+      <div style="margin-top:20px; border-top:2px solid #e2e8f0; padding-top:14px;">
+        <h3>Planes de suscripción V.E.A.</h3>
+        <p class="subtexto">Elegí tu plan para ampliar tus publicaciones y duración de video vertical.</p>
+        <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(170px, 1fr)); gap:10px; margin-top:10px;">
+          <div style="border:1px solid #cbd5e1; border-radius:10px; padding:12px;">
+            <strong>Plan Básico</strong>
+            <p class="subtexto">Hasta 10 publicaciones · Video vertical hasta 10s</p>
+            <a href="https://mpago.la/2S79kb4" target="_blank" rel="noopener">Suscribirse (Mercado Pago)</a>
+          </div>
+          <div style="border:2px solid #d4af37; border-radius:10px; padding:12px;">
+            <strong>Plan Estándar</strong>
+            <p class="subtexto">Hasta 20 publicaciones · Video vertical hasta 20s</p>
+            <a href="https://mpago.la/1qQYKhJ" target="_blank" rel="noopener">Suscribirse (Mercado Pago)</a>
+          </div>
+          <div style="border:1px solid #cbd5e1; border-radius:10px; padding:12px;">
+            <strong>Plan Premium</strong>
+            <p class="subtexto">Hasta 40 publicaciones · Video vertical hasta 60s</p>
+            <a href="https://mpago.la/2uckMU3" target="_blank" rel="noopener">Suscribirse (Mercado Pago)</a>
+          </div>
+        </div>
+      </div>
     </section>
 
     <section id="seccion-prueba" class="card">
@@ -136,6 +234,7 @@
     </section>
   </main>
 
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>

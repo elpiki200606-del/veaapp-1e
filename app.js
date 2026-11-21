@@ -105,6 +105,7 @@ if (formRegistro) {
           direccion: direccion,
           telefono: telefono,
           email: email,
+          plan: "basico",
           creadoEn: firebase.firestore.FieldValue.serverTimestamp()
         });
       })
@@ -119,7 +120,7 @@ if (formRegistro) {
   });
 }
 
-// 7. Menú desplegable, vistas, edición de perfil y estado de sesión en la nube
+// 7. Menú desplegable, Perfil editable y Vidriera Comercial
 const btnTriggerMenu = document.getElementById("btn-trigger-menu");
 const dropdownUsuario = document.getElementById("dropdown-usuario");
 const avatarUsuario = document.getElementById("avatar-usuario");
@@ -139,13 +140,57 @@ const perfilTelefono = document.getElementById("perfil-telefono");
 const btnCerrarPerfil = document.getElementById("btn-cerrar-perfil");
 const mensajePerfil = document.getElementById("mensaje-perfil");
 
+const badgePlanVidriera = document.getElementById("badge-plan-vidriera");
+const estadoPlanDetalle = document.getElementById("estado-plan-detalle");
+const formVidriera = document.getElementById("form-vidriera");
+const vidNombreComercio = document.getElementById("vid-nombre-comercio");
+const vidDireccion = document.getElementById("vid-direccion");
+const vidSugerenciasDireccion = document.getElementById("vid-sugerencias-direccion");
+const vidCoordsTexto = document.getElementById("vid-coords-texto");
+const vidFachadaInput = document.getElementById("vid-fachada-input");
+const vidPreviewFachada = document.getElementById("vid-preview-fachada");
+const btnQuitarFachada = document.getElementById("btn-quitar-fachada");
+const labelVideoVidriera = document.getElementById("label-video-vidriera");
+const vidVideoInput = document.getElementById("vid-video-input");
+const vidVideoEstado = document.getElementById("vid-video-estado");
+const vidPreviewVideo = document.getElementById("vid-preview-video");
+const btnQuitarVideo = document.getElementById("btn-quitar-video");
+const vidCuponTitulo = document.getElementById("vid-cupon-titulo");
+const vidCuponCodigo = document.getElementById("vid-cupon-codigo");
+const btnAgregarCupon = document.getElementById("btn-agregar-cupon");
+const vidListaCupones = document.getElementById("vid-lista-cupones");
+const labelPublicacionesVidriera = document.getElementById("label-publicaciones-vidriera");
+const vidPubFoto = document.getElementById("vid-pub-foto");
+const vidPubTitulo = document.getElementById("vid-pub-titulo");
+const vidPubDescripcion = document.getElementById("vid-pub-descripcion");
+const btnAgregarPublicacion = document.getElementById("btn-agregar-publicacion");
+const vidListaPublicaciones = document.getElementById("vid-lista-publicaciones");
+const btnCerrarVidriera = document.getElementById("btn-cerrar-vidriera");
+const mensajeVidriera = document.getElementById("mensaje-vidriera");
+const vidrieraReflejoContenido = document.getElementById("vidriera-reflejo-contenido");
+
+const PLANES_VEA = {
+  basico: { nombre: "BÁSICO", maxPubs: 10, maxVideoSec: 10 },
+  estandar: { nombre: "ESTÁNDAR", maxPubs: 20, maxVideoSec: 20 },
+  premium: { nombre: "PREMIUM", maxPubs: 40, maxVideoSec: 60 }
+};
+
 let fotoPerfilActual = "";
 let usuarioActual = null;
+let planActualUsuario = "basico";
+let fotoFachadaActual = "";
+let videoVerticalActual = "";
+let cuponesVidriera = [];
+let publicacionesVidriera = [];
+let latVidriera = -34.6434;
+let lngVidriera = -58.6231;
+let mapaVidriera = null;
+let pinVidriera = null;
+let timerSugerencias = null;
 
 const vistasMenu = {
   perfil: document.getElementById("vista-perfil"),
-  vidriera: document.getElementById("vista-vidriera"),
-  cargar: document.getElementById("vista-cargar")
+  vidriera: document.getElementById("vista-vidriera")
 };
 
 function mostrarVista(nombreVista) {
@@ -155,12 +200,25 @@ function mostrarVista(nombreVista) {
   if (vistasMenu[nombreVista]) {
     vistasMenu[nombreVista].classList.remove("hidden");
   }
+  if (nombreVista === "vidriera") {
+    inicializarMapaVidriera();
+  }
   if (dropdownUsuario) {
     dropdownUsuario.classList.add("hidden");
   }
   if (btnTriggerMenu) {
     btnTriggerMenu.setAttribute("aria-expanded", "false");
   }
+}
+
+function escaparHTML(texto) {
+  return String(texto ?? "").replace(/[&<>"']/g, (c) => ({
+    "&": "&amp;",
+    "<": "&lt;",
+    ">": "&gt;",
+    '"': "&quot;",
+    "'": "&#39;"
+  }[c]));
 }
 
 function renderizarAvatarHeader(fotoBase64, fallbackTexto) {
@@ -183,7 +241,7 @@ function renderizarPreviewFoto(fotoBase64) {
   }
 }
 
-function comprimirImagenAvatar(file, maxSize = 240, quality = 0.78) {
+function comprimirImagen(file, maxSize = 240, quality = 0.78) {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
     reader.onerror = () => reject(new Error("No se pudo leer el archivo."));
@@ -224,14 +282,13 @@ if (perfilFotoInput) {
     const file = e.target.files && e.target.files[0];
     if (!file) return;
 
-    comprimirImagenAvatar(file)
+    comprimirImagen(file, 240, 0.78)
       .then((dataUrl) => {
         fotoPerfilActual = dataUrl;
         renderizarPreviewFoto(fotoPerfilActual);
         if (mensajePerfil) mensajePerfil.textContent = "Foto cargada. Tocá 'Guardar cambios' para guardar en la nube.";
       })
       .catch((err) => {
-        console.error("Error procesando foto:", err);
         if (mensajePerfil) mensajePerfil.textContent = "Error: " + err.message;
       });
   });
@@ -249,10 +306,7 @@ if (btnQuitarFoto) {
 if (formPerfil) {
   formPerfil.addEventListener("submit", (e) => {
     e.preventDefault();
-    if (!usuarioActual) {
-      if (mensajePerfil) mensajePerfil.textContent = "Tenés que iniciar sesión primero.";
-      return;
-    }
+    if (!usuarioActual) return;
 
     const nombreApellido = (perfilNombre ? perfilNombre.value : "").trim();
     const direccion = (perfilDireccion ? perfilDireccion.value : "").trim();
@@ -265,15 +319,13 @@ if (formPerfil) {
 
     if (mensajePerfil) mensajePerfil.textContent = "Guardando cambios...";
 
-    const payload = {
+    db.collection("usuarios").doc(usuarioActual.uid).set({
       nombreApellido: nombreApellido,
       direccion: direccion,
       telefono: telefono,
       fotoPerfil: fotoPerfilActual,
       actualizadoEn: firebase.firestore.FieldValue.serverTimestamp()
-    };
-
-    db.collection("usuarios").doc(usuarioActual.uid).set(payload, { merge: true })
+    }, { merge: true })
       .then(() => {
         const inicial = (usuarioActual.email || "U").charAt(0).toUpperCase();
         renderizarAvatarHeader(fotoPerfilActual, inicial);
@@ -289,16 +341,408 @@ if (formPerfil) {
         if (mensajePerfil) mensajePerfil.textContent = "Perfil actualizado en la nube.";
       })
       .catch((err) => {
-        console.error("Error guardando perfil:", err);
         if (mensajePerfil) mensajePerfil.textContent = "Error al guardar: " + err.message;
       });
   });
 }
 
 if (btnCerrarPerfil) {
-  btnCerrarPerfil.addEventListener("click", () => {
-    mostrarVista(null);
+  btnCerrarPerfil.addEventListener("click", () => mostrarVista(null));
+}
+
+function obtenerConfigPlan() {
+  return PLANES_VEA[planActualUsuario] || PLANES_VEA.basico;
+}
+
+function actualizarUIPlanVidriera() {
+  const cfg = obtenerConfigPlan();
+  if (badgePlanVidriera) badgePlanVidriera.textContent = "Plan activo: " + cfg.nombre;
+  if (estadoPlanDetalle) {
+    estadoPlanDetalle.textContent = `Límites de tu plan: hasta ${cfg.maxPubs} publicaciones y video vertical de hasta ${cfg.maxVideoSec}s.`;
+  }
+  if (labelVideoVidriera) {
+    labelVideoVidriera.textContent = `Video promocional vertical (máximo ${cfg.maxVideoSec}s según tu plan)`;
+  }
+  if (labelPublicacionesVidriera) {
+    labelPublicacionesVidriera.textContent = `Publicaciones (${publicacionesVidriera.length} / ${cfg.maxPubs} máx.)`;
+  }
+}
+
+function inicializarMapaVidriera() {
+  const cont = document.getElementById("vidriera-mapa");
+  if (!cont || typeof L === "undefined") return;
+
+  if (!mapaVidriera) {
+    mapaVidriera = L.map("vidriera-mapa").setView([latVidriera, lngVidriera], 14);
+    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+      attribution: "&copy; OpenStreetMap"
+    }).addTo(mapaVidriera);
+    pinVidriera = L.marker([latVidriera, lngVidriera]).addTo(mapaVidriera);
+  } else {
+    mapaVidriera.setView([latVidriera, lngVidriera], 15);
+    if (pinVidriera) pinVidriera.setLatLng([latVidriera, lngVidriera]);
+  }
+  setTimeout(() => mapaVidriera.invalidateSize(), 180);
+}
+
+function actualizarCoordenadasVidriera(lat, lng, etiqueta) {
+  latVidriera = lat;
+  lngVidriera = lng;
+  if (vidCoordsTexto) {
+    vidCoordsTexto.textContent = `Ubicación fijada: ${etiqueta || ""} (${lat.toFixed(5)}, ${lng.toFixed(5)})`;
+  }
+  inicializarMapaVidriera();
+}
+
+if (vidDireccion && vidSugerenciasDireccion) {
+  vidDireccion.addEventListener("input", () => {
+    const q = vidDireccion.value.trim();
+    if (q.length < 4) {
+      vidSugerenciasDireccion.classList.add("hidden");
+      return;
+    }
+
+    clearTimeout(timerSugerencias);
+    timerSugerencias = setTimeout(() => {
+      const url = `https://nominatim.openstreetmap.org/search?format=json&countrycodes=ar&limit=6&q=${encodeURIComponent(q + ", Argentina")}`;
+      fetch(url)
+        .then((res) => res.json())
+        .then((resultados) => {
+          vidSugerenciasDireccion.innerHTML = "";
+          if (!resultados || !resultados.length) {
+            vidSugerenciasDireccion.classList.add("hidden");
+            return;
+          }
+          resultados.forEach((lugar) => {
+            const item = document.createElement("div");
+            item.style.cssText = "padding:8px 10px; font-size:0.82rem; border-bottom:1px solid #eee; cursor:pointer;";
+            item.textContent = lugar.display_name;
+            item.addEventListener("click", () => {
+              vidDireccion.value = lugar.display_name;
+              vidSugerenciasDireccion.classList.add("hidden");
+              actualizarCoordenadasVidriera(parseFloat(lugar.lat), parseFloat(lugar.lon), lugar.display_name);
+            });
+            vidSugerenciasDireccion.appendChild(item);
+          });
+          vidSugerenciasDireccion.classList.remove("hidden");
+        })
+        .catch((err) => {
+          console.error("Error buscando direcciones:", err);
+        });
+    }, 350);
   });
+}
+
+function renderizarPreviewFachada(dataUrl) {
+  if (!vidPreviewFachada) return;
+  if (dataUrl) {
+    vidPreviewFachada.src = dataUrl;
+    vidPreviewFachada.classList.remove("hidden");
+  } else {
+    vidPreviewFachada.removeAttribute("src");
+    vidPreviewFachada.classList.add("hidden");
+  }
+}
+
+if (vidFachadaInput) {
+  vidFachadaInput.addEventListener("change", (e) => {
+    const file = e.target.files && e.target.files[0];
+    if (!file) return;
+
+    comprimirImagen(file, 640, 0.75)
+      .then((dataUrl) => {
+        fotoFachadaActual = dataUrl;
+        renderizarPreviewFachada(fotoFachadaActual);
+        if (mensajeVidriera) mensajeVidriera.textContent = "Foto de fachada cargada. Tocá 'Guardar y actualizar vidriera'.";
+      })
+      .catch((err) => {
+        if (mensajeVidriera) mensajeVidriera.textContent = "Error en fachada: " + err.message;
+      });
+  });
+}
+
+if (btnQuitarFachada) {
+  btnQuitarFachada.addEventListener("click", () => {
+    fotoFachadaActual = "";
+    if (vidFachadaInput) vidFachadaInput.value = "";
+    renderizarPreviewFachada("");
+  });
+}
+
+function renderizarPreviewVideo(dataUrl) {
+  if (!vidPreviewVideo) return;
+  if (dataUrl) {
+    vidPreviewVideo.src = dataUrl;
+    vidPreviewVideo.classList.remove("hidden");
+    if (btnQuitarVideo) btnQuitarVideo.classList.remove("hidden");
+  } else {
+    vidPreviewVideo.removeAttribute("src");
+    vidPreviewVideo.classList.add("hidden");
+    if (btnQuitarVideo) btnQuitarVideo.classList.add("hidden");
+  }
+}
+
+if (vidVideoInput) {
+  vidVideoInput.addEventListener("change", (e) => {
+    const file = e.target.files && e.target.files[0];
+    if (!file) return;
+
+    const cfg = obtenerConfigPlan();
+    const tempVideo = document.createElement("video");
+    tempVideo.preload = "metadata";
+    const objectUrl = URL.createObjectURL(file);
+    tempVideo.src = objectUrl;
+
+    tempVideo.onloadedmetadata = () => {
+      URL.revokeObjectURL(objectUrl);
+      const duracion = tempVideo.duration;
+      const ancho = tempVideo.videoWidth;
+      const alto = tempVideo.videoHeight;
+
+      if (ancho >= alto) {
+        vidVideoInput.value = "";
+        if (vidVideoEstado) {
+          vidVideoEstado.textContent = `Rechazado: el video es horizontal (${ancho}x${alto}). Subí un video vertical.`;
+        }
+        return;
+      }
+
+      if (duracion > cfg.maxVideoSec) {
+        vidVideoInput.value = "";
+        if (vidVideoEstado) {
+          vidVideoEstado.textContent = `Rechazado: dura ${Math.round(duracion)}s y tu plan ${cfg.nombre} permite hasta ${cfg.maxVideoSec}s.`;
+        }
+        return;
+      }
+
+      if (file.size > 700 * 1024) {
+        vidVideoInput.value = "";
+        if (vidVideoEstado) {
+          vidVideoEstado.textContent = "El video supera los 700 KB para guardarse directo en la nube de prueba. Comprimilo un poco más.";
+        }
+        return;
+      }
+
+      const reader = new FileReader();
+      reader.onload = () => {
+        videoVerticalActual = reader.result;
+        renderizarPreviewVideo(videoVerticalActual);
+        if (vidVideoEstado) {
+          vidVideoEstado.textContent = `Video vertical válido (${ancho}x${alto}, ${Math.round(duracion)}s). Guardá la vidriera para aplicarlo.`;
+        }
+      };
+      reader.readAsDataURL(file);
+    };
+  });
+}
+
+if (btnQuitarVideo) {
+  btnQuitarVideo.addEventListener("click", () => {
+    videoVerticalActual = "";
+    if (vidVideoInput) vidVideoInput.value = "";
+    renderizarPreviewVideo("");
+    if (vidVideoEstado) vidVideoEstado.textContent = "Video quitado.";
+  });
+}
+
+function renderizarCuponesVidriera() {
+  if (!vidListaCupones) return;
+  vidListaCupones.innerHTML = "";
+  cuponesVidriera.forEach((cup, idx) => {
+    const li = document.createElement("li");
+    li.style.cssText = "display:flex; justify-content:space-between; align-items:center; gap:8px; margin-top:4px;";
+    li.innerHTML = `<span>🎟️ <strong>${escaparHTML(cup.titulo)}</strong> — Código: <code>${escaparHTML(cup.codigo)}</code></span>`;
+    const btnDel = document.createElement("button");
+    btnDel.type = "button";
+    btnDel.textContent = "Eliminar";
+    btnDel.addEventListener("click", () => {
+      cuponesVidriera.splice(idx, 1);
+      renderizarCuponesVidriera();
+    });
+    li.appendChild(btnDel);
+    vidListaCupones.appendChild(li);
+  });
+}
+
+if (btnAgregarCupon) {
+  btnAgregarCupon.addEventListener("click", () => {
+    const titulo = (vidCuponTitulo ? vidCuponTitulo.value : "").trim();
+    const codigo = (vidCuponCodigo ? vidCuponCodigo.value : "").trim().toUpperCase();
+    if (!titulo || !codigo) {
+      if (mensajeVidriera) mensajeVidriera.textContent = "Completá título y código del cupón.";
+      return;
+    }
+    cuponesVidriera.push({ titulo, codigo });
+    if (vidCuponTitulo) vidCuponTitulo.value = "";
+    if (vidCuponCodigo) vidCuponCodigo.value = "";
+    renderizarCuponesVidriera();
+  });
+}
+
+function renderizarPublicacionesVidriera() {
+  actualizarUIPlanVidriera();
+  if (!vidListaPublicaciones) return;
+  vidListaPublicaciones.innerHTML = "";
+
+  publicacionesVidriera.forEach((pub, idx) => {
+    const card = document.createElement("div");
+    card.style.cssText = "display:flex; justify-content:space-between; align-items:center; gap:8px; border:1px solid #cbd5e1; border-radius:8px; padding:8px; margin-bottom:6px;";
+    const thumb = pub.foto
+      ? `<img src="${pub.foto}" alt="" style="width:48px; height:48px; object-fit:cover; border-radius:6px;">`
+      : "";
+    card.innerHTML = `
+      <div style="display:flex; align-items:center; gap:8px;">
+        ${thumb}
+        <div>
+          <strong>${escaparHTML(pub.titulo)}</strong>
+          <p class="subtexto" style="margin:0;">${escaparHTML(pub.descripcion)}</p>
+        </div>
+      </div>
+    `;
+    const btnDel = document.createElement("button");
+    btnDel.type = "button";
+    btnDel.textContent = "Eliminar";
+    btnDel.addEventListener("click", () => {
+      publicacionesVidriera.splice(idx, 1);
+      renderizarPublicacionesVidriera();
+    });
+    card.appendChild(btnDel);
+    vidListaPublicaciones.appendChild(card);
+  });
+}
+
+if (btnAgregarPublicacion) {
+  btnAgregarPublicacion.addEventListener("click", async () => {
+    const cfg = obtenerConfigPlan();
+    if (publicacionesVidriera.length >= cfg.maxPubs) {
+      if (mensajeVidriera) {
+        mensajeVidriera.textContent = `Alcanzaste el límite de ${cfg.maxPubs} publicaciones de tu plan ${cfg.nombre}.`;
+      }
+      return;
+    }
+
+    const titulo = (vidPubTitulo ? vidPubTitulo.value : "").trim();
+    const descripcion = (vidPubDescripcion ? vidPubDescripcion.value : "").trim();
+    const file = vidPubFoto && vidPubFoto.files ? vidPubFoto.files[0] : null;
+
+    if (!titulo || !descripcion) {
+      if (mensajeVidriera) mensajeVidriera.textContent = "Completá título y descripción de la publicación.";
+      return;
+    }
+
+    let fotoData = "";
+    if (file) {
+      try {
+        fotoData = await comprimirImagen(file, 480, 0.72);
+      } catch (err) {
+        if (mensajeVidriera) mensajeVidriera.textContent = "Error en foto de publicación: " + err.message;
+        return;
+      }
+    }
+
+    publicacionesVidriera.push({
+      titulo: titulo,
+      descripcion: descripcion,
+      foto: fotoData
+    });
+
+    if (vidPubTitulo) vidPubTitulo.value = "";
+    if (vidPubDescripcion) vidPubDescripcion.value = "";
+    if (vidPubFoto) vidPubFoto.value = "";
+    renderizarPublicacionesVidriera();
+  });
+}
+
+function renderizarReflejoVidriera(datos) {
+  if (!vidrieraReflejoContenido) return;
+  if (!datos || !datos.nombreComercio) {
+    vidrieraReflejoContenido.textContent = "Guardá tu vidriera para verla reflejada acá.";
+    return;
+  }
+
+  const fachadaHtml = datos.fotoFachada
+    ? `<img src="${datos.fotoFachada}" alt="Fachada" style="width:100%; max-height:180px; object-fit:cover; border-radius:8px; margin-bottom:8px;">`
+    : "";
+
+  const videoHtml = datos.videoVertical
+    ? `<video controls playsinline src="${datos.videoVertical}" style="width:150px; max-height:260px; border-radius:8px; background:#000; display:block; margin:8px 0;"></video>`
+    : "";
+
+  const cuponesHtml = (datos.cupones || []).length
+    ? `<ul>${datos.cupones.map((c) => `<li>🎟️ <strong>${escaparHTML(c.titulo)}</strong> — Código: <code>${escaparHTML(c.codigo)}</code></li>`).join("")}</ul>`
+    : `<p class="subtexto">Sin cupones activos.</p>`;
+
+  const pubsHtml = (datos.publicaciones || []).length
+    ? `<div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(160px, 1fr)); gap:8px; margin-top:8px;">
+        ${datos.publicaciones.map((p) => `
+          <div style="border:1px solid #cbd5e1; border-radius:8px; padding:8px;">
+            ${p.foto ? `<img src="${p.foto}" alt="" style="width:100%; height:110px; object-fit:cover; border-radius:6px; margin-bottom:4px;">` : ""}
+            <strong>${escaparHTML(p.titulo)}</strong>
+            <p class="subtexto" style="margin:2px 0 0;">${escaparHTML(p.descripcion)}</p>
+          </div>
+        `).join("")}
+      </div>`
+    : `<p class="subtexto">Sin publicaciones cargadas.</p>`;
+
+  vidrieraReflejoContenido.innerHTML = `
+    ${fachadaHtml}
+    <h4>${escaparHTML(datos.nombreComercio)}</h4>
+    <p class="subtexto">📍 ${escaparHTML(datos.direccion || "")}</p>
+    ${videoHtml}
+    <strong>Cupones vigentes</strong>
+    ${cuponesHtml}
+    <strong>Publicaciones</strong>
+    ${pubsHtml}
+  `;
+}
+
+if (formVidriera) {
+  formVidriera.addEventListener("submit", (e) => {
+    e.preventDefault();
+    if (!usuarioActual) {
+      if (mensajeVidriera) mensajeVidriera.textContent = "Tenés que iniciar sesión para guardar tu vidriera.";
+      return;
+    }
+
+    const nombreComercio = (vidNombreComercio ? vidNombreComercio.value : "").trim();
+    const direccion = (vidDireccion ? vidDireccion.value : "").trim();
+
+    if (!nombreComercio || !direccion) {
+      if (mensajeVidriera) mensajeVidriera.textContent = "Completá el nombre del comercio y la dirección.";
+      return;
+    }
+
+    if (mensajeVidriera) mensajeVidriera.textContent = "Guardando vidriera en la nube...";
+
+    const payloadVidriera = {
+      uid: usuarioActual.uid,
+      email: usuarioActual.email,
+      plan: planActualUsuario,
+      nombreComercio: nombreComercio,
+      direccion: direccion,
+      lat: latVidriera,
+      lng: lngVidriera,
+      fotoFachada: fotoFachadaActual,
+      videoVertical: videoVerticalActual,
+      cupones: cuponesVidriera,
+      publicaciones: publicacionesVidriera,
+      actualizadoEn: firebase.firestore.FieldValue.serverTimestamp()
+    };
+
+    db.collection("comercios").doc(usuarioActual.uid).set(payloadVidriera, { merge: true })
+      .then(() => {
+        renderizarReflejoVidriera(payloadVidriera);
+        if (mensajeVidriera) mensajeVidriera.textContent = "Vidriera guardada y reflejada correctamente.";
+      })
+      .catch((err) => {
+        console.error("Error guardando vidriera:", err);
+        if (mensajeVidriera) mensajeVidriera.textContent = "Error al guardar vidriera: " + err.message;
+      });
+  });
+}
+
+if (btnCerrarVidriera) {
+  btnCerrarVidriera.addEventListener("click", () => mostrarVista(null));
 }
 
 if (btnTriggerMenu && dropdownUsuario) {
@@ -320,6 +764,7 @@ if (btnTriggerMenu && dropdownUsuario) {
 document.querySelectorAll(".dropdown-item[data-vista]").forEach((btn) => {
   btn.addEventListener("click", () => {
     if (mensajePerfil) mensajePerfil.textContent = "";
+    if (mensajeVidriera) mensajeVidriera.textContent = "";
     mostrarVista(btn.dataset.vista);
   });
 });
@@ -350,9 +795,11 @@ auth.onAuthStateChanged((user) => {
         const direccion = datos.direccion || "";
         const telefono = datos.telefono || "";
         fotoPerfilActual = datos.fotoPerfil || "";
+        planActualUsuario = (datos.plan && PLANES_VEA[datos.plan]) ? datos.plan : "basico";
 
         renderizarAvatarHeader(fotoPerfilActual, inicial);
         renderizarPreviewFoto(fotoPerfilActual);
+        actualizarUIPlanVidriera();
 
         if (menuNombreUsuario) menuNombreUsuario.textContent = nombre;
         if (textoUsuarioHeader) textoUsuarioHeader.textContent = nombre;
@@ -371,10 +818,44 @@ auth.onAuthStateChanged((user) => {
       .catch((err) => {
         console.error("Error leyendo perfil en Firestore:", err);
       });
+
+    db.collection("comercios").doc(user.uid).get()
+      .then((doc) => {
+        if (!doc.exists) {
+          renderizarCuponesVidriera();
+          renderizarPublicacionesVidriera();
+          renderizarReflejoVidriera(null);
+          return;
+        }
+        const com = doc.data();
+        if (com.plan && PLANES_VEA[com.plan]) planActualUsuario = com.plan;
+        if (vidNombreComercio) vidNombreComercio.value = com.nombreComercio || "";
+        if (vidDireccion) vidDireccion.value = com.direccion || "";
+        latVidriera = Number.isFinite(com.lat) ? com.lat : -34.6434;
+        lngVidriera = Number.isFinite(com.lng) ? com.lng : -58.6231;
+        fotoFachadaActual = com.fotoFachada || "";
+        videoVerticalActual = com.videoVertical || "";
+        cuponesVidriera = Array.isArray(com.cupones) ? com.cupones : [];
+        publicacionesVidriera = Array.isArray(com.publicaciones) ? com.publicaciones : [];
+
+        renderizarPreviewFachada(fotoFachadaActual);
+        renderizarPreviewVideo(videoVerticalActual);
+        renderizarCuponesVidriera();
+        renderizarPublicacionesVidriera();
+        renderizarReflejoVidriera(com);
+      })
+      .catch((err) => {
+        console.error("Error leyendo vidriera en Firestore:", err);
+      });
   } else {
     if (seccionRegistro) seccionRegistro.classList.remove("hidden");
 
     fotoPerfilActual = "";
+    planActualUsuario = "basico";
+    fotoFachadaActual = "";
+    videoVerticalActual = "";
+    cuponesVidriera = [];
+    publicacionesVidriera = [];
     renderizarAvatarHeader("", "V");
     renderizarPreviewFoto("");
     if (textoUsuarioHeader) textoUsuarioHeader.textContent = "Sin sesión";
