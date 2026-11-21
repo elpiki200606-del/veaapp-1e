@@ -47,7 +47,8 @@
       display: flex;
       justify-content: space-between;
       align-items: center;
-      gap: 12px;
+      flex-wrap: wrap;
+      gap: 10px;
       background: linear-gradient(135deg, var(--verde), var(--verde2));
       color: #fff;
       padding: 10px 14px;
@@ -75,6 +76,22 @@
     #detalle-conexion {
       font-size: 0.68rem;
       color: #fef08a;
+    }
+
+    .header-acciones {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .btn-acceso-header {
+      background: var(--dorado);
+      color: var(--verde);
+      border: 1px solid #fef08a;
+      border-radius: 999px;
+      padding: 6px 12px;
+      font-size: 0.78rem;
+      font-weight: 800;
     }
 
     .search-bar-container {
@@ -142,20 +159,6 @@
       color: #cbd5e1;
     }
 
-    .cupones-top {
-      display: block;
-      margin: 4px 12px;
-      padding: 8px;
-      background: linear-gradient(135deg, var(--verde), var(--verde2));
-      color: var(--dorado);
-      border: 1px solid var(--dorado);
-      border-radius: 10px;
-      font-weight: 800;
-      width: calc(100% - 24px);
-      font-size: 0.78rem;
-      text-align: center;
-    }
-
     .banner-suscripcion-home {
       margin: 4px 12px;
       padding: 8px 12px;
@@ -167,30 +170,6 @@
       align-items: center;
       justify-content: space-between;
       gap: 8px;
-    }
-
-    .categories {
-      display: flex;
-      gap: 6px;
-      overflow-x: auto;
-      padding: 6px 12px 8px;
-    }
-
-    .cat-pill {
-      flex: none;
-      border: 1px solid var(--borde);
-      border-radius: 20px;
-      padding: 5px 12px;
-      background: #fff;
-      color: var(--verde);
-      font-size: 0.75rem;
-      font-weight: 650;
-    }
-
-    .cat-pill.active, .cat-pill:hover {
-      background: var(--verde);
-      color: var(--dorado);
-      border-color: var(--dorado);
     }
 
     .main-container {
@@ -241,6 +220,12 @@
     .card {
       padding: 16px;
       margin: 12px;
+    }
+
+    .vista-completa {
+      max-width: 780px;
+      margin: 16px auto;
+      padding: 18px;
     }
 
     .card-vidriera {
@@ -308,10 +293,10 @@
       display: inline-block;
       border: 0;
       border-radius: 6px;
-      padding: 7px 10px;
+      padding: 8px 12px;
       text-align: center;
       text-decoration: none;
-      font-size: 0.75rem;
+      font-size: 0.8rem;
       font-weight: 750;
       background: var(--verde);
       color: var(--dorado);
@@ -336,7 +321,7 @@
     }
 
     .campo label {
-      font-size: 0.8rem;
+      font-size: 0.82rem;
       font-weight: 700;
       color: var(--verde);
     }
@@ -367,7 +352,7 @@
 
     .mensaje-estado {
       margin-top: 8px;
-      font-size: 0.8rem;
+      font-size: 0.82rem;
       font-weight: 700;
       color: var(--verde2);
     }
@@ -446,49 +431,55 @@
       <small id="detalle-conexion"></small>
     </div>
 
-    <div id="menu-usuario-wrap" class="menu-usuario-wrap">
-      <button type="button" id="btn-trigger-menu" class="usuario-trigger" aria-expanded="false">
-        <span id="avatar-usuario" class="avatar-circulo">V</span>
-        <span id="texto-usuario-header">Sin sesión</span>
-        <span class="flecha-menu">▾</span>
-      </button>
+    <div class="header-acciones">
+      <button type="button" id="btn-acceso-header" class="btn-acceso-header">Iniciar sesión / Registrarse</button>
 
-      <div id="dropdown-usuario" class="dropdown-menu hidden">
-        <div class="dropdown-cabecera">
-          <strong id="menu-nombre-usuario">Invitado</strong>
-          <small id="menu-email-usuario"></small>
+      <div id="menu-usuario-wrap" class="menu-usuario-wrap">
+        <button type="button" id="btn-trigger-menu" class="usuario-trigger" aria-expanded="false">
+          <span id="avatar-usuario" class="avatar-circulo">V</span>
+          <span id="texto-usuario-header">Sin sesión</span>
+          <span class="flecha-menu">▾</span>
+        </button>
+
+        <div id="dropdown-usuario" class="dropdown-menu hidden">
+          <div class="dropdown-cabecera">
+            <strong id="menu-nombre-usuario">Invitado</strong>
+            <small id="menu-email-usuario"></small>
+          </div>
+          <button type="button" class="dropdown-item" data-vista="perfil">Perfil</button>
+          <button type="button" class="dropdown-item" data-vista="vidriera">Vidriera</button>
+          <hr class="dropdown-divisor">
+          <button type="button" id="btn-cerrar-sesion" class="dropdown-item dropdown-salir">Cerrar sesión</button>
         </div>
-        <button type="button" class="dropdown-item" data-vista="perfil">Perfil</button>
-        <button type="button" class="dropdown-item" data-vista="vidriera">Vidriera</button>
-        <hr class="dropdown-divisor">
-        <button type="button" id="btn-cerrar-sesion" class="dropdown-item dropdown-salir">Cerrar sesión</button>
       </div>
     </div>
   </header>
 
-  <div class="search-bar-container">
-    <input type="text" id="buscar-comercio" placeholder="🔍 Buscá por comercio, dirección, cupón o publicación...">
-    <button type="button" id="btn-limpiar-busqueda">Todos</button>
-  </div>
-
-  <div class="banner">
-    ✨ Red Comercial Geolocalizada — Sumate a la red V.E.A. desde <strong>USD 5</strong> mensuales.
-  </div>
-
-  <div class="banner-premium-rotativo" id="bannerRotativoPremium">
-    <div class="banner-premium-info">
-      <span style="background:var(--dorado);color:var(--verde);font-size:.6rem;font-weight:800;padding:2px 5px;border-radius:4px">⭐ DESTACADO PREMIUM V.E.A.</span>
-      <h4 id="premRotativoNombre">Vidrieras locales activas</h4>
-      <p id="premRotativoOferta">Explorá comercios, cupones y contacto directo por WhatsApp.</p>
+  <div id="chrome-inicio">
+    <div class="search-bar-container">
+      <input type="text" id="buscar-comercio" placeholder="🔍 Buscá por comercio, dirección, cupón o publicación...">
+      <button type="button" id="btn-limpiar-busqueda">Todos</button>
     </div>
-  </div>
 
-  <div class="banner-suscripcion-home">
-    <div style="text-align: left;">
-      <strong style="color:var(--dorado); font-size:.82rem;">¿Tenés un comercio o emprendimiento?</strong>
-      <p style="font-size: .72rem; color: #c2dcd1;">Cargá tu vidriera, cupones, video vertical y WhatsApp.</p>
+    <div class="banner">
+      ✨ Red Comercial Geolocalizada — Sumate a la red V.E.A. desde <strong>USD 5</strong> mensuales.
     </div>
-    <button type="button" class="btn" id="btn-abrir-vidriera-home">⭐ Mi Vidriera</button>
+
+    <div class="banner-premium-rotativo" id="bannerRotativoPremium">
+      <div class="banner-premium-info">
+        <span style="background:var(--dorado);color:var(--verde);font-size:.6rem;font-weight:800;padding:2px 5px;border-radius:4px">⭐ DESTACADO PREMIUM V.E.A.</span>
+        <h4 id="premRotativoNombre">Vidrieras locales activas</h4>
+        <p id="premRotativoOferta">Explorá comercios, cupones y contacto directo por WhatsApp.</p>
+      </div>
+    </div>
+
+    <div class="banner-suscripcion-home">
+      <div style="text-align: left;">
+        <strong style="color:var(--dorado); font-size:.82rem;">¿Tenés un comercio o emprendimiento?</strong>
+        <p style="font-size: .72rem; color: #c2dcd1;">Cargá tu vidriera, cupones, video vertical y WhatsApp.</p>
+      </div>
+      <button type="button" class="btn" id="btn-abrir-vidriera-home">⭐ Mi Vidriera</button>
+    </div>
   </div>
 
   <main>
@@ -513,8 +504,11 @@
       </div>
     </section>
 
-    <section id="seccion-login" class="card hidden">
-      <h2>Iniciar sesión</h2>
+    <section id="seccion-login" class="card vista-completa hidden">
+      <div style="display:flex; justify-content:space-between; align-items:center; gap:8px; margin-bottom:6px;">
+        <h2 style="margin:0;">Iniciar sesión</h2>
+        <button type="button" class="btn" id="btn-volver-login">← Volver al inicio</button>
+      </div>
       <p class="subtexto">Ingresá con tu correo y contraseña para recuperar tu perfil y tu vidriera.</p>
 
       <form id="form-login" class="form-grid" novalidate>
@@ -537,8 +531,11 @@
       <p id="mensaje-login" class="mensaje-estado" aria-live="polite"></p>
     </section>
 
-    <section id="seccion-registro" class="card hidden">
-      <h2>Crear cuenta</h2>
+    <section id="seccion-registro" class="card vista-completa hidden">
+      <div style="display:flex; justify-content:space-between; align-items:center; gap:8px; margin-bottom:6px;">
+        <h2 style="margin:0;">Crear cuenta</h2>
+        <button type="button" class="btn" id="btn-volver-registro">← Volver al inicio</button>
+      </div>
       <p class="subtexto">Completá tus datos para registrarte en VEA App.</p>
 
       <form id="form-registro" class="form-grid" novalidate>
@@ -581,8 +578,11 @@
       <p id="mensaje-registro" class="mensaje-estado" aria-live="polite"></p>
     </section>
 
-    <section id="vista-perfil" class="card hidden">
-      <h2>Editar perfil</h2>
+    <section id="vista-perfil" class="card vista-completa hidden">
+      <div style="display:flex; justify-content:space-between; align-items:center; gap:8px; margin-bottom:6px;">
+        <h2 style="margin:0;">Editar perfil</h2>
+        <button type="button" class="btn" id="btn-cerrar-perfil">← Volver al inicio</button>
+      </div>
       <p id="datos-perfil-nube" class="subtexto">Iniciá sesión para editar tu perfil guardado en la nube.</p>
 
       <form id="form-perfil" class="form-grid" novalidate>
@@ -612,17 +612,19 @@
 
         <div class="acciones-form">
           <button type="submit" id="btn-guardar-perfil" class="btn">Guardar cambios</button>
-          <button type="button" id="btn-cerrar-perfil" class="btn">Cerrar</button>
         </div>
       </form>
 
       <p id="mensaje-perfil" class="mensaje-estado" aria-live="polite"></p>
     </section>
 
-    <section id="vista-vidriera" class="card hidden">
+    <section id="vista-vidriera" class="card vista-completa hidden">
       <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; margin-bottom:10px;">
         <h2 style="margin:0;">Mi Vidriera Comercial</h2>
-        <span id="badge-plan-vidriera" class="badge-plan">Plan activo: BÁSICO</span>
+        <div style="display:flex; align-items:center; gap:8px;">
+          <span id="badge-plan-vidriera" class="badge-plan">Plan activo: BÁSICO</span>
+          <button type="button" class="btn" id="btn-cerrar-vidriera">← Volver al inicio</button>
+        </div>
       </div>
 
       <p id="estado-plan-detalle" class="subtexto">Límites de tu plan: hasta 10 publicaciones y video vertical de hasta 10s.</p>
@@ -688,7 +690,6 @@
 
         <div class="acciones-form">
           <button type="submit" id="btn-guardar-vidriera" class="btn">Guardar y actualizar vidriera</button>
-          <button type="button" id="btn-cerrar-vidriera" class="btn">Cerrar</button>
         </div>
       </form>
 
@@ -700,7 +701,7 @@
       </div>
     </section>
 
-    <section id="seccion-prueba" class="card hidden">
+    <section id="seccion-prueba" class="card vista-completa hidden">
       <h2>Prueba de Firestore</h2>
       <div class="fila-input">
         <input type="text" id="texto-prueba" placeholder="Escribí algo de prueba...">
@@ -722,16 +723,98 @@
   <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
   <script src="app.js"></script>
   <script>
-    document.getElementById("btn-abrir-vidriera-home")?.addEventListener("click", () => mostrarVista("vidriera"));
-    document.getElementById("btnAbrirVidrieraNav")?.addEventListener("click", () => mostrarVista("vidriera"));
-    document.getElementById("btnNavHome")?.addEventListener("click", () => mostrarVista(null));
-    document.getElementById("btnCentrarMapaNav")?.addEventListener("click", () => {
+    const vistaPrincipalEl = document.getElementById("vista-principal");
+    const chromeInicioEl = document.getElementById("chrome-inicio");
+    const btnAccesoHeaderEl = document.getElementById("btn-acceso-header");
+
+    function sincronizarVisibilidadInicio(nombreVista) {
+      const enInicio = !nombreVista;
+      if (vistaPrincipalEl) vistaPrincipalEl.classList.toggle("hidden", !enInicio);
+      if (chromeInicioEl) chromeInicioEl.classList.toggle("hidden", !enInicio);
+      if (enInicio && typeof mapaPrincipal !== "undefined" && mapaPrincipal) {
+        setTimeout(() => mapaPrincipal.invalidateSize(), 180);
+      }
+    }
+
+    function abrirAccesoUsuario(mostrarRegistro = false) {
+      sincronizarVisibilidadInicio("auth");
+      if (typeof alternarAuth === "function") {
+        alternarAuth(!mostrarRegistro);
+      } else {
+        document.getElementById("seccion-login")?.classList.toggle("hidden", mostrarRegistro);
+        document.getElementById("seccion-registro")?.classList.toggle("hidden", !mostrarRegistro);
+      }
+    }
+
+    btnAccesoHeaderEl?.addEventListener("click", () => abrirAccesoUsuario(false));
+    document.getElementById("btn-volver-login")?.addEventListener("click", () => {
+      document.getElementById("seccion-login")?.classList.add("hidden");
+      sincronizarVisibilidadInicio(null);
+    });
+    document.getElementById("btn-volver-registro")?.addEventListener("click", () => {
+      document.getElementById("seccion-registro")?.classList.add("hidden");
+      sincronizarVisibilidadInicio(null);
+    });
+
+    document.getElementById("btn-abrir-vidriera-home")?.addEventListener("click", () => {
+      if (!usuarioActual) {
+        abrirAccesoUsuario(false);
+        return;
+      }
+      sincronizarVisibilidadInicio("vidriera");
+      mostrarVista("vidriera");
+    });
+
+    document.getElementById("btnAbrirVidrieraNav")?.addEventListener("click", () => {
+      if (!usuarioActual) {
+        abrirAccesoUsuario(false);
+        return;
+      }
+      sincronizarVisibilidadInicio("vidriera");
+      mostrarVista("vidriera");
+    });
+
+    document.querySelectorAll(".dropdown-item[data-vista]").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        sincronizarVisibilidadInicio(btn.dataset.vista);
+      });
+    });
+
+    document.getElementById("btn-cerrar-perfil")?.addEventListener("click", () => sincronizarVisibilidadInicio(null));
+    document.getElementById("btn-cerrar-vidriera")?.addEventListener("click", () => sincronizarVisibilidadInicio(null));
+    document.getElementById("btn-cerrar-sesion")?.addEventListener("click", () => sincronizarVisibilidadInicio(null));
+
+    document.getElementById("btnNavHome")?.addEventListener("click", () => {
+      document.getElementById("seccion-login")?.classList.add("hidden");
+      document.getElementById("seccion-registro")?.classList.add("hidden");
       mostrarVista(null);
+      sincronizarVisibilidadInicio(null);
+    });
+
+    document.getElementById("btnCentrarMapaNav")?.addEventListener("click", () => {
+      document.getElementById("seccion-login")?.classList.add("hidden");
+      document.getElementById("seccion-registro")?.classList.add("hidden");
+      mostrarVista(null);
+      sincronizarVisibilidadInicio(null);
       if (typeof mapaPrincipal !== "undefined" && mapaPrincipal) {
         mapaPrincipal.setView([-34.6434, -58.6231], 13);
         setTimeout(() => mapaPrincipal.invalidateSize(), 150);
       }
     });
+
+    const obsAuthAcceso = setInterval(() => {
+      if (typeof auth !== "undefined" && auth && typeof auth.onAuthStateChanged === "function") {
+        clearInterval(obsAuthAcceso);
+        auth.onAuthStateChanged((u) => {
+          if (btnAccesoHeaderEl) {
+            btnAccesoHeaderEl.classList.toggle("hidden", Boolean(u));
+          }
+          if (!u) {
+            sincronizarVisibilidadInicio(null);
+          }
+        });
+      }
+    }, 100);
   </script>
 </body>
 </html>

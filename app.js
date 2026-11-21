@@ -946,7 +946,7 @@ auth.onAuthStateChanged((user) => {
       });
   } else {
     if (seccionRegistro) seccionRegistro.classList.add("hidden");
-    if (seccionLogin) seccionLogin.classList.remove("hidden");
+    if (seccionLogin) seccionLogin.classList.add("hidden");
 
     fotoPerfilActual = "";
     telefonoUsuarioActual = "";
