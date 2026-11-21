@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="es">
 <head>
   <meta charset="UTF-8">
@@ -7,13 +7,93 @@
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <header>
-    <h1 id="estado-app">VEA App - Conectando...</h1>
-    <p id="detalle-conexion"></p>
+  <header class="topbar">
+    <div class="topbar-brand">
+      <h1 id="estado-app">VEA App - Conectando...</h1>
+      <p id="detalle-conexion"></p>
+    </div>
+
+    <div id="menu-usuario-wrap" class="menu-usuario-wrap">
+      <button type="button" id="btn-trigger-menu" class="usuario-trigger" aria-expanded="false">
+        <span id="avatar-usuario" class="avatar-circulo">V</span>
+        <span id="texto-usuario-header">Sin sesión</span>
+        <span class="flecha-menu">▾</span>
+      </button>
+
+      <div id="dropdown-usuario" class="dropdown-menu hidden">
+        <div class="dropdown-cabecera">
+          <strong id="menu-nombre-usuario">Invitado</strong>
+          <small id="menu-email-usuario"></small>
+        </div>
+        <button type="button" class="dropdown-item" data-vista="perfil">Perfil</button>
+        <button type="button" class="dropdown-item" data-vista="vidriera">Vidriera</button>
+        <button type="button" class="dropdown-item" data-vista="cargar">Cargar</button>
+        <hr class="dropdown-divisor">
+        <button type="button" id="btn-cerrar-sesion" class="dropdown-item dropdown-salir">Cerrar sesión</button>
+      </div>
+    </div>
   </header>
 
   <main>
-    <section id="seccion-prueba">
+    <section id="seccion-registro" class="card">
+      <h2>Crear cuenta</h2>
+      <p class="subtexto">Completá tus datos para registrarte en VEA App.</p>
+
+      <form id="form-registro" class="form-grid" novalidate>
+        <div class="campo">
+          <label for="reg-nombre">Nombre y apellido</label>
+          <input type="text" id="reg-nombre" placeholder="Ej. Martín Osorio" required>
+        </div>
+
+        <div class="campo">
+          <label for="reg-direccion">Dirección</label>
+          <input type="text" id="reg-direccion" placeholder="Calle, altura y localidad" required>
+        </div>
+
+        <div class="campo">
+          <label for="reg-telefono">Teléfono</label>
+          <input type="tel" id="reg-telefono" placeholder="Ej. 11 5555-5555" required>
+        </div>
+
+        <div class="campo">
+          <label for="reg-email">Correo electrónico</label>
+          <input type="email" id="reg-email" placeholder="correo@ejemplo.com" required>
+        </div>
+
+        <div class="campo">
+          <label for="reg-password">Contraseña (mínimo 6 caracteres)</label>
+          <input type="password" id="reg-password" minlength="6" maxlength="20" placeholder="••••••" required>
+        </div>
+
+        <div class="campo">
+          <label for="reg-password2">Confirmar contraseña</label>
+          <input type="password" id="reg-password2" minlength="6" maxlength="20" placeholder="••••••" required>
+        </div>
+
+        <div class="acciones-form">
+          <button type="submit" id="btn-registrar">Registrarme</button>
+        </div>
+      </form>
+
+      <p id="mensaje-registro" class="mensaje-estado" aria-live="polite"></p>
+    </section>
+
+    <section id="vista-perfil" class="card hidden">
+      <h2>Perfil</h2>
+      <p id="datos-perfil-nube" class="subtexto">Iniciá sesión para ver tu perfil guardado en la nube.</p>
+    </section>
+
+    <section id="vista-vidriera" class="card hidden">
+      <h2>Vidriera</h2>
+      <p class="subtexto">Espacio de vidriera listo para armar el siguiente módulo.</p>
+    </section>
+
+    <section id="vista-cargar" class="card hidden">
+      <h2>Cargar</h2>
+      <p class="subtexto">Espacio de carga listo para armar el siguiente módulo.</p>
+    </section>
+
+    <section id="seccion-prueba" class="card">
       <h2>Prueba de Firestore</h2>
       <div class="fila-input">
         <input type="text" id="texto-prueba" placeholder="Escribí algo de prueba...">
