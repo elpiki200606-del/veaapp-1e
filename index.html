@@ -101,8 +101,8 @@
     }
 
     .header-search {
-      flex: 0 1 175px;
-      min-width: 115px;
+      flex: 0 1 195px;
+      min-width: 120px;
       display: flex;
       align-items: center;
       background: #fff;
@@ -131,7 +131,7 @@
       background: var(--dorado);
       color: var(--verde);
       border: 0;
-      padding: 3px 7px;
+      padding: 3px 8px;
       font-weight: 800;
       font-size: 0.66rem;
     }
@@ -199,6 +199,25 @@
       display: inline-flex;
       align-items: center;
       gap: 5px;
+    }
+
+    .vea-pin-rubro {
+      width: 34px;
+      height: 34px;
+      border-radius: 50% 50% 50% 0;
+      transform: rotate(-45deg);
+      background: var(--verde);
+      border: 2px solid var(--dorado);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 3px 8px rgba(0, 0, 0, 0.35);
+    }
+
+    .vea-pin-rubro span {
+      transform: rotate(45deg);
+      font-size: 16px;
+      line-height: 1;
     }
 
     .rubros-grid {
@@ -576,8 +595,8 @@
     <div class="header-bottom-row">
       <div class="header-search">
         <span>🔍</span>
-        <input type="text" id="buscar-comercio" placeholder="Buscar...">
-        <button type="button" id="btn-limpiar-busqueda">Todos</button>
+        <input type="text" id="buscar-comercio" placeholder="Buscar producto o rubro...">
+        <button type="button" id="btn-limpiar-busqueda">Buscar</button>
       </div>
 
       <button type="button" id="btn-acceso-header" class="btn-acceso-header">Iniciar sesión</button>
@@ -594,7 +613,7 @@
       <div class="map-column">
         <div class="mapa-top-bar">
           <button type="button" id="btn-abrir-rubros-mapa" class="btn-rubros-mapa">🏷️ Rubros</button>
-          <span id="estado-filtro-rubro" class="subtexto">Todos los rubros</span>
+          <span id="estado-filtro-rubro" class="subtexto">Mapa limpio · Elegí rubro o buscá</span>
         </div>
         <div class="mapa-canvas-wrap">
           <div id="mapa-principal"></div>
@@ -603,7 +622,7 @@
 
       <div class="showcase-column">
         <h2 class="section-title">📍 Vidriera cerca tuyo</h2>
-        <p id="contador-comercios" class="subtexto" style="margin-bottom:8px;">Cargando comercios...</p>
+        <p id="contador-comercios" class="subtexto" style="margin-bottom:8px;">Buscá por palabra clave o elegí un rubro.</p>
 
         <div id="detalle-comercio-publico" class="card hidden" style="margin:0 0 12px; border:2px solid var(--dorado);">
           <div style="display:flex; justify-content:space-between; align-items:center; gap:8px; margin-bottom:8px;">
@@ -622,9 +641,9 @@
         <h2 style="margin:0;">🏷️ Elegí un rubro</h2>
         <button type="button" class="btn" id="btn-volver-rubros">← Volver al inicio</button>
       </div>
-      <p class="subtexto" style="margin-bottom:10px;">Tocá un rubro para mostrar solo esos comercios en el mapa y las vidrieras.</p>
+      <p class="subtexto" style="margin-bottom:10px;">Tocá un rubro para mostrar sus pines y vidrieras en el mapa.</p>
       <div class="fila-input">
-        <button type="button" class="btn" id="btn-rubro-todos">Todos los rubros</button>
+        <button type="button" class="btn" id="btn-rubro-todos">Limpiar filtro</button>
       </div>
       <div id="lista-rubros-dinamica" class="rubros-grid"></div>
     </section>
@@ -909,6 +928,45 @@
   <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
   <script src="app.js"></script>
   <script>
+    const DICCIONARIO_PALABRAS_RUBRO = {
+      "Carnicería": ["churrasco", "chinchulines", "chorizo", "molleja", "chancho", "cerdo", "vacio", "vacío", "asado", "bife", "milanesa", "costilla", "morcilla", "achuras", "carne", "novillo", "matambre", "entraña", "carniceria"],
+      "Pollería": ["pollo", "patita", "pata y muslo", "suprema", "alitas", "menudos", "polleria", "rostizado"],
+      "Granja": ["granja", "huevo", "huevos", "pollo", "conejo", "codorniz", "fideos caseros", "milanesas"],
+      "Pescadería": ["pescado", "merluza", "salmon", "salmón", "camaron", "camarón", "rabas", "atun", "atún", "filet", "pescaderia"],
+      "Fiambrería": ["fiambre", "fiambreria", "jamon", "jamón", "queso", "salame", "mortadela", "picada"],
+      "Verdulería": ["verdura", "verduleria", "fruta", "frutas", "papa", "tomate", "cebolla", "lechuga", "banana", "manzana"],
+      "Cervecería": ["cerveza", "birra", "pinta", "ipa", "scottish", "honey", "stout", "barril", "growler", "artesanal", "cerveceria"],
+      "Pizzería": ["pizza", "porcion", "porción", "muzzarella", "fugazzeta", "empanada", "pizzeria"],
+      "Panadería": ["pan", "factura", "facturas", "medialuna", "medialunas", "bizcocho", "panaderia"],
+      "Zapatería": ["zapato", "zapatos", "zapatilla", "zapatillas", "sueco", "suecos", "bota", "botas", "sandalia", "calzado", "zapateria"],
+      "Tienda de ropa": ["remera", "remeras", "pantalon", "pantalón", "jean", "campera", "buzo", "vestido", "ropa", "indumentaria"],
+      "Indumentaria deportiva": ["deportiva", "deportivo", "short", "calza", "camiseta", "entrenamiento", "jogging", "remera"],
+      "Ferretería": ["ferreteria", "tornillo", "clavo", "martillo", "destornillador", "taladro", "cable", "canilla", "herramienta", "bulon", "bulón"],
+      "Corralón": ["corralon", "corralón", "ladrillo", "cemento", "arena", "cal", "hierro", "viga", "materiales de construccion"],
+      "Taller mecánico": ["taller", "mecanico", "mecánico", "freno", "frenos", "embrague", "motor", "aceite", "service", "llave"],
+      "Lubricentro": ["lubricentro", "aceite", "filtro", "lubricante", "motor"],
+      "Gomería": ["gomeria", "gomería", "cubierta", "cubiertas", "neumatico", "neumático", "parche", "alineacion", "balanceo"],
+      "Celulares": ["celular", "celulares", "telefono", "teléfono", "pantalla", "modulo", "módulo", "cargador", "bateria", "batería", "reparacion", "reparación"],
+      "Computación": ["computadora", "computadoras", "pc", "notebook", "netbook", "teclado", "mouse", "disco", "ssd", "ram", "reparacion", "reparación"],
+      "Electrónica": ["electronica", "electrónica", "cable", "fuente", "soldador", "componente", "control", "parlante"],
+      "Bancos": ["banco", "bancos", "plata", "dinero", "cajero", "prestamo", "préstamo", "cuenta", "tarjeta"],
+      "Maderera": ["maderera", "madera", "maderas", "tabla", "tablon", "tablón", "machimbre", "tirante"],
+      "Aserradero": ["aserradero", "madera", "maderas", "tablon", "tablón", "tirante", "leña", "lena"],
+      "Casa de electricidad": ["electricidad", "casa de electricidad", "cable", "llave termica", "térmica", "disyuntor", "lampara", "lámpara", "led", "toma"],
+      "Clínica": ["clinica", "clínica", "medico", "médico", "consultorio", "guardia", "salud"],
+      "Hospitales": ["hospital", "hospitales", "emergencia", "guardia", "salud"],
+      "Oftalmología": ["oftalmologia", "oftalmología", "ojo", "ojos", "vista", "anteojos", "lentes"],
+      "Dentista": ["dentista", "odontologia", "odontología", "muela", "diente", "dientes", "ortodoncia"],
+      "Barbería": ["barberia", "barbería", "barba", "corte", "afeitado", "navaja", "pelo"],
+      "Peluquería": ["peluqueria", "peluquería", "corte", "tintura", "peinado", "pelo"],
+      "Spa": ["spa", "masaje", "masajes", "relax", "relajacion", "relajación", "sauna"],
+      "Veterinaria": ["veterinaria", "perro", "perros", "gato", "gatos", "mascota", "mascotas", "vacuna"],
+      "Farmacia": ["farmacia", "remedio", "remedios", "medicamento", "medicamentos", "perfumeria"],
+      "Kiosco": ["kiosco", "golosina", "alfajor", "cigarrillo", "gaseosa", "agua"],
+      "Maxikiosco": ["maxikiosco", "kiosco", "golosina", "bebida", "snack"],
+      "Almacén": ["almacen", "almacén", "yerba", "azucar", "azúcar", "fideos", "aceite", "arroz"]
+    };
+
     const RUBROS_INDIVIDUALES = [
       "Aberturas", "Almacén", "Aserradero", "Aseguradora", "Bancos", "Barbería",
       "Bar", "Bazar", "Bicicletería", "Bulonera", "Cafetería", "Carnicería",
@@ -928,6 +986,61 @@
       "Veterinaria", "Vinoteca", "Vivero", "Zapatería"
     ];
 
+    const ICONO_POR_RUBRO = {
+      "Carnicería": "🥩",
+      "Pollería": "🍗",
+      "Granja": "🐔",
+      "Pescadería": "🐟",
+      "Fiambrería": "🧀",
+      "Verdulería": "🥦",
+      "Cervecería": "🍺",
+      "Bar": "🍻",
+      "Cafetería": "☕",
+      "Pizzería": "🍕",
+      "Panadería": "🥖",
+      "Pastelería": "🥐",
+      "Heladería": "🍨",
+      "Restaurante": "🍽️",
+      "Parrilla": "🔥",
+      "Zapatería": "👟",
+      "Tienda de ropa": "👕",
+      "Indumentaria deportiva": "🏃",
+      "Ferretería": "🔧",
+      "Bulonera": "🔩",
+      "Corralón": "🧱",
+      "Taller mecánico": "🔧",
+      "Lubricentro": "🛢️",
+      "Gomería": "🛞",
+      "Celulares": "📱",
+      "Computación": "💻",
+      "Electrónica": "🔌",
+      "Bancos": "💵",
+      "Maderera": "🪵",
+      "Maderas": "🪵",
+      "Aserradero": "🪓",
+      "Casa de electricidad": "💡",
+      "Electricidad": "⚡",
+      "Clínica": "🏥",
+      "Hospitales": "🏥",
+      "Oftalmología": "👓",
+      "Óptica": "🕶️",
+      "Dentista": "🦷",
+      "Barbería": "💈",
+      "Peluquería": "✂️",
+      "Spa": "💆",
+      "Farmacia": "💊",
+      "Veterinaria": "🐾",
+      "Pet shop": "🐶",
+      "Librería": "📚",
+      "Juguetería": "🧸",
+      "Kiosco": "🍬",
+      "Maxikiosco": "🏪",
+      "Almacén": "🛒",
+      "Vinoteca": "🍷",
+      "Floristería": "💐",
+      "Vivero": "🌱"
+    };
+
     const vistaPrincipalEl = document.getElementById("vista-principal");
     const chromeInicioEl = document.getElementById("chrome-inicio");
     const vistaRubrosEl = document.getElementById("vista-rubros");
@@ -937,6 +1050,15 @@
     const listaCuponesPrioridadEl = document.getElementById("lista-cupones-prioridad");
     const btnAccesoHeaderEl = document.getElementById("btn-acceso-header");
     let rubroActivo = "";
+    let busquedaActiva = "";
+
+    function normalizarTexto(txt) {
+      return String(txt || "")
+        .toLowerCase()
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .trim();
+    }
 
     function obtenerRubrosOrdenados() {
       return Array.from(new Set(
@@ -961,8 +1083,9 @@
       const unicos = obtenerRubrosOrdenados();
 
       listaRubrosDinamicaEl.innerHTML = unicos.map((rubro) => {
-        const activa = rubroActivo.toLowerCase() === rubro.toLowerCase() ? "activo" : "";
-        return `<button type="button" class="btn-rubro-item ${activa}" data-rubro="${rubro.replace(/"/g, "&quot;")}">${rubro}</button>`;
+        const activa = normalizarTexto(rubroActivo) === normalizarTexto(rubro) ? "activo" : "";
+        const ico = ICONO_POR_RUBRO[rubro] || "🏷️";
+        return `<button type="button" class="btn-rubro-item ${activa}" data-rubro="${rubro.replace(/"/g, "&quot;")}">${ico} ${rubro}</button>`;
       }).join("");
 
       listaRubrosDinamicaEl.querySelectorAll("[data-rubro]").forEach((btn) => {
@@ -974,47 +1097,124 @@
       });
     }
 
-    function obtenerComerciosVisibles() {
+    function obtenerIconoRubro(comercio) {
+      const texto = normalizarTexto(`${comercio?.rubro || ""} ${comercio?.categoria || ""} ${comercio?.nombreComercio || ""}`);
+      for (const [rubro, emoji] of Object.entries(ICONO_POR_RUBRO)) {
+        if (texto.includes(normalizarTexto(rubro))) return emoji;
+      }
+      for (const [rubro, keywords] of Object.entries(DICCIONARIO_PALABRAS_RUBRO)) {
+        if (keywords.some((kw) => texto.includes(normalizarTexto(kw)))) {
+          return ICONO_POR_RUBRO[rubro] || "📍";
+        }
+      }
+      return "📍";
+    }
+
+    function comercioCoincideConTermino(comercio, terminoNormalizado) {
+      if (!terminoNormalizado) return false;
+      const camposComercio = normalizarTexto([
+        comercio.rubro,
+        comercio.categoria,
+        comercio.nombreComercio,
+        comercio.direccion,
+        Array.isArray(comercio.cupones) ? comercio.cupones.map((x) => `${x.titulo || ""} ${x.codigo || ""}`).join(" ") : "",
+        Array.isArray(comercio.publicaciones) ? comercio.publicaciones.map((p) => `${p.titulo || ""} ${p.descripcion || ""}`).join(" ") : ""
+      ].join(" "));
+
+      if (camposComercio.includes(terminoNormalizado)) return true;
+
+      for (const [rubro, keywords] of Object.entries(DICCIONARIO_PALABRAS_RUBRO)) {
+        const kwMatch = keywords.some((kw) => {
+          const kn = normalizarTexto(kw);
+          return kn === terminoNormalizado || kn.includes(terminoNormalizado) || terminoNormalizado.includes(kn);
+        });
+        if (kwMatch && camposComercio.includes(normalizarTexto(rubro))) {
+          return true;
+        }
+      }
+      return false;
+    }
+
+    function obtenerComerciosFiltrados() {
       const base = (typeof comerciosCargados !== "undefined" && Array.isArray(comerciosCargados))
         ? comerciosCargados
         : [];
-      const term = (document.getElementById("buscar-comercio")?.value || "").trim().toLowerCase();
+      const rNorm = normalizarTexto(rubroActivo);
+      const bNorm = normalizarTexto(busquedaActiva);
+
+      if (!rNorm && !bNorm) return [];
 
       return base.filter((c) => {
-        const textoComercio = [
-          c.rubro, c.categoria, c.nombreComercio, c.direccion,
-          Array.isArray(c.cupones) ? c.cupones.map((x) => `${x.titulo || ""} ${x.codigo || ""}`).join(" ") : "",
-          Array.isArray(c.publicaciones) ? c.publicaciones.map((p) => `${p.titulo || ""} ${p.descripcion || ""}`).join(" ") : ""
-        ].join(" ").toLowerCase();
-
-        const pasaRubro = !rubroActivo || textoComercio.includes(rubroActivo.toLowerCase());
-        const pasaBusqueda = !term || textoComercio.includes(term);
+        const pasaRubro = !rNorm || normalizarTexto(`${c.rubro || ""} ${c.categoria || ""}`).includes(rNorm)
+          || comercioCoincideConTermino(c, rNorm);
+        const pasaBusqueda = !bNorm || comercioCoincideConTermino(c, bNorm);
         return pasaRubro && pasaBusqueda;
       });
     }
 
-    function sincronizarMapaConFiltro() {
-      const visibles = obtenerComerciosVisibles();
-      const tieneFiltro = Boolean(rubroActivo || (document.getElementById("buscar-comercio")?.value || "").trim());
+    function limpiarMapaPrincipal() {
+      if (typeof mapaPrincipal === "undefined" || !mapaPrincipal) return;
+      if (window._veaMarcadoresFiltrados) {
+        window._veaMarcadoresFiltrados.clearLayers();
+      }
+      mapaPrincipal.eachLayer((layer) => {
+        if (layer instanceof L.Marker) {
+          mapaPrincipal.removeLayer(layer);
+        }
+      });
+    }
+
+    function sincronizarVistaYMapa() {
+      const rNorm = normalizarTexto(rubroActivo);
+      const bNorm = normalizarTexto(busquedaActiva);
+      const hayFiltro = Boolean(rNorm || bNorm);
+      const filtrados = obtenerComerciosFiltrados();
+
+      const estadoFiltroEl = document.getElementById("estado-filtro-rubro");
+      const contadorEl = document.getElementById("contador-comercios");
+
+      if (!hayFiltro) {
+        if (estadoFiltroEl) estadoFiltroEl.textContent = "Mapa limpio · Elegí rubro o buscá";
+        if (contadorEl) contadorEl.textContent = "Buscá por palabra clave o elegí un rubro.";
+        if (typeof renderizarComerciosPublicos === "function") {
+          renderizarComerciosPublicos([]);
+        }
+        limpiarMapaPrincipal();
+        return;
+      }
+
+      if (estadoFiltroEl) {
+        estadoFiltroEl.textContent = rNorm && bNorm
+          ? `${rubroActivo} · "${busquedaActiva}"`
+          : (rNorm ? `Rubro: ${rubroActivo}` : `Búsqueda: "${busquedaActiva}"`);
+      }
 
       if (typeof renderizarComerciosPublicos === "function") {
-        renderizarComerciosPublicos(visibles);
+        renderizarComerciosPublicos(filtrados);
       }
+
+      limpiarMapaPrincipal();
 
       if (typeof mapaPrincipal !== "undefined" && mapaPrincipal && typeof L !== "undefined") {
         if (!window._veaMarcadoresFiltrados) {
           window._veaMarcadoresFiltrados = L.layerGroup().addTo(mapaPrincipal);
         }
-        window._veaMarcadoresFiltrados.clearLayers();
 
-        const aMostrarEnMapa = tieneFiltro ? visibles : visibles.slice(0, 6);
-
-        aMostrarEnMapa.forEach((com) => {
+        filtrados.forEach((com) => {
           const lat = Number(com.lat ?? com.latitude);
           const lng = Number(com.lng ?? com.longitude);
           if (!Number.isFinite(lat) || !Number.isFinite(lng)) return;
 
-          const marcador = L.marker([lat, lng]).addTo(window._veaMarcadoresFiltrados);
+          const emoji = obtenerIconoRubro(com);
+          const iconoDiv = L.divIcon({
+            className: "",
+            html: `<div class="vea-pin-rubro"><span>${emoji}</span></div>`,
+            iconSize: [34, 34],
+            iconAnchor: [17, 34],
+            popupAnchor: [0, -32]
+          });
+
+          const marcador = L.marker([lat, lng], { icon: iconoDiv }).addTo(window._veaMarcadoresFiltrados);
           const esc = typeof escaparHTML === "function" ? escaparHTML : (s) => String(s ?? "");
           const nombre = esc(com.nombreComercio || "Comercio");
           const idAttr = esc(com.id || "");
@@ -1045,13 +1245,15 @@
 
     window.aplicarFiltroRubro = function aplicarFiltroRubro(nombreRubro) {
       rubroActivo = String(nombreRubro || "").trim();
-      const estadoEl = document.getElementById("estado-filtro-rubro");
-      if (estadoEl) {
-        estadoEl.textContent = rubroActivo ? `Rubro: ${rubroActivo}` : "Todos los rubros";
-      }
       construirListadoRubros();
-      sincronizarMapaConFiltro();
+      sincronizarVistaYMapa();
     };
+
+    function ejecutarBusquedaInput() {
+      const inp = document.getElementById("buscar-comercio");
+      busquedaActiva = (inp?.value || "").trim();
+      sincronizarVistaYMapa();
+    }
 
     function pesoJerarquiaPlan(plan) {
       const p = String(plan || "basico").toLowerCase();
@@ -1155,7 +1357,7 @@
           }
         });
       }
-      setTimeout(() => sincronizarMapaConFiltro(), 350);
+      setTimeout(() => sincronizarVistaYMapa(), 350);
     });
 
     function irAInicioLimpio() {
@@ -1171,7 +1373,7 @@
       }
       if (vistaPrincipalEl) vistaPrincipalEl.classList.remove("hidden");
       if (chromeInicioEl) chromeInicioEl.classList.remove("hidden");
-      sincronizarMapaConFiltro();
+      sincronizarVistaYMapa();
       if (typeof mapaPrincipal !== "undefined" && mapaPrincipal) {
         setTimeout(() => mapaPrincipal.invalidateSize(), 180);
       }
@@ -1231,19 +1433,20 @@
     document.getElementById("btn-abrir-rubros-mapa")?.addEventListener("click", () => abrirVistaAislada("rubros"));
     document.getElementById("btn-volver-rubros")?.addEventListener("click", irAInicioLimpio);
     document.getElementById("btn-rubro-todos")?.addEventListener("click", () => {
-      window.aplicarFiltroRubro("");
+      rubroActivo = "";
+      construirListadoRubros();
+      sincronizarVistaYMapa();
       irAInicioLimpio();
     });
-    document.getElementById("buscar-comercio")?.addEventListener("input", () => {
-      sincronizarMapaConFiltro();
+    document.getElementById("buscar-comercio")?.addEventListener("input", ejecutarBusquedaInput);
+    document.getElementById("buscar-comercio")?.addEventListener("keydown", (e) => {
+      if (e.key === "Enter") {
+        e.preventDefault();
+        ejecutarBusquedaInput();
+      }
     });
     document.getElementById("btn-limpiar-busqueda")?.addEventListener("click", () => {
-      const inp = document.getElementById("buscar-comercio");
-      if (inp) inp.value = "";
-      rubroActivo = "";
-      const estadoEl = document.getElementById("estado-filtro-rubro");
-      if (estadoEl) estadoEl.textContent = "Todos los rubros";
-      sincronizarMapaConFiltro();
+      ejecutarBusquedaInput();
     });
     document.getElementById("btn-menu-registrarse")?.addEventListener("click", () => {
       document.getElementById("dropdown-usuario")?.classList.add("hidden");
@@ -1268,7 +1471,13 @@
       });
     });
 
-    document.getElementById("btnNavHome")?.addEventListener("click", irAInicioLimpio);
+    document.getElementById("btnNavHome")?.addEventListener("click", () => {
+      rubroActivo = "";
+      busquedaActiva = "";
+      const inp = document.getElementById("buscar-comercio");
+      if (inp) inp.value = "";
+      irAInicioLimpio();
+    });
     document.getElementById("btnCuponesNav")?.addEventListener("click", () => abrirVistaAislada("cupones"));
     document.getElementById("btnCentrarMapaNav")?.addEventListener("click", () => {
       irAInicioLimpio();
@@ -1295,7 +1504,7 @@
       }
     }, 100);
 
-    setTimeout(() => sincronizarMapaConFiltro(), 800);
+    setTimeout(() => sincronizarVistaYMapa(), 800);
   </script>
 </body>
 </html>
