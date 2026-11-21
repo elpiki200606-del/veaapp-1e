@@ -435,7 +435,7 @@
       color: var(--verde);
     }
 
-    .campo input, .campo textarea {
+    .campo input, .campo select, .campo textarea {
       width: 100%;
       padding: 8px 10px;
       border: 1px solid var(--borde);
@@ -773,6 +773,13 @@
           <input type="text" id="vid-nombre-comercio" placeholder="Ej. Cervecería El Tordo" required>
         </div>
 
+        <div class="campo">
+          <label for="vid-rubro">Rubro del comercio (elegí uno)</label>
+          <select id="vid-rubro" required>
+            <option value="">Seleccioná el rubro de tu local...</option>
+          </select>
+        </div>
+
         <div class="campo" style="position:relative;">
           <label for="vid-direccion">Dirección real en Argentina (calle, altura y localidad)</label>
           <input type="text" id="vid-direccion" placeholder="Ej. Pueyrredón 867, Ramos Mejía" autocomplete="off" required>
@@ -903,35 +910,55 @@
   <script src="app.js"></script>
   <script>
     const RUBROS_INDIVIDUALES = [
-      "Carnicería", "Pollería", "Granja", "Pescadería", "Fiambrería", "Verdulería",
-      "Almacén", "Kiosco", "Maxikiosco", "Panadería", "Pastelería", "Confitería",
-      "Heladería", "Cafetería", "Bar", "Cervecería", "Restaurante", "Parrilla",
-      "Pizzería", "Rotisería", "Dietética", "Vinoteca", "Ferretería", "Corralón",
-      "Pinturería", "Sanitario", "Electricidad", "Bulonera", "Aberturas", "Maderas",
-      "Zapatería", "Tienda de ropa", "Indumentaria deportiva", "Lencería", "Mercería",
-      "Joyería", "Relojería", "Óptica", "Perfumería", "Peluquería", "Barbería",
-      "Estética", "Spa", "Farmacia", "Veterinaria", "Pet shop", "Librería",
-      "Juguetería", "Regalería", "Bazar", "Mueblería", "Colchonería", "Electrodomésticos",
-      "Celulares", "Computación", "Electrónica", "Gomería", "LUBRICENTRO", "Taller mecánico",
-      "Chapa y pintura", "Lavadero de autos", "Repuestos automotor", "Concesionaria",
-      "Bicicletería", "Motos", "Inmobiliaria", "Aseguradora", "Gestoría", "Imprenta",
-      "Gráfica", "Fotografía", "Floristería", "Vivero", "Limpieza", "Cotillón"
+      "Aberturas", "Almacén", "Aserradero", "Aseguradora", "Bancos", "Barbería",
+      "Bar", "Bazar", "Bicicletería", "Bulonera", "Cafetería", "Carnicería",
+      "Casa de electricidad", "Celulares", "Cervecería", "Chapa y pintura",
+      "Clínica", "Colchonería", "Computación", "Concesionaria", "Confitería",
+      "Corralón", "Cotillón", "Dentista", "Dietética", "Electrodomésticos",
+      "Electricidad", "Electrónica", "Estética", "Farmacia", "Ferretería",
+      "Fiambrería", "Floristería", "Fotografía", "Gomería", "Gráfica", "Granja",
+      "Heladería", "Hospitales", "Imprenta", "Indumentaria deportiva",
+      "Inmobiliaria", "Joyería", "Juguetería", "Kiosco", "Lavadero de autos",
+      "Lencería", "Librería", "Limpieza", "Lubricentro", "Maderera", "Maderas",
+      "Maxikiosco", "Mercería", "Motos", "Mueblería", "Oftalmología", "Óptica",
+      "Panadería", "Parrilla", "Pastelería", "Perfumería", "Pescadería",
+      "Pet shop", "Pinturería", "Pizzería", "Pollería", "Regalería",
+      "Repuestos automotor", "Restaurante", "Rotisería", "Sanitario",
+      "Sex shop", "Spa", "Taller mecánico", "Tienda de ropa", "Verdulería",
+      "Veterinaria", "Vinoteca", "Vivero", "Zapatería"
     ];
 
     const vistaPrincipalEl = document.getElementById("vista-principal");
     const chromeInicioEl = document.getElementById("chrome-inicio");
     const vistaRubrosEl = document.getElementById("vista-rubros");
     const listaRubrosDinamicaEl = document.getElementById("lista-rubros-dinamica");
+    const vidRubroSelectEl = document.getElementById("vid-rubro");
     const vistaCuponesPrioridadEl = document.getElementById("vista-cupones-prioridad");
     const listaCuponesPrioridadEl = document.getElementById("lista-cupones-prioridad");
     const btnAccesoHeaderEl = document.getElementById("btn-acceso-header");
     let rubroActivo = "";
 
-    function construirListadoRubros() {
-      if (!listaRubrosDinamicaEl) return;
-      const unicos = Array.from(new Set(
+    function obtenerRubrosOrdenados() {
+      return Array.from(new Set(
         RUBROS_INDIVIDUALES.map((r) => r.trim()).filter(Boolean)
       )).sort((a, b) => a.localeCompare(b, "es"));
+    }
+
+    function poblarSelectRubrosVidriera() {
+      if (!vidRubroSelectEl) return;
+      const valorActual = vidRubroSelectEl.value;
+      const opciones = obtenerRubrosOrdenados()
+        .map((r) => `<option value="${r.replace(/"/g, "&quot;")}">${r}</option>`)
+        .join("");
+      vidRubroSelectEl.innerHTML = `<option value="">Seleccioná el rubro de tu local...</option>${opciones}`;
+      if (valorActual) {
+        vidRubroSelectEl.value = valorActual;
+      }
+    }
+
+    function construirListadoRubros() {
+      if (!listaRubrosDinamicaEl) return;
+      const unicos = obtenerRubrosOrdenados();
 
       listaRubrosDinamicaEl.innerHTML = unicos.map((rubro) => {
         const activa = rubroActivo.toLowerCase() === rubro.toLowerCase() ? "activo" : "";
@@ -956,8 +983,8 @@
       return base.filter((c) => {
         const textoComercio = [
           c.rubro, c.categoria, c.nombreComercio, c.direccion,
-          Array.isArray(c.cupones) ? c.cupones.map((x) => `${x.titulo} ${x.codigo}`).join(" ") : "",
-          Array.isArray(c.publicaciones) ? c.publicaciones.map((p) => `${p.titulo} ${p.descripcion}`).join(" ") : ""
+          Array.isArray(c.cupones) ? c.cupones.map((x) => `${x.titulo || ""} ${x.codigo || ""}`).join(" ") : "",
+          Array.isArray(c.publicaciones) ? c.publicaciones.map((p) => `${p.titulo || ""} ${p.descripcion || ""}`).join(" ") : ""
         ].join(" ").toLowerCase();
 
         const pasaRubro = !rubroActivo || textoComercio.includes(rubroActivo.toLowerCase());
@@ -980,7 +1007,6 @@
         }
         window._veaMarcadoresFiltrados.clearLayers();
 
-        // Para no saturar el mapa cuando hay muchos comercios sin filtro, solo muestra si hay filtro o pocos comercios
         const aMostrarEnMapa = tieneFiltro ? visibles : visibles.slice(0, 6);
 
         aMostrarEnMapa.forEach((com) => {
@@ -1041,6 +1067,22 @@
       return "BÁSICO";
     }
 
+    function extraerCuponesDeComercio(com) {
+      if (!com || typeof com !== "object") return [];
+      const candidatos = [
+        com.cupones,
+        com.coupons,
+        com.vidriera?.cupones,
+        com.datos?.cupones
+      ];
+      for (const lista of candidatos) {
+        if (Array.isArray(lista) && lista.length) {
+          return lista;
+        }
+      }
+      return [];
+    }
+
     function renderizarCuponesJerarquia() {
       if (!listaCuponesPrioridadEl) return;
       const baseComercios = (typeof comerciosCargados !== "undefined" && Array.isArray(comerciosCargados))
@@ -1053,19 +1095,22 @@
 
       const filas = [];
       ordenados.forEach((com) => {
-        const cupones = Array.isArray(com.cupones) ? com.cupones : [];
+        const cupones = extraerCuponesDeComercio(com);
         if (!cupones.length) return;
         const nivel = etiquetaJerarquiaPlan(com.plan);
         const waUrl = com.whatsappUrl || (typeof formatearWhatsAppUrl === "function" ? formatearWhatsAppUrl(com.telefono || "") : "");
         const esc = typeof escaparHTML === "function" ? escaparHTML : (s) => String(s ?? "");
 
         cupones.forEach((cup) => {
+          const itemCup = typeof cup === "string" ? { titulo: cup, codigo: "" } : (cup || {});
+          const titulo = itemCup.titulo || itemCup.nombre || itemCup.descripcion || "Cupón promocional";
+          const codigo = itemCup.codigo || itemCup.code || "";
           filas.push(`
             <div class="cupon-item">
               <div>
                 <span class="badge-plan">${esc(nivel)}</span>
-                <strong style="margin-left:6px; color:var(--verde);">${esc(com.nombreComercio || "Comercio")}</strong>
-                <div style="margin-top:4px; font-size:0.86rem;">🎟️ <strong>${esc(cup.titulo || cup.nombre || "")}</strong> — Código: <code>${esc(cup.codigo || cup.code || "")}</code></div>
+                <strong style="margin-left:6px; color:var(--verde);">${esc(com.nombreComercio || com.nombre || "Comercio")}</strong>
+                <div style="margin-top:4px; font-size:0.86rem;">🎟️ <strong>${esc(titulo)}</strong>${codigo ? ` — Código: <code>${esc(codigo)}</code>` : ""}</div>
                 <p class="subtexto">📍 ${esc(com.direccion || "")}</p>
               </div>
               <div style="display:flex; gap:6px; flex-wrap:wrap;">
@@ -1094,6 +1139,24 @@
         });
       }
     }
+
+    document.getElementById("form-vidriera")?.addEventListener("submit", () => {
+      const rubroElegido = (vidRubroSelectEl?.value || "").trim();
+      if (!rubroElegido) return;
+
+      if (typeof db !== "undefined" && db && typeof usuarioActual !== "undefined" && usuarioActual?.uid) {
+        db.collection("comercios").doc(usuarioActual.uid).set({ rubro: rubroElegido }, { merge: true }).catch(() => {});
+      }
+
+      if (typeof comerciosCargados !== "undefined" && Array.isArray(comerciosCargados) && typeof usuarioActual !== "undefined" && usuarioActual?.uid) {
+        comerciosCargados.forEach((c) => {
+          if (String(c.id || c.uid || "") === String(usuarioActual.uid)) {
+            c.rubro = rubroElegido;
+          }
+        });
+      }
+      setTimeout(() => sincronizarMapaConFiltro(), 350);
+    });
 
     function irAInicioLimpio() {
       document.getElementById("seccion-login")?.classList.add("hidden");
@@ -1142,6 +1205,10 @@
         document.getElementById("seccion-login")?.classList.toggle("hidden", !esLogin);
         document.getElementById("seccion-registro")?.classList.toggle("hidden", esLogin);
         return;
+      }
+
+      if (tipo === "vidriera") {
+        poblarSelectRubrosVidriera();
       }
 
       if (typeof mostrarVista === "function") {
@@ -1211,6 +1278,7 @@
       }
     });
 
+    poblarSelectRubrosVidriera();
     construirListadoRubros();
 
     const obsAuthAcceso = setInterval(() => {
