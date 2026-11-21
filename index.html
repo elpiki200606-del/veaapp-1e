@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="es">
 <head>
   <meta charset="UTF-8">
@@ -8,12 +8,6 @@
 <body>
   <h1 id="estado-app">VEA App - Conectando...</h1>
   <p id="detalle-conexion"></p>
-
-  <hr>
-  <h2>Prueba de Firestore</h2>
-  <input type="text" id="texto-prueba" placeholder="Escribí algo de prueba...">
-  <button id="btn-guardar">Guardar</button>
-  <ul id="lista-prueba"></ul>
 
   <!-- SDK de Firebase (versión Compat para HTML directo) -->
   <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
@@ -51,8 +45,7 @@
         detalleEl.textContent = error.message;
         console.error("Error conectando a Firebase:", error);
       });
-
-    const inputPrueba = document.getElementById("texto-prueba");
+     const inputPrueba = document.getElementById("texto-prueba");
     const btnGuardar = document.getElementById("btn-guardar");
     const listaPrueba = document.getElementById("lista-prueba");
 
@@ -82,5 +75,10 @@
         console.error("Error leyendo Firestore:", err);
       });
   </script>
+   <hr>
+  <h2>Prueba de Firestore</h2>
+  <input type="text" id="texto-prueba" placeholder="Escribí algo de prueba...">
+  <button id="btn-guardar">Guardar</button>
+  <ul id="lista-prueba"></ul>
 </body>
 </html>
