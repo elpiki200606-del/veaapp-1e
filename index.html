@@ -1,84 +1,31 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="es">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>VEA App</title>
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <h1 id="estado-app">VEA App - Conectando...</h1>
-  <p id="detalle-conexion"></p>
+  <header>
+    <h1 id="estado-app">VEA App - Conectando...</h1>
+    <p id="detalle-conexion"></p>
+  </header>
 
-  <!-- SDK de Firebase (versión Compat para HTML directo) -->
+  <main>
+    <section id="seccion-prueba">
+      <h2>Prueba de Firestore</h2>
+      <div class="fila-input">
+        <input type="text" id="texto-prueba" placeholder="Escribí algo de prueba...">
+        <button id="btn-guardar">Guardar</button>
+      </div>
+      <ul id="lista-prueba"></ul>
+    </section>
+  </main>
+
   <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
-
-  <script>
-    // Configuración de tu proyecto Firebase
-    const firebaseConfig = {
-      apiKey: "AIzaSyA8GnnmlGoSeaC5JaOajcZDS0ZQBpUYUIM",
-      authDomain: "app-vea-2.firebaseapp.com",
-      projectId: "app-vea-2",
-      storageBucket: "app-vea-2.firebasestorage.app",
-      messagingSenderId: "43679100188",
-      appId: "1:43679100188:web:bb006e0a238f5b37035ed9"
-    };
-
-    // Inicializar Firebase
-    firebase.initializeApp(firebaseConfig);
-    const db = firebase.firestore();
-    const auth = firebase.auth();
-
-    const estadoEl = document.getElementById("estado-app");
-    const detalleEl = document.getElementById("detalle-conexion");
-
-    // Prueba de conexión a Firestore
-    db.collection("ping").limit(1).get()
-      .then(() => {
-        estadoEl.textContent = "VEA App - Conectado";
-        detalleEl.textContent = "Proyecto: " + firebaseConfig.projectId + " (Firestore OK)";
-        console.log("Firebase conectado correctamente al proyecto:", firebaseConfig.projectId);
-      })
-      .catch((error) => {
-        estadoEl.textContent = "VEA App - Error de conexión";
-        detalleEl.textContent = error.message;
-        console.error("Error conectando a Firebase:", error);
-      });
-     const inputPrueba = document.getElementById("texto-prueba");
-    const btnGuardar = document.getElementById("btn-guardar");
-    const listaPrueba = document.getElementById("lista-prueba");
-
-    btnGuardar.addEventListener("click", () => {
-      const texto = inputPrueba.value.trim();
-      if (!texto) return;
-
-      db.collection("pruebas").add({
-        texto: texto,
-        creadoEn: firebase.firestore.FieldValue.serverTimestamp()
-      }).then(() => {
-        inputPrueba.value = "";
-      }).catch((err) => {
-        console.error("Error al guardar:", err);
-      });
-    });
-
-    db.collection("pruebas").orderBy("creadoEn", "desc").limit(10)
-      .onSnapshot((snapshot) => {
-        listaPrueba.innerHTML = "";
-        snapshot.forEach((doc) => {
-          const li = document.createElement("li");
-          li.textContent = doc.data().texto;
-          listaPrueba.appendChild(li);
-        });
-      }, (err) => {
-        console.error("Error leyendo Firestore:", err);
-      });
-  </script>
-   <hr>
-  <h2>Prueba de Firestore</h2>
-  <input type="text" id="texto-prueba" placeholder="Escribí algo de prueba...">
-  <button id="btn-guardar">Guardar</button>
-  <ul id="lista-prueba"></ul>
+  <script src="app.js"></script>
 </body>
 </html>
