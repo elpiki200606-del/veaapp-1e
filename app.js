@@ -57,6 +57,66 @@ db.collection("pruebas").orderBy("creadoEn", "desc").limit(10)
   }, (err) => {
     console.error("Error leyendo Firestore:", err);
   });
+// 6. Registro de usuarios en Firebase Auth + Firestore
+const formRegistro = document.getElementById("form-registro");
+const regNombre = document.getElementById("reg-nombre");
+const regDireccion = document.getElementById("reg-direccion");
+const regTelefono = document.getElementById("reg-telefono");
+const regEmail = document.getElementById("reg-email");
+const regPassword = document.getElementById("reg-password");
+const regPassword2 = document.getElementById("reg-password2");
+const mensajeRegistro = document.getElementById("mensaje-registro");
+const seccionRegistro = document.getElementById("seccion-registro");
+
+if (formRegistro) {
+  formRegistro.addEventListener("submit", (e) => {
+    e.preventDefault();
+
+    const nombreApellido = (regNombre ? regNombre.value : "").trim();
+    const direccion = (regDireccion ? regDireccion.value : "").trim();
+    const telefono = (regTelefono ? regTelefono.value : "").trim();
+    const email = (regEmail ? regEmail.value : "").trim();
+    const password = regPassword ? regPassword.value : "";
+    const password2 = regPassword2 ? regPassword2.value : "";
+
+    if (!nombreApellido || !direccion || !telefono || !email || !password || !password2) {
+      if (mensajeRegistro) mensajeRegistro.textContent = "Completá todos los campos.";
+      return;
+    }
+
+    if (password.length < 6) {
+      if (mensajeRegistro) mensajeRegistro.textContent = "La contraseña debe tener al menos 6 caracteres.";
+      return;
+    }
+
+    if (password !== password2) {
+      if (mensajeRegistro) mensajeRegistro.textContent = "Las contraseñas no coinciden.";
+      return;
+    }
+
+    if (mensajeRegistro) mensajeRegistro.textContent = "Creando cuenta...";
+
+    auth.createUserWithEmailAndPassword(email, password)
+      .then((cred) => {
+        const uid = cred.user.uid;
+        return db.collection("usuarios").doc(uid).set({
+          nombreApellido: nombreApellido,
+          direccion: direccion,
+          telefono: telefono,
+          email: email,
+          creadoEn: firebase.firestore.FieldValue.serverTimestamp()
+        });
+      })
+      .then(() => {
+        if (mensajeRegistro) mensajeRegistro.textContent = "Cuenta creada correctamente.";
+        formRegistro.reset();
+      })
+      .catch((err) => {
+        console.error("Error en registro:", err);
+        if (mensajeRegistro) mensajeRegistro.textContent = "Error: " + err.message;
+      });
+  });
+}
   // 7. Menú desplegable, vistas y estado de sesión en la nube
 const btnTriggerMenu = document.getElementById("btn-trigger-menu");
 const dropdownUsuario = document.getElementById("dropdown-usuario");
