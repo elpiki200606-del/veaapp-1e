@@ -195,6 +195,7 @@ const estadoPlanDetalle = document.getElementById("estado-plan-detalle");
 const formVidriera = document.getElementById("form-vidriera");
 const vidNombreComercio = document.getElementById("vid-nombre-comercio");
 const vidDireccion = document.getElementById("vid-direccion");
+const vidTelefono = document.getElementById("vid-telefono");
 const vidSugerenciasDireccion = document.getElementById("vid-sugerencias-direccion");
 const vidCoordsTexto = document.getElementById("vid-coords-texto");
 const vidFachadaInput = document.getElementById("vid-fachada-input");
@@ -226,6 +227,7 @@ const PLANES_VEA = {
 };
 
 let fotoPerfilActual = "";
+let telefonoUsuarioActual = "";
 let usuarioActual = null;
 let planActualUsuario = "basico";
 let fotoFachadaActual = "";
@@ -269,6 +271,20 @@ function escaparHTML(texto) {
     '"': "&quot;",
     "'": "&#39;"
   }[c]));
+}
+
+function formatearWhatsAppUrl(telefono) {
+  let digits = String(telefono ?? "").replace(/\D/g, "");
+  if (!digits) return "";
+  if (digits.startsWith("0")) digits = digits.slice(1);
+  if (!digits.startsWith("549")) {
+    if (digits.startsWith("54") && !digits.startsWith("549")) {
+      digits = "549" + digits.slice(2);
+    } else if (digits.length >= 10 && digits.length <= 11) {
+      digits = "549" + digits;
+    }
+  }
+  return `https://wa.me/${digits}`;
 }
 
 function renderizarAvatarHeader(fotoBase64, fallbackTexto) {
@@ -377,6 +393,10 @@ if (formPerfil) {
       actualizadoEn: firebase.firestore.FieldValue.serverTimestamp()
     }, { merge: true })
       .then(() => {
+        telefonoUsuarioActual = telefono;
+        if (vidTelefono && !vidTelefono.value.trim()) {
+          vidTelefono.value = telefono;
+        }
         const inicial = (usuarioActual.email || "U").charAt(0).toUpperCase();
         renderizarAvatarHeader(fotoPerfilActual, inicial);
         if (menuNombreUsuario) menuNombreUsuario.textContent = nombreApellido;
@@ -710,6 +730,20 @@ function renderizarReflejoVidriera(datos) {
     return;
   }
 
+  const telefonoVisible = (datos.telefono || telefonoUsuarioActual || "").trim();
+  const waUrl = formatearWhatsAppUrl(telefonoVisible);
+  const badgeWhatsAppSvg = `<svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" style="flex:0 0 auto;"><circle cx="12" cy="12" r="12" fill="#25D366"/><path fill="#ffffff" d="M17.47 14.38c-.28-.14-1.65-.81-1.91-.9-.26-.1-.44-.14-.63.14-.19.28-.72.9-.88 1.09-.16.19-.32.21-.6.07-.28-.14-1.18-.44-2.25-1.39-.83-.74-1.39-1.66-1.56-1.94-.16-.28-.02-.43.12-.57.13-.13.28-.32.42-.48.14-.16.19-.28.28-.47.09-.19.05-.35-.02-.49-.07-.14-.63-1.52-.86-2.08-.23-.55-.46-.47-.63-.48h-.54c-.19 0-.49.07-.75.35-.26.28-.98.96-.98 2.34s1 2.71 1.14 2.9c.14.19 1.97 3.01 4.78 4.22.67.29 1.19.46 1.6.59.67.21 1.28.18 1.76.11.54-.08 1.65-.67 1.88-1.32.23-.65.23-1.21.16-1.32-.07-.12-.26-.19-.54-.33z"/></svg>`;
+
+  const contactoWhatsAppHtml = telefonoVisible
+    ? `<div style="display:inline-flex; align-items:center; gap:8px; flex-wrap:wrap; margin:6px 0 10px; padding:8px 12px; border-radius:10px; background:#f0fdf4; border:1px solid #86efac; color:#14532d; font-size:0.9rem;">
+        ${badgeWhatsAppSvg}
+        <span>Consultas al WhatsApp:</span>
+        ${waUrl
+          ? `<a href="${escaparHTML(waUrl)}" target="_blank" rel="noopener" style="font-weight:700; color:#15803d; text-decoration:underline;">${escaparHTML(telefonoVisible)}</a>`
+          : `<strong>${escaparHTML(telefonoVisible)}</strong>`}
+      </div>`
+    : `<p class="subtexto">Consultas al WhatsApp: número no cargado.</p>`;
+
   const fachadaHtml = datos.fotoFachada
     ? `<img src="${datos.fotoFachada}" alt="Fachada" style="width:100%; max-height:180px; object-fit:cover; border-radius:8px; margin-bottom:8px;">`
     : "";
@@ -738,6 +772,7 @@ function renderizarReflejoVidriera(datos) {
     ${fachadaHtml}
     <h4>${escaparHTML(datos.nombreComercio)}</h4>
     <p class="subtexto">📍 ${escaparHTML(datos.direccion || "")}</p>
+    ${contactoWhatsAppHtml}
     ${videoHtml}
     <strong>Cupones vigentes</strong>
     ${cuponesHtml}
@@ -756,6 +791,7 @@ if (formVidriera) {
 
     const nombreComercio = (vidNombreComercio ? vidNombreComercio.value : "").trim();
     const direccion = (vidDireccion ? vidDireccion.value : "").trim();
+    const telefonoComercio = ((vidTelefono ? vidTelefono.value : "").trim()) || telefonoUsuarioActual;
 
     if (!nombreComercio || !direccion) {
       if (mensajeVidriera) mensajeVidriera.textContent = "Completá el nombre del comercio y la dirección.";
@@ -770,6 +806,8 @@ if (formVidriera) {
       plan: planActualUsuario,
       nombreComercio: nombreComercio,
       direccion: direccion,
+      telefono: telefonoComercio,
+      whatsappUrl: formatearWhatsAppUrl(telefonoComercio),
       lat: latVidriera,
       lng: lngVidriera,
       fotoFachada: fotoFachadaActual,
@@ -781,6 +819,9 @@ if (formVidriera) {
 
     db.collection("comercios").doc(usuarioActual.uid).set(payloadVidriera, { merge: true })
       .then(() => {
+        if (vidTelefono && !vidTelefono.value.trim() && telefonoComercio) {
+          vidTelefono.value = telefonoComercio;
+        }
         renderizarReflejoVidriera(payloadVidriera);
         if (mensajeVidriera) mensajeVidriera.textContent = "Vidriera guardada y reflejada correctamente.";
       })
@@ -845,6 +886,7 @@ auth.onAuthStateChanged((user) => {
         const nombre = datos.nombreApellido || "Usuario";
         const direccion = datos.direccion || "";
         const telefono = datos.telefono || "";
+        telefonoUsuarioActual = telefono;
         fotoPerfilActual = datos.fotoPerfil || "";
         planActualUsuario = (datos.plan && PLANES_VEA[datos.plan]) ? datos.plan : "basico";
 
@@ -857,6 +899,9 @@ auth.onAuthStateChanged((user) => {
         if (perfilNombre) perfilNombre.value = nombre === "Usuario" ? "" : nombre;
         if (perfilDireccion) perfilDireccion.value = direccion;
         if (perfilTelefono) perfilTelefono.value = telefono;
+        if (vidTelefono && !vidTelefono.value.trim() && telefono) {
+          vidTelefono.value = telefono;
+        }
 
         if (datosPerfilNube) {
           datosPerfilNube.textContent =
@@ -882,6 +927,7 @@ auth.onAuthStateChanged((user) => {
         if (com.plan && PLANES_VEA[com.plan]) planActualUsuario = com.plan;
         if (vidNombreComercio) vidNombreComercio.value = com.nombreComercio || "";
         if (vidDireccion) vidDireccion.value = com.direccion || "";
+        if (vidTelefono) vidTelefono.value = com.telefono || telefonoUsuarioActual || "";
         latVidriera = Number.isFinite(com.lat) ? com.lat : -34.6434;
         lngVidriera = Number.isFinite(com.lng) ? com.lng : -58.6231;
         fotoFachadaActual = com.fotoFachada || "";
@@ -903,6 +949,7 @@ auth.onAuthStateChanged((user) => {
     if (seccionLogin) seccionLogin.classList.remove("hidden");
 
     fotoPerfilActual = "";
+    telefonoUsuarioActual = "";
     planActualUsuario = "basico";
     fotoFachadaActual = "";
     videoVerticalActual = "";
@@ -922,6 +969,7 @@ auth.onAuthStateChanged((user) => {
     if (perfilNombre) perfilNombre.value = "";
     if (perfilDireccion) perfilDireccion.value = "";
     if (perfilTelefono) perfilTelefono.value = "";
+    if (vidTelefono) vidTelefono.value = "";
     if (datosPerfilNube) {
       datosPerfilNube.textContent = "Iniciá sesión para ver tu perfil guardado en la nube.";
     }
