@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="es">
 <head>
   <meta charset="UTF-8">
@@ -32,7 +32,7 @@
       color: var(--texto);
       background: var(--fondo);
       min-height: 100vh;
-      padding-bottom: 76px;
+      padding-bottom: 72px;
     }
 
     button, input, select, textarea {
@@ -48,34 +48,55 @@
       justify-content: space-between;
       align-items: center;
       flex-wrap: wrap;
-      gap: 10px;
+      gap: 8px;
       background: linear-gradient(135deg, var(--verde), var(--verde2));
       color: #fff;
-      padding: 10px 14px;
+      padding: 8px 12px;
       border-bottom: 2px solid var(--dorado);
     }
 
-    .app-header-brand {
-      text-align: left;
-    }
-
-    .app-header h1 {
+    .app-header-brand h1 {
       color: var(--dorado);
-      letter-spacing: 3px;
-      font-size: 1.35rem;
+      letter-spacing: 2px;
+      font-size: 1.25rem;
       line-height: 1.1;
     }
 
-    .app-header p {
-      font-size: 0.65rem;
-      letter-spacing: 1px;
-      color: #c2dcd1;
-      margin-top: 2px;
+    #estado-app, #detalle-conexion {
+      display: none;
     }
 
-    #detalle-conexion {
-      font-size: 0.68rem;
-      color: #fef08a;
+    .header-search {
+      flex: 1;
+      min-width: 170px;
+      max-width: 340px;
+      display: flex;
+      align-items: center;
+      background: #fff;
+      border: 1.5px solid var(--dorado);
+      border-radius: 999px;
+      overflow: hidden;
+      padding-left: 10px;
+    }
+
+    .header-search input {
+      flex: 1;
+      min-width: 0;
+      border: 0;
+      padding: 5px 6px;
+      font-size: 0.8rem;
+      outline: none;
+      background: transparent;
+      color: var(--texto);
+    }
+
+    .header-search button {
+      background: var(--dorado);
+      color: var(--verde);
+      border: 0;
+      padding: 5px 10px;
+      font-weight: 800;
+      font-size: 0.78rem;
     }
 
     .header-acciones {
@@ -89,93 +110,42 @@
       color: var(--verde);
       border: 1px solid #fef08a;
       border-radius: 999px;
-      padding: 6px 12px;
-      font-size: 0.78rem;
+      padding: 5px 11px;
+      font-size: 0.75rem;
       font-weight: 800;
+      white-space: nowrap;
     }
 
-    .search-bar-container {
-      margin: 8px 12px 4px;
-      display: flex;
-      background: #fff;
-      border: 2px solid var(--dorado);
-      border-radius: 10px;
-      overflow: hidden;
-      box-shadow: 0 2px 8px rgba(6, 46, 34, 0.08);
-    }
-
-    .search-bar-container input {
-      flex: 1;
-      border: 0;
-      padding: 9px 12px;
-      font-size: 0.85rem;
-      outline: none;
-      background: transparent;
-      color: var(--texto);
-    }
-
-    .search-bar-container button {
-      background: var(--verde);
-      color: var(--dorado);
-      border: 0;
-      padding: 0 14px;
-      font-weight: 800;
-      font-size: 0.95rem;
-    }
-
-    .banner {
-      margin: 4px 12px;
+    .barra-red-susc {
+      margin: 6px 12px;
       padding: 6px 10px;
-      text-align: center;
       border-radius: 8px;
       background: var(--verde);
       color: #fef08a;
       border: 1px solid var(--dorado);
-      font-size: 0.75rem;
-    }
-
-    .banner-premium-rotativo {
-      margin: 4px 12px;
-      padding: 8px 12px;
-      background: linear-gradient(135deg, #182333, #0b131d);
-      border: 1px solid var(--dorado);
-      border-radius: 10px;
-      color: #fff;
+      font-size: 0.74rem;
       display: flex;
       align-items: center;
       justify-content: space-between;
       gap: 8px;
-      box-shadow: 0 2px 8px rgba(212, 175, 55, 0.15);
+      flex-wrap: wrap;
     }
 
-    .banner-premium-info h4 {
-      color: var(--dorado);
-      font-size: 0.85rem;
-      margin-top: 2px;
-    }
-
-    .banner-premium-info p {
+    .barra-red-susc button {
+      background: var(--dorado);
+      color: var(--verde);
+      border: 0;
+      border-radius: 6px;
+      padding: 4px 10px;
       font-size: 0.72rem;
-      color: #cbd5e1;
-    }
-
-    .banner-suscripcion-home {
-      margin: 4px 12px;
-      padding: 8px 12px;
-      background: linear-gradient(135deg, var(--verde), var(--verde2));
-      border: 1px solid var(--dorado);
-      border-radius: 10px;
-      color: #fff;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 8px;
+      font-weight: 800;
+      white-space: nowrap;
     }
 
     .main-container {
       display: flex;
-      height: calc(100vh - 255px);
-      min-height: 400px;
+      height: calc(100vh - 135px);
+      min-height: 420px;
     }
 
     .map-column {
@@ -200,7 +170,7 @@
     .section-title {
       font-size: 0.95rem;
       font-weight: 800;
-      margin-bottom: 10px;
+      margin-bottom: 8px;
       color: var(--verde);
     }
 
@@ -302,11 +272,6 @@
       color: var(--dorado);
     }
 
-    .btn-wa {
-      background: var(--whatsapp);
-      color: #fff;
-    }
-
     .planes-box {
       margin-top: 16px;
       padding: 14px;
@@ -399,7 +364,7 @@
       bottom: 0;
       left: 0;
       right: 0;
-      height: 58px;
+      height: 54px;
       display: flex;
       justify-content: space-around;
       align-items: center;
@@ -427,8 +392,8 @@
     .nav-floating-btn {
       border: 3px solid #fff;
       background: linear-gradient(135deg, #cda12f, #bf9324);
-      width: 48px;
-      height: 48px;
+      width: 46px;
+      height: 46px;
       border-radius: 50%;
       display: flex;
       align-items: center;
@@ -463,13 +428,19 @@
 <body>
   <header class="app-header">
     <div class="app-header-brand">
-      <h1 id="estado-app">V.E.A.</h1>
-      <p>VIDRIERAS ELECTRÓNICAS ARGENTINAS</p>
+      <h1>V.E.A.</h1>
+      <span id="estado-app"></span>
       <small id="detalle-conexion"></small>
     </div>
 
+    <div class="header-search">
+      <span>🔍</span>
+      <input type="text" id="buscar-comercio" placeholder="Buscar...">
+      <button type="button" id="btn-limpiar-busqueda">Todos</button>
+    </div>
+
     <div class="header-acciones">
-      <button type="button" id="btn-acceso-header" class="btn-acceso-header">Iniciar sesión / Registrarse</button>
+      <button type="button" id="btn-acceso-header" class="btn-acceso-header">Iniciar sesión</button>
 
       <div id="menu-usuario-wrap" class="menu-usuario-wrap">
         <button type="button" id="btn-trigger-menu" class="usuario-trigger" aria-expanded="false">
@@ -483,6 +454,7 @@
             <strong id="menu-nombre-usuario">Invitado</strong>
             <small id="menu-email-usuario"></small>
           </div>
+          <button type="button" id="btn-menu-registrarse" class="dropdown-item">Registrarse</button>
           <button type="button" class="dropdown-item" data-vista="perfil">Perfil</button>
           <button type="button" class="dropdown-item" data-vista="vidriera">Vidriera</button>
           <hr class="dropdown-divisor">
@@ -492,34 +464,9 @@
     </div>
   </header>
 
-  <div id="chrome-inicio">
-    <div class="search-bar-container">
-      <input type="text" id="buscar-comercio" placeholder="🔍 Buscá por comercio, dirección, cupón o publicación...">
-      <button type="button" id="btn-limpiar-busqueda">Todos</button>
-    </div>
-
-    <div class="banner">
-      ✨ Red Comercial Geolocalizada — Sumate a la red V.E.A. desde <strong>USD 5</strong> mensuales.
-    </div>
-
-    <div class="banner-premium-rotativo" id="bannerRotativoPremium">
-      <div class="banner-premium-info">
-        <span style="background:var(--dorado);color:var(--verde);font-size:.6rem;font-weight:800;padding:2px 5px;border-radius:4px">⭐ DESTACADO PREMIUM V.E.A.</span>
-        <h4 id="premRotativoNombre">Vidrieras locales activas</h4>
-        <p id="premRotativoOferta">Explorá comercios, cupones y contacto directo por WhatsApp.</p>
-      </div>
-    </div>
-
-    <div class="banner-suscripcion-home">
-      <div style="text-align: left;">
-        <strong style="color:var(--dorado); font-size:.82rem;">¿Tenés un comercio o emprendimiento?</strong>
-        <p style="font-size: .72rem; color: #c2dcd1;">Cargá tu vidriera, cupones, video vertical y WhatsApp.</p>
-      </div>
-      <div style="display:flex; gap:6px; flex-wrap:wrap;">
-        <button type="button" class="btn" id="btn-abrir-planes-home">💳 Suscripciones</button>
-        <button type="button" class="btn" id="btn-abrir-vidriera-home">⭐ Mi Vidriera</button>
-      </div>
-    </div>
+  <div id="chrome-inicio" class="barra-red-susc">
+    <span>✨ Red Comercial Geolocalizada — Sumate a V.E.A. desde <strong>USD 5</strong> mensuales.</span>
+    <button type="button" id="btn-abrir-planes-home">💳 Suscripciones</button>
   </div>
 
   <main>
@@ -794,7 +741,6 @@
   <nav class="bottom-nav">
     <button type="button" class="nav-item active" id="btnNavHome"><span>🏠</span><span>Inicio</span></button>
     <button type="button" class="nav-floating-btn" id="btnCentrarMapaNav" title="Centrar mapa">📍</button>
-    <button type="button" class="nav-item" id="btnAbrirVidrieraNav"><span>🏪</span><span>Mi Vidriera</span></button>
   </nav>
 
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
@@ -854,6 +800,10 @@
     }
 
     btnAccesoHeaderEl?.addEventListener("click", () => abrirVistaAislada("login"));
+    document.getElementById("btn-menu-registrarse")?.addEventListener("click", () => {
+      document.getElementById("dropdown-usuario")?.classList.add("hidden");
+      abrirVistaAislada("registro");
+    });
     document.getElementById("btn-volver-login")?.addEventListener("click", irAInicioLimpio);
     document.getElementById("btn-volver-registro")?.addEventListener("click", irAInicioLimpio);
     document.getElementById("btn-cerrar-perfil")?.addEventListener("click", irAInicioLimpio);
@@ -864,22 +814,6 @@
     document.getElementById("btn-ir-planes-perfil")?.addEventListener("click", irASuscripciones);
     document.getElementById("btn-ir-planes-vidriera")?.addEventListener("click", () => {
       document.getElementById("bloque-suscripciones-vidriera")?.scrollIntoView({ behavior: "smooth", block: "center" });
-    });
-
-    document.getElementById("btn-abrir-vidriera-home")?.addEventListener("click", () => {
-      if (!usuarioActual) {
-        abrirVistaAislada("login");
-        return;
-      }
-      abrirVistaAislada("vidriera");
-    });
-
-    document.getElementById("btnAbrirVidrieraNav")?.addEventListener("click", () => {
-      if (!usuarioActual) {
-        abrirVistaAislada("login");
-        return;
-      }
-      abrirVistaAislada("vidriera");
     });
 
     document.querySelectorAll(".dropdown-item[data-vista]").forEach((btn) => {
