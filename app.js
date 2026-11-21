@@ -58,7 +58,7 @@ db.collection("pruebas").orderBy("creadoEn", "desc").limit(10)
     console.error("Error leyendo Firestore:", err);
   });
 
-// 6. Registro de usuarios en Firebase Auth + Firestore
+// 6. Registro e inicio de sesión en Firebase Auth + Firestore
 const formRegistro = document.getElementById("form-registro");
 const regNombre = document.getElementById("reg-nombre");
 const regDireccion = document.getElementById("reg-direccion");
@@ -68,6 +68,30 @@ const regPassword = document.getElementById("reg-password");
 const regPassword2 = document.getElementById("reg-password2");
 const mensajeRegistro = document.getElementById("mensaje-registro");
 const seccionRegistro = document.getElementById("seccion-registro");
+
+const seccionLogin = document.getElementById("seccion-login");
+const formLogin = document.getElementById("form-login");
+const loginEmail = document.getElementById("login-email");
+const loginPassword = document.getElementById("login-password");
+const mensajeLogin = document.getElementById("mensaje-login");
+const btnIrRegistro = document.getElementById("btn-ir-registro");
+const btnIrLogin = document.getElementById("btn-ir-login");
+
+function alternarAuth(mostrarLogin) {
+  if (typeof usuarioActual !== "undefined" && usuarioActual) return;
+  if (seccionLogin) seccionLogin.classList.toggle("hidden", !mostrarLogin);
+  if (seccionRegistro) seccionRegistro.classList.toggle("hidden", mostrarLogin);
+  if (mensajeLogin) mensajeLogin.textContent = "";
+  if (mensajeRegistro) mensajeRegistro.textContent = "";
+}
+
+if (btnIrRegistro) {
+  btnIrRegistro.addEventListener("click", () => alternarAuth(false));
+}
+
+if (btnIrLogin) {
+  btnIrLogin.addEventListener("click", () => alternarAuth(true));
+}
 
 if (formRegistro) {
   formRegistro.addEventListener("submit", (e) => {
@@ -116,6 +140,32 @@ if (formRegistro) {
       .catch((err) => {
         console.error("Error en registro:", err);
         if (mensajeRegistro) mensajeRegistro.textContent = "Error: " + err.message;
+      });
+  });
+}
+
+if (formLogin) {
+  formLogin.addEventListener("submit", (e) => {
+    e.preventDefault();
+
+    const email = (loginEmail ? loginEmail.value : "").trim();
+    const password = loginPassword ? loginPassword.value : "";
+
+    if (!email || !password) {
+      if (mensajeLogin) mensajeLogin.textContent = "Completá correo y contraseña.";
+      return;
+    }
+
+    if (mensajeLogin) mensajeLogin.textContent = "Iniciando sesión y recuperando datos...";
+
+    auth.signInWithEmailAndPassword(email, password)
+      .then(() => {
+        if (mensajeLogin) mensajeLogin.textContent = "Sesión iniciada.";
+        formLogin.reset();
+      })
+      .catch((err) => {
+        console.error("Error en login:", err);
+        if (mensajeLogin) mensajeLogin.textContent = "Error al iniciar sesión: " + err.message;
       });
   });
 }
@@ -782,6 +832,7 @@ auth.onAuthStateChanged((user) => {
 
   if (user) {
     if (seccionRegistro) seccionRegistro.classList.add("hidden");
+    if (seccionLogin) seccionLogin.classList.add("hidden");
 
     const inicial = (user.email || "U").charAt(0).toUpperCase();
     renderizarAvatarHeader("", inicial);
@@ -848,7 +899,8 @@ auth.onAuthStateChanged((user) => {
         console.error("Error leyendo vidriera en Firestore:", err);
       });
   } else {
-    if (seccionRegistro) seccionRegistro.classList.remove("hidden");
+    if (seccionRegistro) seccionRegistro.classList.add("hidden");
+    if (seccionLogin) seccionLogin.classList.remove("hidden");
 
     fotoPerfilActual = "";
     planActualUsuario = "basico";
@@ -858,6 +910,12 @@ auth.onAuthStateChanged((user) => {
     publicacionesVidriera = [];
     renderizarAvatarHeader("", "V");
     renderizarPreviewFoto("");
+    renderizarPreviewFachada("");
+    renderizarPreviewVideo("");
+    renderizarCuponesVidriera();
+    renderizarPublicacionesVidriera();
+    renderizarReflejoVidriera(null);
+
     if (textoUsuarioHeader) textoUsuarioHeader.textContent = "Sin sesión";
     if (menuNombreUsuario) menuNombreUsuario.textContent = "Invitado";
     if (menuEmailUsuario) menuEmailUsuario.textContent = "";

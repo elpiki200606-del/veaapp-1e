@@ -38,7 +38,29 @@
     <section id="seccion-registro" class="card">
       <h2>Crear cuenta</h2>
       <p class="subtexto">Completá tus datos para registrarte en VEA App.</p>
+<section id="seccion-login" class="card hidden">
+      <h2>Iniciar sesión</h2>
+      <p class="subtexto">Ingresá con tu correo y contraseña para recuperar tu perfil y tu vidriera.</p>
 
+      <form id="form-login" class="form-grid" novalidate>
+        <div class="campo">
+          <label for="login-email">Correo electrónico</label>
+          <input type="email" id="login-email" placeholder="correo@ejemplo.com" autocomplete="email" required>
+        </div>
+
+        <div class="campo">
+          <label for="login-password">Contraseña</label>
+          <input type="password" id="login-password" placeholder="••••••" autocomplete="current-password" required>
+        </div>
+
+        <div class="acciones-form">
+          <button type="submit" id="btn-iniciar-sesion">Iniciar sesión</button>
+          <button type="button" id="btn-ir-registro">Crear cuenta nueva</button>
+        </div>
+      </form>
+
+      <p id="mensaje-login" class="mensaje-estado" aria-live="polite"></p>
+    </section>
       <form id="form-registro" class="form-grid" novalidate>
         <div class="campo">
           <label for="reg-nombre">Nombre y apellido</label>
