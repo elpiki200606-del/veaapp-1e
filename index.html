@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="es">
 <head>
   <meta charset="UTF-8">
@@ -2383,101 +2383,102 @@
         }
       }, 300);
     });
-  </script>
+  
   const listaBusquedaJerarquiaEl = document.getElementById("lista-busqueda-jerarquia");
-    let desplegarListaEnEnter = false;
+  let desplegarListaEnEnter = false;
 
-    function ocultarListaBusquedaJerarquia() {
-      desplegarListaEnEnter = false;
-      if (listaBusquedaJerarquiaEl) {
-        listaBusquedaJerarquiaEl.classList.add("hidden");
-        listaBusquedaJerarquiaEl.innerHTML = "";
-      }
+  function ocultarListaBusquedaJerarquia() {
+    desplegarListaEnEnter = false;
+    if (listaBusquedaJerarquiaEl) {
+      listaBusquedaJerarquiaEl.classList.add("hidden");
+      listaBusquedaJerarquiaEl.innerHTML = "";
+    }
+  }
+
+  function renderizarListaBusquedaJerarquia() {
+    if (!listaBusquedaJerarquiaEl) return;
+    if (!desplegarListaEnEnter || !normalizarTexto(busquedaActiva)) {
+      listaBusquedaJerarquiaEl.classList.add("hidden");
+      return;
     }
 
-    function renderizarListaBusquedaJerarquia() {
-      if (!listaBusquedaJerarquiaEl) return;
-      if (!desplegarListaEnEnter || !normalizarTexto(busquedaActiva)) {
-        listaBusquedaJerarquiaEl.classList.add("hidden");
-        return;
-      }
+    aplicarPromoPremiumAUnidades();
+    const coincidencia = [...obtenerComerciosFiltrados()].sort(
+      (a, b) => pesoJerarquiaPlan(b.plan) - pesoJerarquiaPlan(a.plan)
+    );
 
-      aplicarPromoPremiumAUnidades();
-      const coincidencia = [...obtenerComerciosFiltrados()].sort(
-        (a, b) => pesoJerarquiaPlan(b.plan) - pesoJerarquiaPlan(a.plan)
-      );
+    const esc = typeof escaparHTML === "function" ? escaparHTML : (s) => String(s ?? "");
 
-      const esc = typeof escaparHTML === "function" ? escaparHTML : (s) => String(s ?? "");
-
-      if (!coincidencia.length) {
-        listaBusquedaJerarquiaEl.innerHTML = `
-          <div class="lista-busqueda-cabecera">
-            <span>Sin resultados para "${esc(busquedaActiva)}"</span>
-            <button type="button" class="btn-cerrar-lista-busqueda" id="btn-cerrar-lista-jerarquia">✕</button>
-          </div>
-        `;
-        listaBusquedaJerarquiaEl.classList.remove("hidden");
-        document.getElementById("btn-cerrar-lista-jerarquia")?.addEventListener("click", ocultarListaBusquedaJerarquia);
-        return;
-      }
-
-      const itemsHtml = coincidencia.map((com, idx) => {
-        const nombre = esc(com.nombreComercio || com.nombre || "Comercio");
-        const rubro = esc(com.rubro || com.categoria || "");
-        const dir = esc(com.direccion || "");
-        const nivel = esc(etiquetaJerarquiaPlan(com.plan));
-        return `
-          <button type="button" class="item-busqueda-jerarquia" data-idx-jerarquia="${idx}">
-            <div style="min-width:0;">
-              <div style="font-size:0.78rem; font-weight:800; color:var(--verde); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${nombre}</div>
-              <div style="font-size:0.68rem; color:var(--muted); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${rubro}${rubro && dir ? " · " : ""}${dir}</div>
-            </div>
-            <span class="badge-plan" style="flex-shrink:0;">${nivel}</span>
-          </button>
-        `;
-      }).join("");
-
+    if (!coincidencia.length) {
       listaBusquedaJerarquiaEl.innerHTML = `
         <div class="lista-busqueda-cabecera">
-          <span>Resultados por plan (${coincidencia.length}) — "${esc(busquedaActiva)}"</span>
+          <span>Sin resultados para "${esc(busquedaActiva)}"</span>
           <button type="button" class="btn-cerrar-lista-busqueda" id="btn-cerrar-lista-jerarquia">✕</button>
         </div>
-        ${itemsHtml}
       `;
       listaBusquedaJerarquiaEl.classList.remove("hidden");
-
       document.getElementById("btn-cerrar-lista-jerarquia")?.addEventListener("click", ocultarListaBusquedaJerarquia);
-
-      listaBusquedaJerarquiaEl.querySelectorAll("[data-idx-jerarquia]").forEach((btn) => {
-        btn.addEventListener("click", () => {
-          const idx = Number(btn.getAttribute("data-idx-jerarquia"));
-          const elegido = coincidencia[idx];
-          ocultarListaBusquedaJerarquia();
-          if (!elegido) return;
-          const lat = Number(elegido.lat ?? elegido.latitude);
-          const lng = Number(elegido.lng ?? elegido.longitude);
-          if (typeof mapaPrincipal !== "undefined" && mapaPrincipal && Number.isFinite(lat) && Number.isFinite(lng)) {
-            mapaPrincipal.setView([lat, lng], 15);
-          }
-          if (typeof abrirDetalleComercio === "function") {
-            abrirDetalleComercio(elegido);
-            detalleComercioPublicoEl?.scrollIntoView({ behavior: "smooth", block: "nearest" });
-          }
-        });
-      });
+      return;
     }
 
-    document.getElementById("buscar-comercio")?.addEventListener("keydown", (e) => {
-      if (e.key === "Enter") {
-        desplegarListaEnEnter = true;
-        setTimeout(renderizarListaBusquedaJerarquia, 30);
-      }
-    });
+    const itemsHtml = coincidencia.map((com, idx) => {
+      const nombre = esc(com.nombreComercio || com.nombre || "Comercio");
+      const rubro = esc(com.rubro || com.categoria || "");
+      const dir = esc(com.direccion || "");
+      const nivel = esc(etiquetaJerarquiaPlan(com.plan));
+      return `
+        <button type="button" class="item-busqueda-jerarquia" data-idx-jerarquia="${idx}">
+          <div style="min-width:0;">
+            <div style="font-size:0.78rem; font-weight:800; color:var(--verde); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${nombre}</div>
+            <div style="font-size:0.68rem; color:var(--muted); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${rubro}${rubro && dir ? " · " : ""}${dir}</div>
+          </div>
+          <span class="badge-plan" style="flex-shrink:0;">${nivel}</span>
+        </button>
+      `;
+    }).join("");
 
-    document.getElementById("buscar-comercio")?.addEventListener("input", () => {
-      if (desplegarListaEnEnter) {
-        setTimeout(renderizarListaBusquedaJerarquia, 30);
-      }
+    listaBusquedaJerarquiaEl.innerHTML = `
+      <div class="lista-busqueda-cabecera">
+        <span>Resultados por plan (${coincidencia.length}) — "${esc(busquedaActiva)}"</span>
+        <button type="button" class="btn-cerrar-lista-jerarquia" id="btn-cerrar-lista-jerarquia">✕</button>
+      </div>
+      ${itemsHtml}
+    `;
+    listaBusquedaJerarquiaEl.classList.remove("hidden");
+
+    document.getElementById("btn-cerrar-lista-jerarquia")?.addEventListener("click", ocultarListaBusquedaJerarquia);
+
+    listaBusquedaJerarquiaEl.querySelectorAll("[data-idx-jerarquia]").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        const idx = Number(btn.getAttribute("data-idx-jerarquia"));
+        const elegido = coincidencia[idx];
+        ocultarListaBusquedaJerarquia();
+        if (!elegido) return;
+        const lat = Number(elegido.lat ?? elegido.latitude);
+        const lng = Number(elegido.lng ?? elegido.longitude);
+        if (typeof mapaPrincipal !== "undefined" && mapaPrincipal && Number.isFinite(lat) && Number.isFinite(lng)) {
+          mapaPrincipal.setView([lat, lng], 15);
+        }
+        if (typeof abrirDetalleComercio === "function") {
+          abrirDetalleComercio(elegido);
+          detalleComercioPublicoEl?.scrollIntoView({ behavior: "smooth", block: "nearest" });
+        }
+      });
     });
+  }
+
+  document.getElementById("buscar-comercio")?.addEventListener("keydown", (e) => {
+    if (e.key === "Enter") {
+      desplegarListaEnEnter = true;
+      setTimeout(renderizarListaBusquedaJerarquia, 30);
+    }
+  });
+
+  document.getElementById("buscar-comercio")?.addEventListener("input", () => {
+    if (desplegarListaEnEnter) {
+      setTimeout(renderizarListaBusquedaJerarquia, 30);
+    }
+  });
+</script>
 </body>
 </html>
