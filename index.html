@@ -201,6 +201,17 @@
       gap: 5px;
     }
 
+    /* Oculta cualquier marcador por defecto de Leaflet (pin azul) en el mapa principal */
+    #mapa-principal .leaflet-marker-icon:not(:has(.vea-pin-rubro)),
+    #mapa-principal .leaflet-marker-shadow {
+      display: none !important;
+    }
+
+    body.vea-sin-filtro #mapa-principal .leaflet-marker-pane .leaflet-marker-icon,
+    body.vea-sin-filtro #mapa-principal .leaflet-shadow-pane .leaflet-marker-shadow {
+      display: none !important;
+    }
+
     .vea-pin-rubro {
       width: 34px;
       height: 34px;
@@ -689,7 +700,7 @@
     }
   </style>
 </head>
-<body>
+<body class="vea-sin-filtro">
   <header class="app-header">
     <div class="header-top-row">
       <div class="app-header-brand">
@@ -1244,6 +1255,16 @@
     let puntuacionSeleccionada = 5;
     let sincronizandoMapa = false;
 
+    if (window.location.hash !== "#vea-home") {
+      history.replaceState({ veaHome: true }, "", "#vea-home");
+    }
+
+    function empujarEstadoVidrieraAbierta() {
+      try {
+        history.pushState({ veaVidrieraAbierta: true }, "", "#vea-vidriera");
+      } catch (_e) {}
+    }
+
     function normalizarTexto(txt) {
       return String(txt || "")
         .toLowerCase()
@@ -1379,8 +1400,9 @@
         const rNorm = normalizarTexto(rubroActivo);
         const bNorm = normalizarTexto(busquedaActiva);
         const hayFiltro = Boolean(rNorm || bNorm);
-        const filtrados = obtenerComerciosFiltrados();
+        document.body.classList.toggle("vea-sin-filtro", !hayFiltro);
 
+        const filtrados = obtenerComerciosFiltrados();
         const estadoFiltroEl = document.getElementById("estado-filtro-rubro");
         const contadorEl = document.getElementById("contador-comercios");
 
@@ -1634,6 +1656,9 @@
     document.getElementById("btn-cerrar-detalle-comercio")?.addEventListener("click", () => {
       cerrarDetalleVidrieraPublica();
       sincronizarVistaYMapa();
+      if (window.location.hash === "#vea-vidriera") {
+        history.back();
+      }
     });
 
     const engancharAbrirDetalle = setInterval(() => {
@@ -1642,10 +1667,12 @@
         clearInterval(engancharAbrirDetalle);
         const originalAbrirDetalle = window.abrirDetalleComercio;
         window.abrirDetalleComercio = function wrappedAbrirDetalle(comercio) {
+          cerrarDetalleVidrieraPublica();
           originalAbrirDetalle(comercio);
           if (detalleComercioPublicoEl) {
             detalleComercioPublicoEl.classList.remove("hidden");
           }
+          empujarEstadoVidrieraAbierta();
           cargarResenasDeComercio(comercio);
           setTimeout(() => {
             limpiarTodosLosPinesDelMapa(window._veaMarcadoresFiltrados || null);
@@ -1847,18 +1874,17 @@
       }, 120);
     }
 
-    window.addEventListener("popstate", () => {
+    function manejarRetrocesoNavegacion() {
       if (modalPubEl && !modalPubEl.classList.contains("hidden")) {
         modalPubEl.classList.add("hidden");
         return;
       }
-      if (detalleComercioPublicoEl && !detalleComercioPublicoEl.classList.contains("hidden")) {
-        cerrarDetalleVidrieraPublica();
-        sincronizarVistaYMapa();
-        return;
-      }
+      cerrarDetalleVidrieraPublica();
       irAInicioLimpio();
-    });
+    }
+
+    window.addEventListener("popstate", manejarRetrocesoNavegacion);
+    window.addEventListener("hashchange", manejarRetrocesoNavegacion);
 
     btnAccesoHeaderEl?.addEventListener("click", () => abrirVistaAislada("login"));
     document.getElementById("btn-abrir-rubros-mapa")?.addEventListener("click", () => abrirVistaAislada("rubros"));
@@ -1937,19 +1963,23 @@
     const guardMapaLimpio = setInterval(() => {
       intentosLimpiezaMapa += 1;
       if (!hayFiltroActivo()) {
+        document.body.classList.add("vea-sin-filtro");
         limpiarTodosLosPinesDelMapa(null);
         if (typeof renderizarComerciosPublicos === "function") {
           renderizarComerciosPublicos([]);
         }
       }
-      if (intentosLimpiezaMapa >= 15) {
+      if (intentosLimpiezaMapa >= 20) {
         clearInterval(guardMapaLimpio);
       }
     }, 500);
 
     window.addEventListener("load", () => {
       setTimeout(() => {
-        if (!hayFiltroActivo()) limpiarTodosLosPinesDelMapa(null);
+        if (!hayFiltroActivo()) {
+          document.body.classList.add("vea-sin-filtro");
+          limpiarTodosLosPinesDelMapa(null);
+        }
       }, 300);
     });
   </script>
