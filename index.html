@@ -46,10 +46,10 @@
     .app-header {
       display: flex;
       flex-direction: column;
-      gap: 6px;
+      gap: 4px;
       background: linear-gradient(135deg, var(--verde), var(--verde2));
       color: #fff;
-      padding: 7px 10px 8px;
+      padding: 5px 10px 6px;
       border-bottom: 2px solid var(--dorado);
     }
 
@@ -68,16 +68,16 @@
     .app-header-brand h1 {
       color: var(--dorado);
       letter-spacing: 2px;
-      font-size: 1.42rem;
+      font-size: 1.38rem;
       line-height: 1;
     }
 
     .app-header-brand p {
-      font-size: 0.56rem;
+      font-size: 0.54rem;
       letter-spacing: 0.7px;
-      line-height: 1.15;
+      line-height: 1.1;
       color: #c2dcd1;
-      margin-top: 3px;
+      margin-top: 2px;
     }
 
     #estado-app, #detalle-conexion {
@@ -120,7 +120,7 @@
       flex: 1;
       min-width: 0;
       border: 0;
-      padding: 3px 5px;
+      padding: 2px 5px;
       font-size: 0.72rem;
       outline: none;
       background: transparent;
@@ -131,7 +131,7 @@
       background: var(--dorado);
       color: var(--verde);
       border: 0;
-      padding: 3px 8px;
+      padding: 2px 8px;
       font-weight: 800;
       font-size: 0.66rem;
     }
@@ -141,7 +141,7 @@
       color: var(--verde);
       border: 1px solid #fef08a;
       border-radius: 999px;
-      padding: 4px 10px;
+      padding: 3px 10px;
       font-size: 0.7rem;
       font-weight: 800;
       white-space: nowrap;
@@ -149,13 +149,13 @@
     }
 
     .barra-red-susc {
-      margin: 4px 10px;
-      padding: 4px 8px;
+      margin: 2px 8px;
+      padding: 3px 8px;
       border-radius: 7px;
       background: linear-gradient(135deg, var(--verde), var(--verde2));
       color: #fef08a;
       border: 1px solid var(--dorado);
-      font-size: 0.65rem;
+      font-size: 0.63rem;
       display: flex;
       align-items: center;
       justify-content: space-between;
@@ -163,7 +163,7 @@
     }
 
     .barra-red-susc span {
-      line-height: 1.2;
+      line-height: 1.15;
     }
 
     .barra-red-susc button {
@@ -171,8 +171,8 @@
       color: var(--verde);
       border: 0;
       border-radius: 6px;
-      padding: 3px 8px;
-      font-size: 0.66rem;
+      padding: 2px 8px;
+      font-size: 0.64rem;
       font-weight: 800;
       white-space: nowrap;
       flex-shrink: 0;
@@ -182,10 +182,11 @@
       display: flex;
       align-items: center;
       justify-content: space-between;
-      gap: 8px;
-      padding: 5px 8px;
+      gap: 6px;
+      padding: 4px 8px;
       background: #fff;
       border-bottom: 1px solid var(--borde);
+      min-height: 38px;
     }
 
     .btn-rubros-mapa {
@@ -193,15 +194,98 @@
       color: var(--dorado);
       border: 1px solid var(--dorado);
       border-radius: 7px;
-      padding: 4px 10px;
+      padding: 5px 10px;
       font-size: 0.72rem;
       font-weight: 800;
       display: inline-flex;
       align-items: center;
-      gap: 5px;
+      gap: 4px;
+      flex-shrink: 0;
     }
 
-    /* Oculta cualquier marcador por defecto de Leaflet (pin azul) en el mapa principal */
+    .banner-premium-slot {
+      flex: 1;
+      min-width: 0;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 7px;
+      background: linear-gradient(135deg, #062e22, #0e4f3b);
+      color: #fff;
+      border: 1.5px solid var(--dorado);
+      border-radius: 8px;
+      padding: 3px 8px;
+      cursor: pointer;
+      overflow: hidden;
+      box-shadow: 0 2px 6px rgba(6, 46, 34, 0.16);
+      transition: transform 0.15s ease, opacity 0.25s ease;
+    }
+
+    .banner-premium-slot:active {
+      transform: scale(0.99);
+    }
+
+    .banner-premium-thumb {
+      width: 28px;
+      height: 28px;
+      border-radius: 6px;
+      object-fit: cover;
+      border: 1px solid var(--dorado);
+      flex-shrink: 0;
+      background: #0b1612;
+    }
+
+    .banner-premium-info {
+      flex: 1;
+      min-width: 0;
+      display: flex;
+      flex-direction: column;
+      line-height: 1.15;
+    }
+
+    .banner-premium-top {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      min-width: 0;
+    }
+
+    .banner-premium-tag {
+      background: var(--dorado);
+      color: var(--verde);
+      font-size: 0.55rem;
+      font-weight: 900;
+      padding: 1px 4px;
+      border-radius: 4px;
+      letter-spacing: 0.4px;
+      flex-shrink: 0;
+    }
+
+    .banner-premium-comercio {
+      font-size: 0.68rem;
+      font-weight: 800;
+      color: #fef08a;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .banner-premium-texto {
+      font-size: 0.63rem;
+      color: #e2f1eb;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .banner-premium-cta {
+      font-size: 0.62rem;
+      font-weight: 800;
+      color: var(--dorado);
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+
     #mapa-principal .leaflet-marker-icon:not(:has(.vea-pin-rubro)),
     #mapa-principal .leaflet-marker-shadow {
       display: none !important;
@@ -259,7 +343,7 @@
 
     .main-container {
       display: flex;
-      height: calc(100vh - 118px);
+      height: calc(100vh - 104px);
       min-height: 440px;
     }
 
@@ -407,6 +491,21 @@
       font-weight: 750;
       background: var(--verde);
       color: var(--dorado);
+    }
+
+    .btn-maps-vidriera {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      margin-top: 8px;
+      padding: 7px 11px;
+      border-radius: 8px;
+      text-decoration: none;
+      font-size: 0.78rem;
+      font-weight: 800;
+      background: #0b4533;
+      color: #fef08a;
+      border: 1px solid var(--dorado);
     }
 
     .planes-box {
@@ -754,7 +853,20 @@
       <div class="map-column">
         <div class="mapa-top-bar">
           <button type="button" id="btn-abrir-rubros-mapa" class="btn-rubros-mapa">🏷️ Rubros</button>
-          <span id="estado-filtro-rubro" class="subtexto">Mapa limpio · Elegí rubro o buscá</span>
+
+          <div id="banner-premium-rotativo" class="banner-premium-slot" role="button" tabindex="0" title="Publicidad destacada Premium">
+            <img id="banner-premium-img" class="banner-premium-thumb hidden" alt="Publicidad Premium">
+            <div class="banner-premium-info">
+              <div class="banner-premium-top">
+                <span class="banner-premium-tag">★ PREMIUM</span>
+                <span id="banner-premium-comercio" class="banner-premium-comercio">Espacio Destacado V.E.A.</span>
+              </div>
+              <span id="banner-premium-texto" class="banner-premium-texto">Activá tu Plan Premium y mostrá tus ofertas acá</span>
+            </div>
+            <span class="banner-premium-cta">Ver ›</span>
+          </div>
+
+          <span id="estado-filtro-rubro" class="hidden"></span>
         </div>
         <div class="mapa-canvas-wrap">
           <div id="mapa-principal"></div>
@@ -771,6 +883,7 @@
             <button type="button" class="btn" id="btn-cerrar-detalle-comercio">Cerrar</button>
           </div>
           <div id="contenido-detalle-comercio"></div>
+          <div id="bloque-google-maps-vidriera"></div>
 
           <div id="bloque-resenas-vidriera" class="resenas-vidriera-box hidden">
             <div class="resenas-resumen-bar">
@@ -1127,7 +1240,8 @@
       "Zapatería": ["zapato", "zapatos", "zapatilla", "zapatillas", "sueco", "suecos", "bota", "botas", "sandalia", "calzado", "zapateria"],
       "Tienda de ropa": ["remera", "remeras", "pantalon", "pantalón", "jean", "campera", "buzo", "vestido", "ropa", "indumentaria"],
       "Indumentaria deportiva": ["deportiva", "deportivo", "short", "calza", "camiseta", "entrenamiento", "jogging", "remera"],
-      "Ferretería": ["ferreteria", "tornillo", "clavo", "martillo", "destornillador", "taladro", "cable", "canilla", "herramienta", "bulon", "bulón"],
+      "Ferretería": ["ferreteria", "ferretería", "bulon", "bulón", "bulonera", "tornillo", "clavo", "martillo", "destornillador", "taladro", "cable", "canilla", "herramienta", "tuerca", "arandela"],
+      "Bulonera": ["bulon", "bulón", "bulonera", "ferreteria", "ferretería", "tornillo", "tuerca", "arandela", "clavo", "herramienta"],
       "Corralón": ["corralon", "corralón", "ladrillo", "cemento", "arena", "cal", "hierro", "viga", "materiales de construccion"],
       "Taller mecánico": ["taller", "mecanico", "mecánico", "freno", "frenos", "embrague", "motor", "aceite", "service", "llave"],
       "Lubricentro": ["lubricentro", "aceite", "filtro", "lubricante", "motor"],
@@ -1235,9 +1349,16 @@
     const vistaCuponesPrioridadEl = document.getElementById("vista-cupones-prioridad");
     const listaCuponesPrioridadEl = document.getElementById("lista-cupones-prioridad");
     const btnAccesoHeaderEl = document.getElementById("btn-acceso-header");
+    const listaComerciosPublicosEl = document.getElementById("lista-comercios-publicos");
+
+    const bannerPremiumSlotEl = document.getElementById("banner-premium-rotativo");
+    const bannerPremiumImgEl = document.getElementById("banner-premium-img");
+    const bannerPremiumComercioEl = document.getElementById("banner-premium-comercio");
+    const bannerPremiumTextoEl = document.getElementById("banner-premium-texto");
 
     const detalleComercioPublicoEl = document.getElementById("detalle-comercio-publico");
     const contenidoDetalleComercioEl = document.getElementById("contenido-detalle-comercio");
+    const bloqueGoogleMapsEl = document.getElementById("bloque-google-maps-vidriera");
 
     const modalPubEl = document.getElementById("modal-publicacion-completa");
     const modalPubTituloEl = document.getElementById("modal-pub-titulo");
@@ -1254,6 +1375,8 @@
     let comercioDetalleActual = null;
     let puntuacionSeleccionada = 5;
     let sincronizandoMapa = false;
+    let slidesPremiumActuales = [];
+    let indiceSlidePremium = 0;
 
     if (window.location.hash !== "#vea-home") {
       history.replaceState({ veaHome: true }, "", "#vea-home");
@@ -1277,6 +1400,122 @@
       return Boolean(normalizarTexto(rubroActivo) || normalizarTexto(busquedaActiva));
     }
 
+    function esPlanPremium(plan) {
+      return normalizarTexto(plan).includes("premium");
+    }
+
+    function construirSlidesPremium() {
+      const base = (typeof comerciosCargados !== "undefined" && Array.isArray(comerciosCargados))
+        ? comerciosCargados
+        : [];
+      const premiumComercios = base.filter((c) => esPlanPremium(c.plan));
+      const slides = [];
+
+      premiumComercios.forEach((com) => {
+        const nombre = String(com.nombreComercio || com.nombre || "Comercio Premium").trim();
+        const fachada = com.fachada || com.fotoFachada || com.imagen || "";
+        const rubro = String(com.rubro || com.categoria || "").trim();
+
+        if (Array.isArray(com.publicaciones) && com.publicaciones.length) {
+          com.publicaciones.forEach((pub) => {
+            const titulo = String(pub.titulo || "").trim();
+            const desc = String(pub.descripcion || "").trim();
+            const fragmento = [titulo, desc].filter(Boolean).join(" · ") || (rubro ? `Vidriera destacada · ${rubro}` : "Ofertas y novedades en nuestra vidriera");
+            slides.push({
+              comercio: com,
+              nombre,
+              texto: fragmento,
+              imagen: pub.foto || pub.imagen || pub.url || fachada
+            });
+          });
+        }
+
+        if (Array.isArray(com.cupones) && com.cupones.length) {
+          com.cupones.forEach((cup) => {
+            const item = typeof cup === "string" ? { titulo: cup } : (cup || {});
+            const tCup = String(item.titulo || item.nombre || "Cupón exclusivo").trim();
+            const cod = String(item.codigo || "").trim();
+            slides.push({
+              comercio: com,
+              nombre,
+              texto: `🎟️ ${tCup}${cod ? ` (Cód: ${cod})` : ""}`,
+              imagen: fachada
+            });
+          });
+        }
+
+        if ((!Array.isArray(com.publicaciones) || !com.publicaciones.length) && (!Array.isArray(com.cupones) || !com.cupones.length)) {
+          slides.push({
+            comercio: com,
+            nombre,
+            texto: rubro ? `${rubro} · ${com.direccion || "Ver vidriera destacada"}` : (com.direccion || "Comercio destacado Premium"),
+            imagen: fachada
+          });
+        }
+      });
+
+      return slides;
+    }
+
+    function mostrarSlidePremium(indice) {
+      if (!bannerPremiumComercioEl || !bannerPremiumTextoEl) return;
+      const slides = construirSlidesPremium();
+      slidesPremiumActuales = slides;
+
+      if (!slides.length) {
+        bannerPremiumComercioEl.textContent = "Publicidad Premium V.E.A.";
+        bannerPremiumTextoEl.textContent = "Destacá tu comercio aquí con el Plan Premium";
+        if (bannerPremiumImgEl) {
+          bannerPremiumImgEl.classList.add("hidden");
+          bannerPremiumImgEl.removeAttribute("src");
+        }
+        return;
+      }
+
+      const idx = ((indice % slides.length) + slides.length) % slides.length;
+      indiceSlidePremium = idx;
+      const actual = slides[idx];
+
+      bannerPremiumComercioEl.textContent = actual.nombre;
+      bannerPremiumTextoEl.textContent = actual.texto;
+      if (bannerPremiumImgEl) {
+        if (actual.imagen) {
+          bannerPremiumImgEl.src = actual.imagen;
+          bannerPremiumImgEl.classList.remove("hidden");
+        } else {
+          bannerPremiumImgEl.classList.add("hidden");
+          bannerPremiumImgEl.removeAttribute("src");
+        }
+      }
+    }
+
+    bannerPremiumSlotEl?.addEventListener("click", () => {
+      if (!slidesPremiumActuales.length) {
+        irASuscripciones();
+        return;
+      }
+      const actual = slidesPremiumActuales[indiceSlidePremium % slidesPremiumActuales.length];
+      if (!actual || !actual.comercio) return;
+
+      const com = actual.comercio;
+      const lat = Number(com.lat ?? com.latitude);
+      const lng = Number(com.lng ?? com.longitude);
+      if (typeof mapaPrincipal !== "undefined" && mapaPrincipal && Number.isFinite(lat) && Number.isFinite(lng)) {
+        mapaPrincipal.setView([lat, lng], 15);
+      }
+      if (typeof abrirDetalleComercio === "function") {
+        abrirDetalleComercio(com);
+        detalleComercioPublicoEl?.scrollIntoView({ behavior: "smooth", block: "nearest" });
+      }
+    });
+
+    setInterval(() => {
+      const lista = construirSlidesPremium();
+      if (lista.length > 0) {
+        mostrarSlidePremium(indiceSlidePremium + 1);
+      }
+    }, 4000);
+
     function cerrarDetalleVidrieraPublica() {
       comercioDetalleActual = null;
       if (detalleComercioPublicoEl) {
@@ -1285,9 +1524,42 @@
       if (contenidoDetalleComercioEl) {
         contenidoDetalleComercioEl.innerHTML = "";
       }
+      if (bloqueGoogleMapsEl) {
+        bloqueGoogleMapsEl.innerHTML = "";
+      }
       if (bloqueResenasEl) {
         bloqueResenasEl.classList.add("hidden");
       }
+    }
+
+    function construirUrlGoogleMaps(comercio) {
+      if (!comercio || typeof comercio !== "object") return "";
+      const lat = Number(comercio.lat ?? comercio.latitude);
+      const lng = Number(comercio.lng ?? comercio.longitude);
+      const dir = String(comercio.direccion || comercio.address || "").trim();
+      const nombre = String(comercio.nombreComercio || comercio.nombre || "").trim();
+
+      if (Number.isFinite(lat) && Number.isFinite(lng)) {
+        return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${lat},${lng}`)}`;
+      }
+      const destino = dir || nombre;
+      if (!destino) return "";
+      return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(destino)}`;
+    }
+
+    function renderizarBotonGoogleMaps(comercio) {
+      if (!bloqueGoogleMapsEl) return;
+      const urlMaps = construirUrlGoogleMaps(comercio);
+      if (!urlMaps) {
+        bloqueGoogleMapsEl.innerHTML = "";
+        return;
+      }
+      const esc = typeof escaparHTML === "function" ? escaparHTML : (s) => String(s ?? "");
+      bloqueGoogleMapsEl.innerHTML = `
+        <a href="${esc(urlMaps)}" target="_blank" rel="noopener" class="btn-maps-vidriera">
+          🗺️ Cómo llegar en Google Maps
+        </a>
+      `;
     }
 
     function obtenerRubrosOrdenados() {
@@ -1347,6 +1619,7 @@
         comercio.rubro,
         comercio.categoria,
         comercio.nombreComercio,
+        comercio.nombre,
         comercio.direccion,
         Array.isArray(comercio.cupones) ? comercio.cupones.map((x) => `${x.titulo || ""} ${x.codigo || ""}`).join(" ") : "",
         Array.isArray(comercio.publicaciones) ? comercio.publicaciones.map((p) => `${p.titulo || ""} ${p.descripcion || ""}`).join(" ") : ""
@@ -1376,10 +1649,48 @@
       if (!rNorm && !bNorm) return [];
 
       return base.filter((c) => {
-        const pasaRubro = !rNorm || normalizarTexto(`${c.rubro || ""} ${c.categoria || ""}`).includes(rNorm)
+        const pasaRubro = !rNorm
+          || normalizarTexto(`${c.rubro || ""} ${c.categoria || ""}`).includes(rNorm)
           || comercioCoincideConTermino(c, rNorm);
         const pasaBusqueda = !bNorm || comercioCoincideConTermino(c, bNorm);
         return pasaRubro && pasaBusqueda;
+      });
+    }
+
+    function podarTarjetasNoCoincidentesEnLista(filtrados) {
+      if (!listaComerciosPublicosEl) return;
+      if (!hayFiltroActivo()) {
+        listaComerciosPublicosEl.innerHTML = "";
+        return;
+      }
+
+      const idsValidos = new Set(
+        filtrados.map((c) => String(c.id || c.uid || "")).filter(Boolean)
+      );
+      const nombresValidos = new Set(
+        filtrados.map((c) => normalizarTexto(c.nombreComercio || c.nombre || "")).filter(Boolean)
+      );
+
+      Array.from(listaComerciosPublicosEl.children).forEach((tarjeta) => {
+        const idAttr = tarjeta.getAttribute("data-comercio-id")
+          || tarjeta.querySelector("[data-id]")?.getAttribute("data-id")
+          || tarjeta.querySelector("[data-comercio-id]")?.getAttribute("data-comercio-id")
+          || "";
+        const txtTarjeta = normalizarTexto(tarjeta.textContent || "");
+
+        const coincideId = idAttr && idsValidos.has(String(idAttr));
+        const coincideNombre = Array.from(nombresValidos).some((nom) => nom && txtTarjeta.includes(nom));
+        const coincideTermino = () => {
+          const rNorm = normalizarTexto(rubroActivo);
+          const bNorm = normalizarTexto(busquedaActiva);
+          const okR = !rNorm || txtTarjeta.includes(rNorm);
+          const okB = !bNorm || txtTarjeta.includes(bNorm);
+          return okR && okB;
+        };
+
+        if (!coincideId && !coincideNombre && !coincideTermino()) {
+          tarjeta.remove();
+        }
       });
     }
 
@@ -1402,6 +1713,8 @@
         const hayFiltro = Boolean(rNorm || bNorm);
         document.body.classList.toggle("vea-sin-filtro", !hayFiltro);
 
+        mostrarSlidePremium(indiceSlidePremium);
+
         const filtrados = obtenerComerciosFiltrados();
         const estadoFiltroEl = document.getElementById("estado-filtro-rubro");
         const contadorEl = document.getElementById("contador-comercios");
@@ -1412,6 +1725,7 @@
           if (typeof renderizarComerciosPublicos === "function") {
             renderizarComerciosPublicos([]);
           }
+          if (listaComerciosPublicosEl) listaComerciosPublicosEl.innerHTML = "";
           if (window._veaMarcadoresFiltrados) {
             window._veaMarcadoresFiltrados.clearLayers();
           }
@@ -1425,9 +1739,16 @@
             : (rNorm ? `Rubro: ${rubroActivo}` : `Búsqueda: "${busquedaActiva}"`);
         }
 
+        if (contadorEl) {
+          contadorEl.textContent = filtrados.length === 1
+            ? "1 vidriera encontrada"
+            : `${filtrados.length} vidrieras encontradas`;
+        }
+
         if (typeof renderizarComerciosPublicos === "function") {
           renderizarComerciosPublicos(filtrados);
         }
+        podarTarjetasNoCoincidentesEnLista(filtrados);
 
         if (typeof mapaPrincipal !== "undefined" && mapaPrincipal && typeof L !== "undefined") {
           if (!window._veaMarcadoresFiltrados) {
@@ -1605,9 +1926,7 @@
             comercio.resenas = nube;
             pintarListaResenas(nube);
           }
-        } catch (_err) {
-          // Mantiene reseñas locales si la subcolección no tiene permisos aún
-        }
+        } catch (_err) {}
       }
     }
 
@@ -1647,9 +1966,7 @@
             promedioEstrellas: Number((suma / actualizadas.length).toFixed(2)),
             totalResenas: actualizadas.length
           }, { merge: true });
-        } catch (_err) {
-          // Mantiene la reseña visible en pantalla
-        }
+        } catch (_err) {}
       }
     });
 
@@ -1672,10 +1989,12 @@
           if (detalleComercioPublicoEl) {
             detalleComercioPublicoEl.classList.remove("hidden");
           }
+          renderizarBotonGoogleMaps(comercio);
           empujarEstadoVidrieraAbierta();
           cargarResenasDeComercio(comercio);
           setTimeout(() => {
             limpiarTodosLosPinesDelMapa(window._veaMarcadoresFiltrados || null);
+            podarTarjetasNoCoincidentesEnLista(obtenerComerciosFiltrados());
           }, 80);
         };
       }
@@ -1946,6 +2265,7 @@
 
     poblarSelectRubrosVidriera();
     construirListadoRubros();
+    mostrarSlidePremium(0);
 
     const obsAuthAcceso = setInterval(() => {
       if (typeof auth !== "undefined" && auth && typeof auth.onAuthStateChanged === "function") {
@@ -1962,12 +2282,15 @@
     let intentosLimpiezaMapa = 0;
     const guardMapaLimpio = setInterval(() => {
       intentosLimpiezaMapa += 1;
+      mostrarSlidePremium(indiceSlidePremium);
       if (!hayFiltroActivo()) {
         document.body.classList.add("vea-sin-filtro");
         limpiarTodosLosPinesDelMapa(null);
         if (typeof renderizarComerciosPublicos === "function") {
           renderizarComerciosPublicos([]);
         }
+      } else {
+        podarTarjetasNoCoincidentesEnLista(obtenerComerciosFiltrados());
       }
       if (intentosLimpiezaMapa >= 20) {
         clearInterval(guardMapaLimpio);
@@ -1976,6 +2299,7 @@
 
     window.addEventListener("load", () => {
       setTimeout(() => {
+        mostrarSlidePremium(0);
         if (!hayFiltroActivo()) {
           document.body.classList.add("vea-sin-filtro");
           limpiarTodosLosPinesDelMapa(null);
