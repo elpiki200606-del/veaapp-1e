@@ -1,0 +1,14 @@
+{
+  "name": "vea-backend",
+  "version": "1.0.0",
+  "description": "Vidrieras Electronicas Argentinas",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "cors": "^2.8.5",
+    "express": "^4.21.2",
+    "mercadopago": "^2.3.0"
+  }
+}
