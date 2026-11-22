@@ -1186,5 +1186,172 @@ db.collection("comercios").onSnapshot((snapshot) => {
     contadorComercios.textContent = "No se pudieron cargar los comercios.";
   }
 });
+(() => {
+  const btnSeguirEl = document.getElementById("btn-seguir-comercio");
+  const contadorSeguidoresEl = document.getElementById("contador-seguidores-comercio");
+  const detalleBoxEl = document.getElementById("detalle-comercio-publico");
 
+  if (!btnSeguirEl || !contadorSeguidoresEl) return;
+
+  let comercioSeguidoActual = null;
+
+  function obtenerIdSeguidor() {
+    try {
+      if (typeof auth !== "undefined" && auth && auth.currentUser && auth.currentUser.uid) {
+        return `uid_${auth.currentUser.uid}`;
+      }
+    } catch (_e) {}
+
+    let anonId = "";
+    try {
+      anonId = localStorage.getItem("vea_visitor_id") || "";
+      if (!anonId) {
+        anonId = `anon_${Date.now()}_${Math.random().toString(36).slice(2, 9)}`;
+        localStorage.setItem("vea_visitor_id", anonId);
+      }
+    } catch (_e) {
+      anonId = "anon_fallback";
+    }
+    return anonId;
+  }
+
+  function leerSeguidosLocales() {
+    try {
+      const raw = JSON.parse(localStorage.getItem("vea_comercios_seguidos") || "[]");
+      return Array.isArray(raw) ? raw.map(String) : [];
+    } catch (_e) {
+      return [];
+    }
+  }
+
+  function guardarSeguidosLocales(lista) {
+    try {
+      localStorage.setItem("vea_comercios_seguidos", JSON.stringify(Array.from(new Set(lista.map(String)))));
+    } catch (_e) {}
+  }
+
+  function pintarBotonSeguidores(total, siguiendo) {
+    const cant = Math.max(0, Number(total) || 0);
+    contadorSeguidoresEl.textContent = cant === 1 ? "1 seguidor" : `${cant} seguidores`;
+    btnSeguirEl.classList.toggle("siguiendo", Boolean(siguiendo));
+    btnSeguirEl.textContent = siguiendo ? "✓ Siguiendo" : "+ Seguir";
+  }
+
+  function buscarComercioPorId(id) {
+    if (!id) return null;
+    const lista = (typeof comerciosCargados !== "undefined" && Array.isArray(comerciosCargados))
+      ? comerciosCargados
+      : [];
+    return lista.find((c) => String(c.id || c.uid || "") === String(id)) || null;
+  }
+
+  async function cargarSeguidoresParaComercio(comercio) {
+    if (!comercio || !comercio.id) return;
+    comercioSeguidoActual = comercio;
+    const comId = String(comercio.id);
+    const seguidorId = obtenerIdSeguidor();
+
+    let total = Number(comercio.totalSeguidores) || 0;
+    let siguiendo = leerSeguidosLocales().includes(comId);
+    pintarBotonSeguidores(total, siguiendo);
+
+    if (typeof db !== "undefined" && db) {
+      try {
+        const docRef = db.collection("comercios").doc(comId);
+        const [comSnap, segSnap] = await Promise.all([
+          docRef.get(),
+          docRef.collection("seguidores").doc(seguidorId).get()
+        ]);
+
+        if (comSnap.exists && typeof comSnap.data()?.totalSeguidores === "number") {
+          total = comSnap.data().totalSeguidores;
+          comercio.totalSeguidores = total;
+        }
+        siguiendo = segSnap.exists;
+
+        const locales = leerSeguidosLocales();
+        if (siguiendo && !locales.includes(comId)) {
+          guardarSeguidosLocales([...locales, comId]);
+        } else if (!siguiendo && locales.includes(comId)) {
+          guardarSeguidosLocales(locales.filter((x) => x !== comId));
+        }
+
+        if (comercioSeguidoActual && String(comercioSeguidoActual.id) === comId) {
+          pintarBotonSeguidores(total, siguiendo);
+        }
+      } catch (_e) {}
+    }
+  }
+
+  btnSeguirEl.addEventListener("click", async () => {
+    if (!comercioSeguidoActual || !comercioSeguidoActual.id) return;
+    const comId = String(comercioSeguidoActual.id);
+    const seguidorId = obtenerIdSeguidor();
+    const yaSiguiendo = btnSeguirEl.classList.contains("siguiendo");
+    const nuevoEstado = !yaSiguiendo;
+
+    const totalActual = Math.max(0, Number(comercioSeguidoActual.totalSeguidores) || 0);
+    const nuevoTotal = Math.max(0, totalActual + (nuevoEstado ? 1 : -1));
+    comercioSeguidoActual.totalSeguidores = nuevoTotal;
+
+    const locales = leerSeguidosLocales();
+    if (nuevoEstado) {
+      guardarSeguidosLocales([...locales, comId]);
+    } else {
+      guardarSeguidosLocales(locales.filter((x) => x !== comId));
+    }
+
+    pintarBotonSeguidores(nuevoTotal, nuevoEstado);
+
+    if (typeof db !== "undefined" && db) {
+      try {
+        const docRef = db.collection("comercios").doc(comId);
+        const segRef = docRef.collection("seguidores").doc(seguidorId);
+        if (nuevoEstado) {
+          await segRef.set({
+            uid: (typeof auth !== "undefined" && auth?.currentUser?.uid) ? auth.currentUser.uid : "",
+            creadoEn: Date.now()
+          });
+        } else {
+          await segRef.delete();
+        }
+        await docRef.set({ totalSeguidores: nuevoTotal }, { merge: true });
+      } catch (_e) {}
+    }
+  });
+
+  if (detalleBoxEl && typeof MutationObserver !== "undefined") {
+    const obs = new MutationObserver(() => {
+      if (!detalleBoxEl.classList.contains("hidden")) {
+        const lista = (typeof comerciosCargados !== "undefined" && Array.isArray(comerciosCargados))
+          ? comerciosCargados
+          : [];
+        if (lista.length && !comercioSeguidoActual) {
+          const textoDetalle = (detalleBoxEl.textContent || "").toLowerCase();
+          const match = lista.find((c) => {
+            const nom = String(c.nombreComercio || c.nombre || "").trim().toLowerCase();
+            return nom && textoDetalle.includes(nom);
+          });
+          if (match) cargarSeguidoresParaComercio(match);
+        }
+      } else {
+        comercioSeguidoActual = null;
+      }
+    });
+    obs.observe(detalleBoxEl, { attributes: true, attributeFilter: ["class"] });
+  }
+
+  document.addEventListener("click", (e) => {
+    const trigger = e.target.closest("[data-comercio-id], [data-id], [data-popup-vidriera-id], .card-vidriera");
+    if (!trigger) return;
+    const id = trigger.getAttribute("data-comercio-id")
+      || trigger.getAttribute("data-id")
+      || trigger.getAttribute("data-popup-vidriera-id")
+      || "";
+    const encontrada = buscarComercioPorId(id);
+    if (encontrada) {
+      setTimeout(() => cargarSeguidoresParaComercio(encontrada), 80);
+    }
+  });
+})();
 inicializarMapaPrincipal();

@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="es">
 <head>
   <meta charset="UTF-8">
@@ -893,10 +893,20 @@
           <div id="bloque-google-maps-vidriera"></div>
 
           <div id="bloque-resenas-vidriera" class="resenas-vidriera-box hidden">
-            <div class="resenas-resumen-bar">
-              <strong style="color:var(--verde);">⭐ Calificación de la vidriera</strong>
-              <span id="resumen-estrellas-comercio" class="badge-plan">Sin calificaciones aún</span>
-            </div>
+          
+  <div class="barra-social-comercio">
+    <div class="seguidores-info">
+      <span>👥</span>
+      <span id="contador-seguidores-comercio">0 seguidores</span>
+    </div>
+    <button type="button" id="btn-seguir-comercio" class="btn-seguir-comercio">+ Seguir</button>
+  </div>
+
+  <div class="resenas-resumen-bar">
+    <strong style="color:var(--verde);">⭐ Calificación del comercio</strong>
+    <span id="resumen-estrellas-comercio" class="badge-plan">Sin calificaciones aún</span>
+  </div>
+            
 
             <form id="form-resena-vidriera" class="form-grid" style="margin-top:0;" novalidate>
               <div class="campo">
