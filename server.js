@@ -58,6 +58,7 @@ app.post('/api/crear-preferencia', async (req, res) => {
 
     const resultado = await preference.create({
       body: {
+        external_reference: planKey,
         items: [
           {
             title: `${planConfig.title} (USD ${planConfig.usd})`,
@@ -88,7 +89,38 @@ app.post('/api/crear-preferencia', async (req, res) => {
     res.status(500).json({ error: 'No se pudo crear la preferencia de pago' });
   }
 });
+app.get('/api/verificar-pago', async (req, res) => {
+  try {
+    const paymentId = req.query.payment_id || req.query.collection_id;
+    if (!paymentId) {
+      return res.status(400).json({ aprobado: false, error: 'Falta payment_id' });
+    }
 
+    const mpResp = await fetch(`https://api.mercadopago.com/v1/payments/${encodeURIComponent(paymentId)}`, {
+      headers: {
+        Authorization: `Bearer ${process.env.MP_ACCESS_TOKEN}`
+      }
+    });
+
+    if (!mpResp.ok) {
+      return res.status(mpResp.status).json({ aprobado: false, error: 'No se pudo consultar el pago en Mercado Pago' });
+    }
+
+    const pago = await mpResp.json();
+    const aprobado = pago.status === 'approved';
+    const plan = pago.external_reference || null;
+
+    res.json({
+      aprobado,
+      status: pago.status,
+      plan,
+      payment_id: pago.id
+    });
+  } catch (error) {
+    console.error('Error al verificar pago:', error);
+    res.status(500).json({ aprobado: false, error: 'Error interno al verificar pago' });
+  }
+});
 app.listen(PORT, () => {
   console.log(`Servidor corriendo en puerto ${PORT}`);
 });

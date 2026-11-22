@@ -1382,6 +1382,40 @@ document.addEventListener("click", async (e) => {
       btn.disabled = false;
       btn.textContent = textoOriginal;
     }
+    async function verificarRetornoMercadoPago() {
+  const params = new URLSearchParams(window.location.search);
+  const paymentId = params.get("payment_id") || params.get("collection_id");
+  const status = params.get("status") || params.get("collection_status");
+
+  if (!paymentId) return;
+
+  if (status && status !== "approved") {
+    alert(`El pago no fue aprobado (estado: ${status}).`);
+    window.history.replaceState({}, document.title, window.location.pathname + window.location.hash);
+    return;
+  }
+
+  try {
+    const resp = await fetch(`${VEA_BACKEND_URL}/api/verificar-pago?payment_id=${encodeURIComponent(paymentId)}`);
+    const data = await resp.json();
+
+    if (resp.ok && data.aprobado && data.plan) {
+      await aplicarPlanActivadoEnApp(data.plan, data.payment_id);
+      window.history.replaceState({}, document.title, window.location.pathname + window.location.hash);
+    } else {
+      alert("No pudimos confirmar el pago aprobado todavía.");
+    }
+  } catch (err) {
+    console.error("Error verificando retorno de pago:", err);
+  }
+}
+
+async function aplicarPlanActivadoEnApp(plan, paymentId) {
+  console.log("Plan aprobado y confirmado:", plan, "Pago:", paymentId);
+  alert(`¡Listo! Tu plan ${plan.toUpperCase()} quedó activado.`);
+}
+
+document.addEventListener("DOMContentLoaded", verificarRetornoMercadoPago);
   } catch (err) {
     console.error("Error al crear preferencia:", err);
     alert("Error de conexión con el servidor de pagos.");
