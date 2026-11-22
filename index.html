@@ -1060,6 +1060,10 @@
         .trim();
     }
 
+    function hayFiltroActivo() {
+      return Boolean(normalizarTexto(rubroActivo) || normalizarTexto(busquedaActiva));
+    }
+
     function obtenerRubrosOrdenados() {
       return Array.from(new Set(
         RUBROS_INDIVIDUALES.map((r) => r.trim()).filter(Boolean)
@@ -1152,11 +1156,8 @@
       });
     }
 
-    function limpiarMapaPrincipal() {
-      if (typeof mapaPrincipal === "undefined" || !mapaPrincipal) return;
-      if (window._veaMarcadoresFiltrados) {
-        window._veaMarcadoresFiltrados.clearLayers();
-      }
+    function limpiarTodosLosPinesDelMapa() {
+      if (typeof mapaPrincipal === "undefined" || !mapaPrincipal || typeof L === "undefined") return;
       mapaPrincipal.eachLayer((layer) => {
         if (layer instanceof L.Marker) {
           mapaPrincipal.removeLayer(layer);
@@ -1179,7 +1180,10 @@
         if (typeof renderizarComerciosPublicos === "function") {
           renderizarComerciosPublicos([]);
         }
-        limpiarMapaPrincipal();
+        if (window._veaMarcadoresFiltrados) {
+          window._veaMarcadoresFiltrados.clearLayers();
+        }
+        limpiarTodosLosPinesDelMapa();
         return;
       }
 
@@ -1193,12 +1197,12 @@
         renderizarComerciosPublicos(filtrados);
       }
 
-      limpiarMapaPrincipal();
-
       if (typeof mapaPrincipal !== "undefined" && mapaPrincipal && typeof L !== "undefined") {
         if (!window._veaMarcadoresFiltrados) {
           window._veaMarcadoresFiltrados = L.layerGroup().addTo(mapaPrincipal);
         }
+        window._veaMarcadoresFiltrados.clearLayers();
+        limpiarTodosLosPinesDelMapa();
 
         filtrados.forEach((com) => {
           const lat = Number(com.lat ?? com.latitude);
@@ -1375,7 +1379,10 @@
       if (chromeInicioEl) chromeInicioEl.classList.remove("hidden");
       sincronizarVistaYMapa();
       if (typeof mapaPrincipal !== "undefined" && mapaPrincipal) {
-        setTimeout(() => mapaPrincipal.invalidateSize(), 180);
+        setTimeout(() => {
+          mapaPrincipal.invalidateSize();
+          if (!hayFiltroActivo()) limpiarTodosLosPinesDelMapa();
+        }, 180);
       }
     }
 
@@ -1497,14 +1504,30 @@
           if (btnAccesoHeaderEl) {
             btnAccesoHeaderEl.classList.toggle("hidden", Boolean(u));
           }
-          if (!u) {
-            irAInicioLimpio();
-          }
+          irAInicioLimpio();
         });
       }
     }, 100);
 
-    setTimeout(() => sincronizarVistaYMapa(), 800);
+    let intentosLimpiezaMapa = 0;
+    const guardMapaLimpio = setInterval(() => {
+      intentosLimpiezaMapa += 1;
+      if (!hayFiltroActivo()) {
+        limpiarTodosLosPinesDelMapa();
+        if (typeof renderizarComerciosPublicos === "function") {
+          renderizarComerciosPublicos([]);
+        }
+      }
+      if (intentosLimpiezaMapa >= 15) {
+        clearInterval(guardMapaLimpio);
+      }
+    }, 500);
+
+    window.addEventListener("load", () => {
+      setTimeout(() => {
+        if (!hayFiltroActivo()) limpiarTodosLosPinesDelMapa();
+      }, 300);
+    });
   </script>
 </body>
 </html>
