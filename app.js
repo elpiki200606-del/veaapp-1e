@@ -1354,4 +1354,39 @@ db.collection("comercios").onSnapshot((snapshot) => {
     }
   });
 })();
+const VEA_BACKEND_URL = "https://veaapp-1e.onrender.com";
+
+document.addEventListener("click", async (e) => {
+  const btn = e.target.closest(".btn-suscripcion");
+  if (!btn) return;
+
+  const plan = btn.dataset.plan;
+  const textoOriginal = btn.textContent;
+  btn.disabled = true;
+  btn.textContent = "Generando pago...";
+
+  try {
+    const resp = await fetch(`${VEA_BACKEND_URL}/api/crear-preferencia`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ plan })
+    });
+
+    const data = await resp.json();
+    const urlPago = data.init_point || data.sandbox_init_point || data.url;
+
+    if (resp.ok && urlPago) {
+      window.location.href = urlPago;
+    } else {
+      alert(data.error || "No se pudo generar el link de pago.");
+      btn.disabled = false;
+      btn.textContent = textoOriginal;
+    }
+  } catch (err) {
+    console.error("Error al crear preferencia:", err);
+    alert("Error de conexión con el servidor de pagos.");
+    btn.disabled = false;
+    btn.textContent = textoOriginal;
+  }
+});
 inicializarMapaPrincipal();
