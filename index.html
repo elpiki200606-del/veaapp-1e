@@ -485,6 +485,136 @@
       color: var(--verde2);
     }
 
+    #contenido-detalle-comercio img {
+      cursor: zoom-in;
+    }
+
+    .modal-pub-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(6, 20, 15, 0.85);
+      z-index: 5000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 14px;
+    }
+
+    .modal-pub-caja {
+      width: 100%;
+      max-width: 560px;
+      max-height: 92vh;
+      overflow-y: auto;
+      background: #fff;
+      border: 2px solid var(--dorado);
+      border-radius: 14px;
+      padding: 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .modal-pub-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .modal-pub-img-wrap {
+      width: 100%;
+      background: #0b1612;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+    }
+
+    .modal-pub-img-wrap img {
+      width: 100%;
+      max-height: 62vh;
+      object-fit: contain;
+      display: block;
+    }
+
+    .modal-pub-desc {
+      padding: 8px 10px;
+      border-radius: 8px;
+      background: #f4f7f5;
+      border-left: 3px solid var(--dorado);
+      font-size: 0.88rem;
+      color: var(--texto);
+      line-height: 1.4;
+      white-space: pre-line;
+    }
+
+    .resenas-vidriera-box {
+      margin-top: 14px;
+      padding-top: 12px;
+      border-top: 2px solid var(--borde);
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .resenas-resumen-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 8px;
+      background: #f8faf9;
+      border: 1px solid var(--dorado);
+      border-radius: 8px;
+      padding: 8px 10px;
+    }
+
+    .estrellas-selector {
+      display: inline-flex;
+      gap: 4px;
+    }
+
+    .btn-estrella {
+      border: 1px solid var(--borde);
+      background: #fff;
+      color: #cbd5e1;
+      border-radius: 6px;
+      padding: 4px 8px;
+      font-size: 1.15rem;
+      line-height: 1;
+    }
+
+    .btn-estrella.activa {
+      color: #eab308;
+      border-color: var(--dorado);
+      background: #fefce8;
+    }
+
+    .lista-resenas-items {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      max-height: 240px;
+      overflow-y: auto;
+    }
+
+    .resena-card {
+      border: 1px solid var(--borde);
+      border-radius: 8px;
+      padding: 8px 10px;
+      background: #fff;
+    }
+
+    .resena-card-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 6px;
+      font-size: 0.78rem;
+      margin-bottom: 4px;
+    }
+
     .bottom-nav {
       position: fixed;
       bottom: 0;
@@ -630,6 +760,38 @@
             <button type="button" class="btn" id="btn-cerrar-detalle-comercio">Cerrar</button>
           </div>
           <div id="contenido-detalle-comercio"></div>
+
+          <div id="bloque-resenas-vidriera" class="resenas-vidriera-box hidden">
+            <div class="resenas-resumen-bar">
+              <strong style="color:var(--verde);">⭐ Calificación de la vidriera</strong>
+              <span id="resumen-estrellas-comercio" class="badge-plan">Sin calificaciones aún</span>
+            </div>
+
+            <form id="form-resena-vidriera" class="form-grid" style="margin-top:0;" novalidate>
+              <div class="campo">
+                <label>Tu puntuación</label>
+                <div class="estrellas-selector" id="selector-estrellas-resena">
+                  <button type="button" class="btn-estrella activa" data-valor="1">★</button>
+                  <button type="button" class="btn-estrella activa" data-valor="2">★</button>
+                  <button type="button" class="btn-estrella activa" data-valor="3">★</button>
+                  <button type="button" class="btn-estrella activa" data-valor="4">★</button>
+                  <button type="button" class="btn-estrella activa" data-valor="5">★</button>
+                </div>
+              </div>
+
+              <div class="campo">
+                <label for="input-comentario-resena">Comentario sobre este comercio</label>
+                <textarea id="input-comentario-resena" rows="2" placeholder="Contá tu experiencia con este comercio..."></textarea>
+              </div>
+
+              <div class="acciones-form" style="margin-top:0;">
+                <button type="submit" class="btn" id="btn-enviar-resena">Publicar opinión</button>
+              </div>
+              <small id="estado-resena-vidriera" class="subtexto"></small>
+            </form>
+
+            <div id="lista-resenas-comercio" class="lista-resenas-items"></div>
+          </div>
         </div>
 
         <div id="lista-comercios-publicos" class="grid-vidrieras"></div>
@@ -911,6 +1073,19 @@
     </section>
   </main>
 
+  <div id="modal-publicacion-completa" class="modal-pub-overlay hidden" role="dialog" aria-modal="true">
+    <div class="modal-pub-caja">
+      <div class="modal-pub-top">
+        <strong id="modal-pub-titulo" style="color:var(--verde); font-size:0.95rem;">Publicación</strong>
+        <button type="button" class="btn" id="btn-cerrar-modal-pub">✕ Cerrar</button>
+      </div>
+      <div class="modal-pub-img-wrap">
+        <img id="modal-pub-imagen" alt="Foto completa de la publicación">
+      </div>
+      <div id="modal-pub-descripcion" class="modal-pub-desc"></div>
+    </div>
+  </div>
+
   <nav class="bottom-nav">
     <button type="button" class="nav-item active" id="btnNavHome"><span>🏠</span><span>Inicio</span></button>
     <button type="button" class="nav-floating-btn" id="btnCentrarMapaNav" title="Centrar mapa" aria-label="Centrar mapa">
@@ -1049,8 +1224,21 @@
     const vistaCuponesPrioridadEl = document.getElementById("vista-cupones-prioridad");
     const listaCuponesPrioridadEl = document.getElementById("lista-cupones-prioridad");
     const btnAccesoHeaderEl = document.getElementById("btn-acceso-header");
+
+    const modalPubEl = document.getElementById("modal-publicacion-completa");
+    const modalPubTituloEl = document.getElementById("modal-pub-titulo");
+    const modalPubImagenEl = document.getElementById("modal-pub-imagen");
+    const modalPubDescEl = document.getElementById("modal-pub-descripcion");
+
+    const bloqueResenasEl = document.getElementById("bloque-resenas-vidriera");
+    const resumenEstrellasEl = document.getElementById("resumen-estrellas-comercio");
+    const listaResenasEl = document.getElementById("lista-resenas-comercio");
+    const estadoResenaEl = document.getElementById("estado-resena-vidriera");
+
     let rubroActivo = "";
     let busquedaActiva = "";
+    let comercioDetalleActual = null;
+    let puntuacionSeleccionada = 5;
 
     function normalizarTexto(txt) {
       return String(txt || "")
@@ -1246,6 +1434,185 @@
         });
       }
     }
+
+    function abrirModalPublicacion(src, titulo, descripcion) {
+      if (!modalPubEl || !modalPubImagenEl) return;
+      modalPubImagenEl.src = src;
+      if (modalPubTituloEl) modalPubTituloEl.textContent = titulo || "Publicación";
+      if (modalPubDescEl) {
+        const textoDesc = String(descripcion || "").trim();
+        modalPubDescEl.textContent = textoDesc || "Sin descripción adicional.";
+      }
+      modalPubEl.classList.remove("hidden");
+    }
+
+    document.getElementById("btn-cerrar-modal-pub")?.addEventListener("click", () => {
+      modalPubEl?.classList.add("hidden");
+    });
+
+    modalPubEl?.addEventListener("click", (e) => {
+      if (e.target === modalPubEl) {
+        modalPubEl.classList.add("hidden");
+      }
+    });
+
+    document.getElementById("contenido-detalle-comercio")?.addEventListener("click", (e) => {
+      const img = e.target.closest("img");
+      if (!img || !img.src) return;
+
+      const contenedorPub = img.closest("div, article, li, figure") || img.parentElement;
+      let titulo = img.alt || "";
+      let descripcion = "";
+
+      if (contenedorPub) {
+        const heading = contenedorPub.querySelector("h1, h2, h3, h4, strong");
+        if (heading && heading.textContent.trim()) {
+          titulo = heading.textContent.trim();
+        }
+        const parrafo = contenedorPub.querySelector("p, small, span");
+        if (parrafo && parrafo.textContent.trim() && parrafo.textContent.trim() !== titulo) {
+          descripcion = parrafo.textContent.trim();
+        }
+      }
+
+      if (!descripcion && comercioDetalleActual && Array.isArray(comercioDetalleActual.publicaciones)) {
+        const pubMatch = comercioDetalleActual.publicaciones.find((p) => {
+          const urlP = p.foto || p.imagen || p.url || p.src || "";
+          return urlP && (img.src === urlP || img.src.endsWith(urlP));
+        });
+        if (pubMatch) {
+          titulo = pubMatch.titulo || titulo;
+          descripcion = pubMatch.descripcion || "";
+        }
+      }
+
+      abrirModalPublicacion(img.src, titulo || (comercioDetalleActual?.nombreComercio || "Publicación"), descripcion);
+    });
+
+    function actualizarBotonesEstrellas(valor) {
+      puntuacionSeleccionada = Number(valor) || 5;
+      document.querySelectorAll("#selector-estrellas-resena .btn-estrella").forEach((btn) => {
+        const v = Number(btn.getAttribute("data-valor") || 0);
+        btn.classList.toggle("activa", v <= puntuacionSeleccionada);
+      });
+    }
+
+    document.querySelectorAll("#selector-estrellas-resena .btn-estrella").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        actualizarBotonesEstrellas(btn.getAttribute("data-valor"));
+      });
+    });
+
+    function pintarListaResenas(resenas) {
+      if (!listaResenasEl || !resumenEstrellasEl) return;
+      const esc = typeof escaparHTML === "function" ? escaparHTML : (s) => String(s ?? "");
+
+      if (!Array.isArray(resenas) || !resenas.length) {
+        resumenEstrellasEl.textContent = "Sin calificaciones aún";
+        listaResenasEl.innerHTML = `<p class="subtexto">Sé el primero en calificar esta vidriera.</p>`;
+        return;
+      }
+
+      const suma = resenas.reduce((acc, r) => acc + (Number(r.estrellas) || 0), 0);
+      const promedio = (suma / resenas.length).toFixed(1);
+      resumenEstrellasEl.textContent = `⭐ ${promedio} (${resenas.length} ${resenas.length === 1 ? "opinión" : "opiniones"})`;
+
+      listaResenasEl.innerHTML = resenas.map((r) => {
+        const est = Math.max(1, Math.min(5, Math.round(Number(r.estrellas) || 5)));
+        const estrellasTxt = "★".repeat(est) + "☆".repeat(5 - est);
+        const autor = esc(r.autor || "Usuario V.E.A.");
+        const comentario = esc(r.comentario || "");
+        return `
+          <div class="resena-card">
+            <div class="resena-card-head">
+              <strong>${autor}</strong>
+              <span style="color:#eab308; letter-spacing:1px;">${estrellasTxt}</span>
+            </div>
+            ${comentario ? `<p style="font-size:0.8rem; color:var(--texto);">${comentario}</p>` : ""}
+          </div>
+        `;
+      }).join("");
+    }
+
+    async function cargarResenasDeComercio(comercio) {
+      comercioDetalleActual = comercio || null;
+      if (!bloqueResenasEl) return;
+      if (!comercio || !comercio.id) {
+        bloqueResenasEl.classList.add("hidden");
+        return;
+      }
+
+      bloqueResenasEl.classList.remove("hidden");
+      if (estadoResenaEl) estadoResenaEl.textContent = "";
+
+      const locales = Array.isArray(comercio.resenas) ? comercio.resenas : [];
+      pintarListaResenas(locales);
+
+      if (typeof db !== "undefined" && db) {
+        try {
+          const snap = await db.collection("comercios").doc(String(comercio.id)).collection("resenas").orderBy("creadoEn", "desc").limit(30).get();
+          const nube = snap.docs.map((d) => d.data());
+          if (nube.length) {
+            comercio.resenas = nube;
+            pintarListaResenas(nube);
+          }
+        } catch (_err) {
+          // Si no hay índice o permisos aún, mantiene las reseñas locales
+        }
+      }
+    }
+
+    document.getElementById("form-resena-vidriera")?.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      if (!comercioDetalleActual || !comercioDetalleActual.id) return;
+
+      const comentarioInput = document.getElementById("input-comentario-resena");
+      const comentario = (comentarioInput?.value || "").trim();
+      const nombreAutor = (typeof usuarioActual !== "undefined" && usuarioActual)
+        ? (usuarioActual.displayName || usuarioActual.email?.split("@")[0] || "Usuario V.E.A.")
+        : "Visitante";
+
+      const nuevaResena = {
+        estrellas: puntuacionSeleccionada,
+        comentario,
+        autor: nombreAutor,
+        uid: (typeof usuarioActual !== "undefined" && usuarioActual?.uid) ? usuarioActual.uid : "",
+        creadoEn: Date.now()
+      };
+
+      const previas = Array.isArray(comercioDetalleActual.resenas) ? comercioDetalleActual.resenas : [];
+      const actualizadas = [nuevaResena, ...previas];
+      comercioDetalleActual.resenas = actualizadas;
+      pintarListaResenas(actualizadas);
+      if (comentarioInput) comentarioInput.value = "";
+      if (estadoResenaEl) estadoResenaEl.textContent = "Opinión publicada.";
+
+      if (typeof db !== "undefined" && db) {
+        try {
+          const docRef = db.collection("comercios").doc(String(comercioDetalleActual.id));
+          await docRef.collection("resenas").add(nuevaResena);
+          const suma = actualizadas.reduce((acc, r) => acc + (Number(r.estrellas) || 0), 0);
+          await docRef.set({
+            promedioEstrellas: Number((suma / actualizadas.length).toFixed(2)),
+            totalResenas: actualizadas.length
+          }, { merge: true });
+        } catch (_err) {
+          // Mantiene la reseña visible en pantalla aunque falle escritura remota
+        }
+      }
+    });
+
+    const engancharAbrirDetalle = setInterval(() => {
+      if (typeof window.abrirDetalleComercio === "function" && !window._veaDetalleEnvoltorioListo) {
+        window._veaDetalleEnvoltorioListo = true;
+        clearInterval(engancharAbrirDetalle);
+        const originalAbrirDetalle = window.abrirDetalleComercio;
+        window.abrirDetalleComercio = function wrappedAbrirDetalle(comercio) {
+          originalAbrirDetalle(comercio);
+          cargarResenasDeComercio(comercio);
+        };
+      }
+    }, 100);
 
     window.aplicarFiltroRubro = function aplicarFiltroRubro(nombreRubro) {
       rubroActivo = String(nombreRubro || "").trim();
