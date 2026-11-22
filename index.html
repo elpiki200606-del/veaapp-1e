@@ -1225,6 +1225,9 @@
     const listaCuponesPrioridadEl = document.getElementById("lista-cupones-prioridad");
     const btnAccesoHeaderEl = document.getElementById("btn-acceso-header");
 
+    const detalleComercioPublicoEl = document.getElementById("detalle-comercio-publico");
+    const contenidoDetalleComercioEl = document.getElementById("contenido-detalle-comercio");
+
     const modalPubEl = document.getElementById("modal-publicacion-completa");
     const modalPubTituloEl = document.getElementById("modal-pub-titulo");
     const modalPubImagenEl = document.getElementById("modal-pub-imagen");
@@ -1239,6 +1242,7 @@
     let busquedaActiva = "";
     let comercioDetalleActual = null;
     let puntuacionSeleccionada = 5;
+    let sincronizandoMapa = false;
 
     function normalizarTexto(txt) {
       return String(txt || "")
@@ -1250,6 +1254,19 @@
 
     function hayFiltroActivo() {
       return Boolean(normalizarTexto(rubroActivo) || normalizarTexto(busquedaActiva));
+    }
+
+    function cerrarDetalleVidrieraPublica() {
+      comercioDetalleActual = null;
+      if (detalleComercioPublicoEl) {
+        detalleComercioPublicoEl.classList.add("hidden");
+      }
+      if (contenidoDetalleComercioEl) {
+        contenidoDetalleComercioEl.innerHTML = "";
+      }
+      if (bloqueResenasEl) {
+        bloqueResenasEl.classList.add("hidden");
+      }
     }
 
     function obtenerRubrosOrdenados() {
@@ -1283,6 +1300,7 @@
       listaRubrosDinamicaEl.querySelectorAll("[data-rubro]").forEach((btn) => {
         btn.addEventListener("click", () => {
           const elegido = btn.getAttribute("data-rubro") || "";
+          cerrarDetalleVidrieraPublica();
           window.aplicarFiltroRubro(elegido);
           irAInicioLimpio();
         });
@@ -1344,94 +1362,103 @@
       });
     }
 
-    function limpiarTodosLosPinesDelMapa() {
+    function limpiarTodosLosPinesDelMapa(excluirGrupo = null) {
       if (typeof mapaPrincipal === "undefined" || !mapaPrincipal || typeof L === "undefined") return;
       mapaPrincipal.eachLayer((layer) => {
         if (layer instanceof L.Marker) {
+          if (excluirGrupo && excluirGrupo.hasLayer(layer)) return;
           mapaPrincipal.removeLayer(layer);
         }
       });
     }
 
     function sincronizarVistaYMapa() {
-      const rNorm = normalizarTexto(rubroActivo);
-      const bNorm = normalizarTexto(busquedaActiva);
-      const hayFiltro = Boolean(rNorm || bNorm);
-      const filtrados = obtenerComerciosFiltrados();
+      if (sincronizandoMapa) return;
+      sincronizandoMapa = true;
+      try {
+        const rNorm = normalizarTexto(rubroActivo);
+        const bNorm = normalizarTexto(busquedaActiva);
+        const hayFiltro = Boolean(rNorm || bNorm);
+        const filtrados = obtenerComerciosFiltrados();
 
-      const estadoFiltroEl = document.getElementById("estado-filtro-rubro");
-      const contadorEl = document.getElementById("contador-comercios");
+        const estadoFiltroEl = document.getElementById("estado-filtro-rubro");
+        const contadorEl = document.getElementById("contador-comercios");
 
-      if (!hayFiltro) {
-        if (estadoFiltroEl) estadoFiltroEl.textContent = "Mapa limpio · Elegí rubro o buscá";
-        if (contadorEl) contadorEl.textContent = "Buscá por palabra clave o elegí un rubro.";
+        if (!hayFiltro) {
+          if (estadoFiltroEl) estadoFiltroEl.textContent = "Mapa limpio · Elegí rubro o buscá";
+          if (contadorEl) contadorEl.textContent = "Buscá por palabra clave o elegí un rubro.";
+          if (typeof renderizarComerciosPublicos === "function") {
+            renderizarComerciosPublicos([]);
+          }
+          if (window._veaMarcadoresFiltrados) {
+            window._veaMarcadoresFiltrados.clearLayers();
+          }
+          limpiarTodosLosPinesDelMapa(null);
+          return;
+        }
+
+        if (estadoFiltroEl) {
+          estadoFiltroEl.textContent = rNorm && bNorm
+            ? `${rubroActivo} · "${busquedaActiva}"`
+            : (rNorm ? `Rubro: ${rubroActivo}` : `Búsqueda: "${busquedaActiva}"`);
+        }
+
         if (typeof renderizarComerciosPublicos === "function") {
-          renderizarComerciosPublicos([]);
+          renderizarComerciosPublicos(filtrados);
         }
-        if (window._veaMarcadoresFiltrados) {
+
+        if (typeof mapaPrincipal !== "undefined" && mapaPrincipal && typeof L !== "undefined") {
+          if (!window._veaMarcadoresFiltrados) {
+            window._veaMarcadoresFiltrados = L.layerGroup().addTo(mapaPrincipal);
+          }
           window._veaMarcadoresFiltrados.clearLayers();
-        }
-        limpiarTodosLosPinesDelMapa();
-        return;
-      }
+          limpiarTodosLosPinesDelMapa(null);
 
-      if (estadoFiltroEl) {
-        estadoFiltroEl.textContent = rNorm && bNorm
-          ? `${rubroActivo} · "${busquedaActiva}"`
-          : (rNorm ? `Rubro: ${rubroActivo}` : `Búsqueda: "${busquedaActiva}"`);
-      }
+          filtrados.forEach((com) => {
+            const lat = Number(com.lat ?? com.latitude);
+            const lng = Number(com.lng ?? com.longitude);
+            if (!Number.isFinite(lat) || !Number.isFinite(lng)) return;
 
-      if (typeof renderizarComerciosPublicos === "function") {
-        renderizarComerciosPublicos(filtrados);
-      }
+            const emoji = obtenerIconoRubro(com);
+            const iconoDiv = L.divIcon({
+              className: "",
+              html: `<div class="vea-pin-rubro"><span>${emoji}</span></div>`,
+              iconSize: [34, 34],
+              iconAnchor: [17, 34],
+              popupAnchor: [0, -32]
+            });
 
-      if (typeof mapaPrincipal !== "undefined" && mapaPrincipal && typeof L !== "undefined") {
-        if (!window._veaMarcadoresFiltrados) {
-          window._veaMarcadoresFiltrados = L.layerGroup().addTo(mapaPrincipal);
-        }
-        window._veaMarcadoresFiltrados.clearLayers();
-        limpiarTodosLosPinesDelMapa();
+            const marcador = L.marker([lat, lng], { icon: iconoDiv }).addTo(window._veaMarcadoresFiltrados);
+            const esc = typeof escaparHTML === "function" ? escaparHTML : (s) => String(s ?? "");
+            const nombre = esc(com.nombreComercio || "Comercio");
+            const idAttr = esc(com.id || "");
 
-        filtrados.forEach((com) => {
-          const lat = Number(com.lat ?? com.latitude);
-          const lng = Number(com.lng ?? com.longitude);
-          if (!Number.isFinite(lat) || !Number.isFinite(lng)) return;
+            marcador.bindPopup(`
+              <div style="text-align:center; min-width:130px;">
+                <strong>${nombre}</strong><br>
+                <button type="button" class="btn" style="margin-top:6px; padding:5px 10px; font-size:0.74rem;" data-popup-vidriera-id="${idAttr}">Ver vidriera</button>
+              </div>
+            `);
 
-          const emoji = obtenerIconoRubro(com);
-          const iconoDiv = L.divIcon({
-            className: "",
-            html: `<div class="vea-pin-rubro"><span>${emoji}</span></div>`,
-            iconSize: [34, 34],
-            iconAnchor: [17, 34],
-            popupAnchor: [0, -32]
-          });
-
-          const marcador = L.marker([lat, lng], { icon: iconoDiv }).addTo(window._veaMarcadoresFiltrados);
-          const esc = typeof escaparHTML === "function" ? escaparHTML : (s) => String(s ?? "");
-          const nombre = esc(com.nombreComercio || "Comercio");
-          const idAttr = esc(com.id || "");
-
-          marcador.bindPopup(`
-            <div style="text-align:center; min-width:130px;">
-              <strong>${nombre}</strong><br>
-              <button type="button" class="btn" style="margin-top:6px; padding:5px 10px; font-size:0.74rem;" data-popup-vidriera-id="${idAttr}">Ver vidriera</button>
-            </div>
-          `);
-
-          marcador.on("popupopen", (ev) => {
-            const cont = ev.popup.getElement();
-            const btn = cont?.querySelector("[data-popup-vidriera-id]");
-            btn?.addEventListener("click", () => {
-              const targetId = btn.getAttribute("data-popup-vidriera-id");
-              const encontrada = (typeof comerciosCargados !== "undefined" ? comerciosCargados : [])
-                .find((item) => String(item.id || "") === String(targetId));
-              if (encontrada && typeof abrirDetalleComercio === "function") {
-                abrirDetalleComercio(encontrada);
-                document.getElementById("detalle-comercio-publico")?.scrollIntoView({ behavior: "smooth", block: "nearest" });
-              }
+            marcador.on("popupopen", (ev) => {
+              const cont = ev.popup.getElement();
+              const btn = cont?.querySelector("[data-popup-vidriera-id]");
+              btn?.addEventListener("click", () => {
+                const targetId = btn.getAttribute("data-popup-vidriera-id");
+                const encontrada = (typeof comerciosCargados !== "undefined" ? comerciosCargados : [])
+                  .find((item) => String(item.id || "") === String(targetId));
+                if (encontrada && typeof abrirDetalleComercio === "function") {
+                  abrirDetalleComercio(encontrada);
+                  document.getElementById("detalle-comercio-publico")?.scrollIntoView({ behavior: "smooth", block: "nearest" });
+                }
+              });
             });
           });
-        });
+
+          limpiarTodosLosPinesDelMapa(window._veaMarcadoresFiltrados);
+        }
+      } finally {
+        sincronizandoMapa = false;
       }
     }
 
@@ -1456,7 +1483,7 @@
       }
     });
 
-    document.getElementById("contenido-detalle-comercio")?.addEventListener("click", (e) => {
+    contenidoDetalleComercioEl?.addEventListener("click", (e) => {
       const img = e.target.closest("img");
       if (!img || !img.src) return;
 
@@ -1557,7 +1584,7 @@
             pintarListaResenas(nube);
           }
         } catch (_err) {
-          // Si no hay índice o permisos aún, mantiene las reseñas locales
+          // Mantiene reseñas locales si la subcolección no tiene permisos aún
         }
       }
     }
@@ -1587,6 +1614,8 @@
       if (comentarioInput) comentarioInput.value = "";
       if (estadoResenaEl) estadoResenaEl.textContent = "Opinión publicada.";
 
+      sincronizarVistaYMapa();
+
       if (typeof db !== "undefined" && db) {
         try {
           const docRef = db.collection("comercios").doc(String(comercioDetalleActual.id));
@@ -1597,9 +1626,14 @@
             totalResenas: actualizadas.length
           }, { merge: true });
         } catch (_err) {
-          // Mantiene la reseña visible en pantalla aunque falle escritura remota
+          // Mantiene la reseña visible en pantalla
         }
       }
+    });
+
+    document.getElementById("btn-cerrar-detalle-comercio")?.addEventListener("click", () => {
+      cerrarDetalleVidrieraPublica();
+      sincronizarVistaYMapa();
     });
 
     const engancharAbrirDetalle = setInterval(() => {
@@ -1609,18 +1643,26 @@
         const originalAbrirDetalle = window.abrirDetalleComercio;
         window.abrirDetalleComercio = function wrappedAbrirDetalle(comercio) {
           originalAbrirDetalle(comercio);
+          if (detalleComercioPublicoEl) {
+            detalleComercioPublicoEl.classList.remove("hidden");
+          }
           cargarResenasDeComercio(comercio);
+          setTimeout(() => {
+            limpiarTodosLosPinesDelMapa(window._veaMarcadoresFiltrados || null);
+          }, 80);
         };
       }
     }, 100);
 
     window.aplicarFiltroRubro = function aplicarFiltroRubro(nombreRubro) {
+      cerrarDetalleVidrieraPublica();
       rubroActivo = String(nombreRubro || "").trim();
       construirListadoRubros();
       sincronizarVistaYMapa();
     };
 
     function ejecutarBusquedaInput() {
+      cerrarDetalleVidrieraPublica();
       const inp = document.getElementById("buscar-comercio");
       busquedaActiva = (inp?.value || "").trim();
       sincronizarVistaYMapa();
@@ -1732,6 +1774,7 @@
     });
 
     function irAInicioLimpio() {
+      cerrarDetalleVidrieraPublica();
       document.getElementById("seccion-login")?.classList.add("hidden");
       document.getElementById("seccion-registro")?.classList.add("hidden");
       vistaRubrosEl?.classList.add("hidden");
@@ -1748,12 +1791,13 @@
       if (typeof mapaPrincipal !== "undefined" && mapaPrincipal) {
         setTimeout(() => {
           mapaPrincipal.invalidateSize();
-          if (!hayFiltroActivo()) limpiarTodosLosPinesDelMapa();
+          if (!hayFiltroActivo()) limpiarTodosLosPinesDelMapa(null);
         }, 180);
       }
     }
 
     function abrirVistaAislada(tipo) {
+      cerrarDetalleVidrieraPublica();
       if (vistaPrincipalEl) vistaPrincipalEl.classList.add("hidden");
       if (chromeInicioEl) chromeInicioEl.classList.add("hidden");
       document.getElementById("seccion-login")?.classList.add("hidden");
@@ -1802,6 +1846,19 @@
         document.getElementById("bloque-suscripciones-vidriera")?.scrollIntoView({ behavior: "smooth", block: "center" });
       }, 120);
     }
+
+    window.addEventListener("popstate", () => {
+      if (modalPubEl && !modalPubEl.classList.contains("hidden")) {
+        modalPubEl.classList.add("hidden");
+        return;
+      }
+      if (detalleComercioPublicoEl && !detalleComercioPublicoEl.classList.contains("hidden")) {
+        cerrarDetalleVidrieraPublica();
+        sincronizarVistaYMapa();
+        return;
+      }
+      irAInicioLimpio();
+    });
 
     btnAccesoHeaderEl?.addEventListener("click", () => abrirVistaAislada("login"));
     document.getElementById("btn-abrir-rubros-mapa")?.addEventListener("click", () => abrirVistaAislada("rubros"));
@@ -1880,7 +1937,7 @@
     const guardMapaLimpio = setInterval(() => {
       intentosLimpiezaMapa += 1;
       if (!hayFiltroActivo()) {
-        limpiarTodosLosPinesDelMapa();
+        limpiarTodosLosPinesDelMapa(null);
         if (typeof renderizarComerciosPublicos === "function") {
           renderizarComerciosPublicos([]);
         }
@@ -1892,7 +1949,7 @@
 
     window.addEventListener("load", () => {
       setTimeout(() => {
-        if (!hayFiltroActivo()) limpiarTodosLosPinesDelMapa();
+        if (!hayFiltroActivo()) limpiarTodosLosPinesDelMapa(null);
       }, 300);
     });
   </script>
