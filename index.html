@@ -149,12 +149,12 @@
     }
 
     .barra-red-susc {
-      margin: 2px 8px;
+      margin: 0;
       padding: 3px 8px;
-      border-radius: 7px;
+      border-radius: 0;
       background: linear-gradient(135deg, var(--verde), var(--verde2));
       color: #fef08a;
-      border: 1px solid var(--dorado);
+      border-bottom: 1px solid var(--dorado);
       font-size: 0.63rem;
       display: flex;
       align-items: center;
@@ -180,44 +180,46 @@
 
     .mapa-top-bar {
       display: flex;
-      align-items: center;
+      align-items: stretch;
       justify-content: space-between;
-      gap: 6px;
-      padding: 4px 8px;
+      gap: 7px;
+      padding: 5px 8px;
       background: #fff;
       border-bottom: 1px solid var(--borde);
-      min-height: 38px;
+      min-height: 52px;
     }
 
     .btn-rubros-mapa {
       background: var(--verde);
       color: var(--dorado);
       border: 1px solid var(--dorado);
-      border-radius: 7px;
-      padding: 5px 10px;
-      font-size: 0.72rem;
+      border-radius: 8px;
+      padding: 6px 11px;
+      font-size: 0.75rem;
       font-weight: 800;
       display: inline-flex;
       align-items: center;
       gap: 4px;
       flex-shrink: 0;
+      align-self: center;
     }
 
     .banner-premium-slot {
       flex: 1;
       min-width: 0;
+      min-height: 44px;
       display: flex;
       align-items: center;
       justify-content: space-between;
-      gap: 7px;
+      gap: 8px;
       background: linear-gradient(135deg, #062e22, #0e4f3b);
       color: #fff;
       border: 1.5px solid var(--dorado);
-      border-radius: 8px;
-      padding: 3px 8px;
+      border-radius: 9px;
+      padding: 5px 10px;
       cursor: pointer;
       overflow: hidden;
-      box-shadow: 0 2px 6px rgba(6, 46, 34, 0.16);
+      box-shadow: 0 2px 8px rgba(6, 46, 34, 0.18);
       transition: transform 0.15s ease, opacity 0.25s ease;
     }
 
@@ -226,9 +228,9 @@
     }
 
     .banner-premium-thumb {
-      width: 28px;
-      height: 28px;
-      border-radius: 6px;
+      width: 36px;
+      height: 36px;
+      border-radius: 7px;
       object-fit: cover;
       border: 1px solid var(--dorado);
       flex-shrink: 0;
@@ -240,29 +242,30 @@
       min-width: 0;
       display: flex;
       flex-direction: column;
-      line-height: 1.15;
+      gap: 2px;
+      line-height: 1.18;
     }
 
     .banner-premium-top {
       display: flex;
       align-items: center;
-      gap: 5px;
+      gap: 6px;
       min-width: 0;
     }
 
     .banner-premium-tag {
       background: var(--dorado);
       color: var(--verde);
-      font-size: 0.55rem;
+      font-size: 0.58rem;
       font-weight: 900;
-      padding: 1px 4px;
+      padding: 1px 5px;
       border-radius: 4px;
       letter-spacing: 0.4px;
       flex-shrink: 0;
     }
 
     .banner-premium-comercio {
-      font-size: 0.68rem;
+      font-size: 0.74rem;
       font-weight: 800;
       color: #fef08a;
       white-space: nowrap;
@@ -271,15 +274,15 @@
     }
 
     .banner-premium-texto {
-      font-size: 0.63rem;
-      color: #e2f1eb;
+      font-size: 0.68rem;
+      color: #e6f4ee;
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
     }
 
     .banner-premium-cta {
-      font-size: 0.62rem;
+      font-size: 0.68rem;
       font-weight: 800;
       color: var(--dorado);
       white-space: nowrap;
@@ -343,7 +346,7 @@
 
     .main-container {
       display: flex;
-      height: calc(100vh - 104px);
+      height: calc(100vh - 102px);
       min-height: 440px;
     }
 
@@ -859,9 +862,9 @@
             <div class="banner-premium-info">
               <div class="banner-premium-top">
                 <span class="banner-premium-tag">★ PREMIUM</span>
-                <span id="banner-premium-comercio" class="banner-premium-comercio">Espacio Destacado V.E.A.</span>
+                <span id="banner-premium-comercio" class="banner-premium-comercio">Vidrieras Destacadas V.E.A.</span>
               </div>
-              <span id="banner-premium-texto" class="banner-premium-texto">Activá tu Plan Premium y mostrá tus ofertas acá</span>
+              <span id="banner-premium-texto" class="banner-premium-texto">Primer mes gratis en Plan Premium · Tocá para ver vidrieras</span>
             </div>
             <span class="banner-premium-cta">Ver ›</span>
           </div>
@@ -1064,13 +1067,13 @@
       <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; margin-bottom:10px;">
         <h2 style="margin:0;">Mi Vidriera Comercial</h2>
         <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
-          <span id="badge-plan-vidriera" class="badge-plan">Plan activo: BÁSICO</span>
+          <span id="badge-plan-vidriera" class="badge-plan">Plan activo: PREMIUM</span>
           <button type="button" class="btn" id="btn-ir-planes-vidriera">💳 Suscripciones</button>
           <button type="button" class="btn" id="btn-cerrar-vidriera">← Volver al inicio</button>
         </div>
       </div>
 
-      <p id="estado-plan-detalle" class="subtexto">Límites de tu plan: hasta 10 publicaciones y video vertical de hasta 10s.</p>
+      <p id="estado-plan-detalle" class="subtexto">Promo lanzamiento: Plan Premium activo (hasta 40 publicaciones y video vertical hasta 60s).</p>
 
       <form id="form-vidriera" class="form-grid" novalidate>
         <div class="campo">
@@ -1130,7 +1133,7 @@
         </div>
 
         <div class="campo" style="border-top:1px solid #e2e8f0; padding-top:10px;">
-          <label id="label-publicaciones-vidriera">Publicaciones (0 / 10 máx.)</label>
+          <label id="label-publicaciones-vidriera">Publicaciones (0 / 40 máx.)</label>
           <input type="file" id="vid-pub-foto" accept="image/*">
           <input type="text" id="vid-pub-titulo" placeholder="Título de la publicación">
           <textarea id="vid-pub-descripcion" rows="2" placeholder="Descripción de la publicación"></textarea>
@@ -1147,7 +1150,7 @@
 
       <div id="bloque-suscripciones-vidriera" class="planes-box">
         <h3 style="color:var(--verde); margin-bottom:4px;">💳 Suscripciones V.E.A. (Básica, Estándar y Premium)</h3>
-        <p class="subtexto">Elegí tu plan para ampliar el límite de publicaciones y duración de video vertical.</p>
+        <p class="subtexto">Promo lanzamiento (3 meses): primer mes gratis al registrarte en Plan Premium.</p>
         <div class="planes-grid">
           <div class="plan-card">
             <div>
@@ -1174,7 +1177,7 @@
               <span class="badge-plan">PREMIUM</span>
               <h4 style="margin-top:6px;">Plan Premium</h4>
               <div class="plan-precio">USD 15</div>
-              <p class="subtexto">Hasta 40 publicaciones · Video hasta 60s</p>
+              <p class="subtexto">1er mes gratis · Hasta 40 publicaciones · Video hasta 60s</p>
             </div>
             <a href="https://mpago.la/2uckMU3" target="_blank" rel="noopener" class="btn">Suscribirse Premium</a>
           </div>
@@ -1227,6 +1230,9 @@
   <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
   <script src="app.js"></script>
   <script>
+    // Etapa promocional de lanzamiento: todos los usuarios/comercios arrancan en Plan Premium (1er mes gratis)
+    const PROMO_PRIMER_MES_GRATIS_ACTIVA = true;
+
     const DICCIONARIO_PALABRAS_RUBRO = {
       "Carnicería": ["churrasco", "chinchulines", "chorizo", "molleja", "chancho", "cerdo", "vacio", "vacío", "asado", "bife", "milanesa", "costilla", "morcilla", "achuras", "carne", "novillo", "matambre", "entraña", "carniceria"],
       "Pollería": ["pollo", "patita", "pata y muslo", "suprema", "alitas", "menudos", "polleria", "rostizado"],
@@ -1401,26 +1407,72 @@
     }
 
     function esPlanPremium(plan) {
+      if (PROMO_PRIMER_MES_GRATIS_ACTIVA) return true;
       return normalizarTexto(plan).includes("premium");
     }
 
+    function aplicarPromoPremiumAUnidades() {
+      if (!PROMO_PRIMER_MES_GRATIS_ACTIVA) return;
+
+      if (typeof comerciosCargados !== "undefined" && Array.isArray(comerciosCargados)) {
+        comerciosCargados.forEach((c) => {
+          if (c && typeof c === "object") {
+            c.plan = "premium";
+            c.promoPrimerMesGratis = true;
+          }
+        });
+      }
+
+      const badgePlanEl = document.getElementById("badge-plan-vidriera");
+      if (badgePlanEl) {
+        badgePlanEl.textContent = "Plan activo: PREMIUM (1er mes gratis)";
+      }
+      const estadoPlanEl = document.getElementById("estado-plan-detalle");
+      if (estadoPlanEl) {
+        estadoPlanEl.textContent = "Promo lanzamiento: Plan Premium activo (hasta 40 publicaciones y video vertical hasta 60s).";
+      }
+      const labelPubEl = document.getElementById("label-publicaciones-vidriera");
+      if (labelPubEl && labelPubEl.textContent) {
+        labelPubEl.textContent = labelPubEl.textContent.replace(/\/\s*\d+\s*máx\./i, "/ 40 máx.");
+      }
+    }
+
+    async function asegurarPlanPremiumEnFirestore(uid) {
+      if (!PROMO_PRIMER_MES_GRATIS_ACTIVA || !uid || typeof db === "undefined" || !db) return;
+      try {
+        await db.collection("comercios").doc(String(uid)).set({
+          plan: "premium",
+          promoPrimerMesGratis: true
+        }, { merge: true });
+      } catch (_e) {}
+      try {
+        await db.collection("usuarios").doc(String(uid)).set({
+          plan: "premium",
+          promoPrimerMesGratis: true
+        }, { merge: true });
+      } catch (_e) {}
+    }
+
     function construirSlidesPremium() {
+      aplicarPromoPremiumAUnidades();
       const base = (typeof comerciosCargados !== "undefined" && Array.isArray(comerciosCargados))
         ? comerciosCargados
         : [];
-      const premiumComercios = base.filter((c) => esPlanPremium(c.plan));
+      const candidatos = base.filter((c) => esPlanPremium(c.plan));
       const slides = [];
 
-      premiumComercios.forEach((com) => {
-        const nombre = String(com.nombreComercio || com.nombre || "Comercio Premium").trim();
+      candidatos.forEach((com) => {
+        const nombre = String(com.nombreComercio || com.nombre || "Comercio V.E.A.").trim();
         const fachada = com.fachada || com.fotoFachada || com.imagen || "";
         const rubro = String(com.rubro || com.categoria || "").trim();
+        const ico = obtenerIconoRubro(com);
 
         if (Array.isArray(com.publicaciones) && com.publicaciones.length) {
           com.publicaciones.forEach((pub) => {
             const titulo = String(pub.titulo || "").trim();
             const desc = String(pub.descripcion || "").trim();
-            const fragmento = [titulo, desc].filter(Boolean).join(" · ") || (rubro ? `Vidriera destacada · ${rubro}` : "Ofertas y novedades en nuestra vidriera");
+            const fragmento = [titulo, desc].filter(Boolean).join(" · ")
+              || (rubro ? `${ico} ${rubro} · Ver novedades en vidriera` : "Ofertas y novedades en vidriera");
             slides.push({
               comercio: com,
               nombre,
@@ -1448,7 +1500,7 @@
           slides.push({
             comercio: com,
             nombre,
-            texto: rubro ? `${rubro} · ${com.direccion || "Ver vidriera destacada"}` : (com.direccion || "Comercio destacado Premium"),
+            texto: rubro ? `${ico} ${rubro} · Tocá para visitar la vidriera` : (com.direccion || "Tocá para visitar la vidriera"),
             imagen: fachada
           });
         }
@@ -1463,8 +1515,8 @@
       slidesPremiumActuales = slides;
 
       if (!slides.length) {
-        bannerPremiumComercioEl.textContent = "Publicidad Premium V.E.A.";
-        bannerPremiumTextoEl.textContent = "Destacá tu comercio aquí con el Plan Premium";
+        bannerPremiumComercioEl.textContent = "Vidrieras Destacadas V.E.A.";
+        bannerPremiumTextoEl.textContent = "1er mes gratis en Plan Premium · Ferretería, cerveza, ropa, calzados y más";
         if (bannerPremiumImgEl) {
           bannerPremiumImgEl.classList.add("hidden");
           bannerPremiumImgEl.removeAttribute("src");
@@ -1514,7 +1566,7 @@
       if (lista.length > 0) {
         mostrarSlidePremium(indiceSlidePremium + 1);
       }
-    }, 4000);
+    }, 3500);
 
     function cerrarDetalleVidrieraPublica() {
       comercioDetalleActual = null;
@@ -1708,6 +1760,7 @@
       if (sincronizandoMapa) return;
       sincronizandoMapa = true;
       try {
+        aplicarPromoPremiumAUnidades();
         const rNorm = normalizarTexto(rubroActivo);
         const bNorm = normalizarTexto(busquedaActiva);
         const hayFiltro = Boolean(rNorm || bNorm);
@@ -2046,6 +2099,7 @@
 
     function renderizarCuponesJerarquia() {
       if (!listaCuponesPrioridadEl) return;
+      aplicarPromoPremiumAUnidades();
       const baseComercios = (typeof comerciosCargados !== "undefined" && Array.isArray(comerciosCargados))
         ? comerciosCargados
         : [];
@@ -2103,20 +2157,28 @@
 
     document.getElementById("form-vidriera")?.addEventListener("submit", () => {
       const rubroElegido = (vidRubroSelectEl?.value || "").trim();
-      if (!rubroElegido) return;
+      const uidActual = (typeof usuarioActual !== "undefined" && usuarioActual?.uid) ? usuarioActual.uid : "";
+      const datosPromo = PROMO_PRIMER_MES_GRATIS_ACTIVA
+        ? { ...(rubroElegido ? { rubro: rubroElegido } : {}), plan: "premium", promoPrimerMesGratis: true }
+        : (rubroElegido ? { rubro: rubroElegido } : null);
 
-      if (typeof db !== "undefined" && db && typeof usuarioActual !== "undefined" && usuarioActual?.uid) {
-        db.collection("comercios").doc(usuarioActual.uid).set({ rubro: rubroElegido }, { merge: true }).catch(() => {});
+      if (datosPromo && typeof db !== "undefined" && db && uidActual) {
+        db.collection("comercios").doc(uidActual).set(datosPromo, { merge: true }).catch(() => {});
       }
 
-      if (typeof comerciosCargados !== "undefined" && Array.isArray(comerciosCargados) && typeof usuarioActual !== "undefined" && usuarioActual?.uid) {
+      if (typeof comerciosCargados !== "undefined" && Array.isArray(comerciosCargados) && uidActual) {
         comerciosCargados.forEach((c) => {
-          if (String(c.id || c.uid || "") === String(usuarioActual.uid)) {
-            c.rubro = rubroElegido;
+          if (String(c.id || c.uid || "") === String(uidActual)) {
+            if (rubroElegido) c.rubro = rubroElegido;
+            if (PROMO_PRIMER_MES_GRATIS_ACTIVA) c.plan = "premium";
           }
         });
       }
-      setTimeout(() => sincronizarVistaYMapa(), 350);
+      setTimeout(() => {
+        aplicarPromoPremiumAUnidades();
+        mostrarSlidePremium(indiceSlidePremium);
+        sincronizarVistaYMapa();
+      }, 350);
     });
 
     function irAInicioLimpio() {
@@ -2175,10 +2237,14 @@
 
       if (tipo === "vidriera") {
         poblarSelectRubrosVidriera();
+        aplicarPromoPremiumAUnidades();
       }
 
       if (typeof mostrarVista === "function") {
         mostrarVista(tipo);
+        if (tipo === "vidriera") {
+          setTimeout(() => aplicarPromoPremiumAUnidades(), 60);
+        }
       }
     }
 
@@ -2265,6 +2331,7 @@
 
     poblarSelectRubrosVidriera();
     construirListadoRubros();
+    aplicarPromoPremiumAUnidades();
     mostrarSlidePremium(0);
 
     const obsAuthAcceso = setInterval(() => {
@@ -2274,6 +2341,11 @@
           if (btnAccesoHeaderEl) {
             btnAccesoHeaderEl.classList.toggle("hidden", Boolean(u));
           }
+          if (u && u.uid) {
+            asegurarPlanPremiumEnFirestore(u.uid);
+          }
+          aplicarPromoPremiumAUnidades();
+          mostrarSlidePremium(indiceSlidePremium);
           irAInicioLimpio();
         });
       }
@@ -2282,6 +2354,7 @@
     let intentosLimpiezaMapa = 0;
     const guardMapaLimpio = setInterval(() => {
       intentosLimpiezaMapa += 1;
+      aplicarPromoPremiumAUnidades();
       mostrarSlidePremium(indiceSlidePremium);
       if (!hayFiltroActivo()) {
         document.body.classList.add("vea-sin-filtro");
@@ -2299,6 +2372,7 @@
 
     window.addEventListener("load", () => {
       setTimeout(() => {
+        aplicarPromoPremiumAUnidades();
         mostrarSlidePremium(0);
         if (!hayFiltroActivo()) {
           document.body.classList.add("vea-sin-filtro");
