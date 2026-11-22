@@ -46,11 +46,13 @@
     .app-header {
       display: flex;
       flex-direction: column;
-      gap: 4px;
+      gap: 3px;
       background: linear-gradient(135deg, var(--verde), var(--verde2));
       color: #fff;
-      padding: 5px 10px 6px;
+      padding: 5px 10px 5px;
       border-bottom: 2px solid var(--dorado);
+      margin: 0 !important;
+      border-radius: 0 !important;
     }
 
     .header-top-row {
@@ -68,7 +70,7 @@
     .app-header-brand h1 {
       color: var(--dorado);
       letter-spacing: 2px;
-      font-size: 1.38rem;
+      font-size: 1.35rem;
       line-height: 1;
     }
 
@@ -149,9 +151,9 @@
     }
 
     .barra-red-susc {
-      margin: 0;
+      margin: -2px 0 0 0 !important;
       padding: 3px 8px;
-      border-radius: 0;
+      border-radius: 0 !important;
       background: linear-gradient(135deg, var(--verde), var(--verde2));
       color: #fef08a;
       border-bottom: 1px solid var(--dorado);
@@ -183,10 +185,11 @@
       align-items: stretch;
       justify-content: space-between;
       gap: 7px;
-      padding: 5px 8px;
+      padding: 4px 8px;
       background: #fff;
       border-bottom: 1px solid var(--borde);
-      min-height: 52px;
+      min-height: 50px;
+      margin-top: 0 !important;
     }
 
     .btn-rubros-mapa {
@@ -346,8 +349,8 @@
 
     .main-container {
       display: flex;
-      height: calc(100vh - 102px);
-      min-height: 440px;
+      height: calc(100vh - 96px);
+      min-height: 460px;
     }
 
     .map-column {
@@ -789,8 +792,8 @@
 
       .map-column {
         width: 100%;
-        height: 56vh;
-        min-height: 370px;
+        height: 61vh;
+        min-height: 410px;
         border-right: 0;
         border-bottom: 2px solid var(--dorado);
       }
@@ -1230,7 +1233,6 @@
   <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
   <script src="app.js"></script>
   <script>
-    // Etapa promocional de lanzamiento: todos los usuarios/comercios arrancan en Plan Premium (1er mes gratis)
     const PROMO_PRIMER_MES_GRATIS_ACTIVA = true;
 
     const DICCIONARIO_PALABRAS_RUBRO = {
