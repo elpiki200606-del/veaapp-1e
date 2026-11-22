@@ -1411,8 +1411,47 @@ document.addEventListener("click", async (e) => {
 }
 
 async function aplicarPlanActivadoEnApp(plan, paymentId) {
-  console.log("Plan aprobado y confirmado:", plan, "Pago:", paymentId);
-  alert(`¡Listo! Tu plan ${plan.toUpperCase()} quedó activado.`);
+  const planNormalizado = String(plan || "").toLowerCase();
+  const dbRef = (typeof db !== "undefined") ? db : firebase.firestore();
+  const usuario = (typeof firebase !== "undefined" && firebase.auth) ? firebase.auth().currentUser : null;
+
+  if (!usuario) {
+    alert(`Pago confirmado (${planNormalizado.toUpperCase()}). Iniciá sesión para vincular el plan a tu comercio.`);
+    return;
+  }
+
+  try {
+    // 1. Intenta actualizar el documento con el mismo ID del uid del usuario
+    const docDirecto = dbRef.collection("comercios").doc(usuario.uid);
+    const snapDirecto = await docDirecto.get();
+
+    if (snapDirecto.exists) {
+      await docDirecto.update({
+        plan: planNormalizado,
+        ultimoPagoId: paymentId,
+        actualizadoEn: new Date().toISOString()
+      });
+    } else if (usuario.email) {
+      // 2. Si el ID del documento es distinto al uid, busca el comercio por email
+      const querySnap = await dbRef.collection("comercios")
+        .where("email", "==", usuario.email)
+        .limit(1)
+        .get();
+
+      if (!querySnap.empty) {
+        await querySnap.docs[0].ref.update({
+          plan: planNormalizado,
+          ultimoPagoId: paymentId,
+          actualizadoEn: new Date().toISOString()
+        });
+      }
+    }
+
+    alert(`¡Listo! Tu plan ${planNormalizado.toUpperCase()} quedó guardado en tu comercio.`);
+  } catch (err) {
+    console.error("Error guardando el plan en Firestore:", err);
+    alert("El pago se aprobó, pero hubo un problema al guardar el plan en la base.");
+  }
 }
 
 document.addEventListener("DOMContentLoaded", verificarRetornoMercadoPago);
