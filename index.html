@@ -1227,25 +1227,30 @@
     </div>
   </div>
 
-  <nav class="bottom-nav">
-      <button type="button" class="nav-item active" id="btnNavHome"><span>🏠</span><span>Inicio</span></button>
-      <button type="button" class="nav-item" id="btnResultadosRubroNav">
+  <nav class="bottom-nav" style="display:flex; align-items:center; justify-content:space-around; gap:4px; padding:4px 8px;">
+      <button type="button" class="nav-item active" id="btnNavHome" style="display:flex; flex-direction:column; align-items:center; justify-content:center; min-width:56px;">
+        <span>🏠</span>
+        <span>Inicio</span>
+      </button>
+      <button type="button" class="nav-item" id="btnResultadosRubroNav" style="position:relative; display:flex; flex-direction:column; align-items:center; justify-content:center; min-width:56px;">
         <span>📋</span>
         <span>Lista</span>
-        <span id="badgeContadorRubro" style="display:none; background:#dc2626; color:#fff; border-radius:999px; padding:1px 6px; font-size:11px; font-weight:700; margin-left:4px;">0</span>
+        <span id="badgeContadorRubro" style="display:none; position:absolute; top:0; right:6px; background:#dc2626; color:#fff; border-radius:999px; padding:1px 6px; font-size:11px; font-weight:700; line-height:1.2;">0</span>
       </button>
-        <span>📋</span>
-        <span>Rubro</span>
-        <span id="badgeContadorRubro" style="display:none; background:#dc2626; color:#fff; border-radius:999px; padding:1px 6px; font-size:11px; font-weight:700; margin-left:4px;">0</span>
-      </button>
-      <button type="button" class="nav-floating-btn" id="btnCentrarMapaNav" title="Centrar mapa" aria-label="Centrar mapa">
+      <button type="button" class="nav-floating-btn" id="btnCentrarMapaNav" title="Centrar mapa" aria-label="Centrar mapa" style="flex-shrink:0;">
         <svg viewBox="0 0 100 100">
           <path d="M50 15 C33 15 20 28 20 45 C20 68 50 88 50 88 C50 88 80 68 80 45 C80 28 67 15 50 15 Z" fill="#182333" />
           <circle cx="50" cy="42" r="11" fill="#cda12f" />
         </svg>
       </button>
-      <button type="button" class="nav-item" id="btnCuponesNav"><span>🎟️</span><span>Cupones</span></button>
-      <button type="button" class="nav-item" id="btnAyudanosMejorarNav"><span>💡</span><span>Mejorar</span></button>
+      <button type="button" class="nav-item" id="btnCuponesNav" style="display:flex; flex-direction:column; align-items:center; justify-content:center; min-width:56px;">
+        <span>🎟️</span>
+        <span>Cupones</span>
+      </button>
+      <button type="button" class="nav-item" id="btnAyudanosMejorarNav" style="display:flex; flex-direction:column; align-items:center; justify-content:center; min-width:56px;">
+        <span>💡</span>
+        <span>Mejorar</span>
+      </button>
     </nav>
 <div id="modal-ayudanos-mejorar" class="modal-pub-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="titulo-ayudanos-mejorar">
       <div class="modal-pub-caja" style="max-width:440px; padding:18px; border-radius:12px; background:#fff;">

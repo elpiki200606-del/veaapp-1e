@@ -1254,6 +1254,31 @@ function filtrarComercios() {
   renderizarComerciosPublicos(filtrados);
 }
 
+function filtrarComercios() {
+  const termino = (inputBuscarComercio ? inputBuscarComercio.value : "").trim().toLowerCase();
+  const ordenadosBase = [...comerciosCargados].sort((a, b) => obtenerPesoPlan(b) - obtenerPesoPlan(a));
+
+  if (!termino) {
+    actualizarBadgeResultados(0, false);
+    window.__ultimosResultadosOrdenados = ordenadosBase;
+    renderizarComerciosPublicos(ordenadosBase);
+    return;
+  }
+
+  const filtrados = ordenadosBase
+    .filter((com) => {
+      const textoCupones = (com.cupones || []).map((c) => `${c.titulo || ""} ${c.codigo || ""}`).join(" ");
+      const textoPubs = (com.publicaciones || []).map((p) => `${p.titulo || ""} ${p.descripcion || ""}`).join(" ");
+      const campoCompleto = `${com.nombreComercio || ""} ${com.rubro || ""} ${com.direccion || ""} ${com.telefono || ""} ${textoCupones} ${textoPubs}`.toLowerCase();
+      return campoCompleto.includes(termino);
+    })
+    .sort((a, b) => obtenerPesoPlan(b) - obtenerPesoPlan(a));
+
+  window.__ultimosResultadosOrdenados = filtrados;
+  actualizarBadgeResultados(filtrados.length, true);
+  renderizarComerciosPublicos(filtrados);
+}
+
 if (inputBuscarComercio) {
   inputBuscarComercio.addEventListener("input", filtrarComercios);
 }
