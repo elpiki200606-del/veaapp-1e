@@ -2551,5 +2551,57 @@
     }
   });
 </script>
+
+/* Campanita en barra inferior V.E.A. */
+<style>
+  #item-campanita-inferior-vea {
+  position: relative !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 6px !important;
+  color: #ffffff !important;
+  opacity: 1 !important;
+  visibility: visible !important;
+  z-index: 9999 !important;
+  cursor: pointer !important;
+  padding: 6px 10px !important;
+}
+
+#item-campanita-inferior-vea svg,
+#item-campanita-inferior-vea i,
+#item-campanita-inferior-vea span.icono-campanita-vea {
+  color: #ffd54f !important;
+  fill: #ffd54f !important;
+  stroke: #ffd54f !important;
+  font-size: 20px !important;
+  width: 20px !important;
+  height: 20px !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+
+/* Badge rojo de no leídos */
+#item-campanita-inferior-vea .badge-no-leidas-vea,
+#item-campanita-inferior-vea [class*="badge"],
+#badge-campanita-vea {
+  position: absolute !important;
+  top: -2px !important;
+  right: 2px !important;
+  min-width: 18px !important;
+  height: 18px !important;
+  padding: 0 5px !important;
+  border-radius: 999px !important;
+  background-color: #e53935 !important;
+  color: #ffffff !important;
+  font-size: 11px !important;
+  font-weight: 700 !important;
+  line-height: 18px !important;
+  text-align: center !important;
+  display: inline-block !important;
+  z-index: 10000 !important;
+}
+</style>
 </body>
 </html>
