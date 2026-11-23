@@ -1212,20 +1212,45 @@ function renderizarComerciosPublicos(lista) {
   }
 }
 
+function obtenerPesoPlan(com) {
+  const plan = String((com && (com.plan || com.tipoPlan)) || "basico")
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "");
+  if (plan.includes("premium")) return 3;
+  if (plan.includes("estandar") || plan.includes("standard")) return 2;
+  return 1;
+}
+
+function actualizarBadgeResultados(cantidad, mostrar) {
+  const badge = document.getElementById("badgeContadorRubro");
+  if (!badge) return;
+  badge.textContent = String(cantidad);
+  badge.style.display = mostrar && cantidad > 0 ? "inline-block" : "none";
+}
+
 function filtrarComercios() {
   const termino = (inputBuscarComercio ? inputBuscarComercio.value : "").trim().toLowerCase();
+  const ordenadosBase = [...comerciosCargados].sort((a, b) => obtenerPesoPlan(b) - obtenerPesoPlan(a));
+
   if (!termino) {
-    renderizarComerciosPublicos(comerciosCargados);
+    actualizarBadgeResultados(0, false);
+    window.__ultimosResultadosOrdenados = ordenadosBase;
+    renderizarComerciosPublicos(ordenadosBase);
     return;
   }
 
-  const filtrados = comerciosCargados.filter((com) => {
-    const textoCupones = (com.cupones || []).map((c) => `${c.titulo || ""} ${c.codigo || ""}`).join(" ");
-    const textoPubs = (com.publicaciones || []).map((p) => `${p.titulo || ""} ${p.descripcion || ""}`).join(" ");
-    const campoCompleto = `${com.nombreComercio || ""} ${com.direccion || ""} ${com.telefono || ""} ${textoCupones} ${textoPubs}`.toLowerCase();
-    return campoCompleto.includes(termino);
-  });
+  const filtrados = ordenadosBase
+    .filter((com) => {
+      const textoCupones = (com.cupones || []).map((c) => `${c.titulo || ""} ${c.codigo || ""}`).join(" ");
+      const textoPubs = (com.publicaciones || []).map((p) => `${p.titulo || ""} ${p.descripcion || ""}`).join(" ");
+      const campoCompleto = `${com.nombreComercio || ""} ${com.rubro || ""} ${com.direccion || ""} ${com.telefono || ""} ${textoCupones} ${textoPubs}`.toLowerCase();
+      return campoCompleto.includes(termino);
+    })
+    .sort((a, b) => obtenerPesoPlan(b) - obtenerPesoPlan(a));
 
+  window.__ultimosResultadosOrdenados = filtrados;
+  actualizarBadgeResultados(filtrados.length, true);
   renderizarComerciosPublicos(filtrados);
 }
 
@@ -1702,4 +1727,20 @@ inicializarMapaPrincipal();
       }
     });
   }
+})();
+(function initBotonListaRubro() {
+  const btnLista = document.getElementById("btnResultadosRubroNav");
+  if (!btnLista) return;
+
+  btnLista.addEventListener("click", () => {
+    const lista = Array.isArray(window.__ultimosResultadosOrdenados)
+      ? window.__ultimosResultadosOrdenados
+      : [...comerciosCargados].sort((a, b) => obtenerPesoPlan(b) - obtenerPesoPlan(a));
+
+    renderizarComerciosPublicos(lista);
+    if (typeof listaComerciosPublicos !== "undefined" && listaComerciosPublicos) {
+      listaComerciosPublicos.classList.remove("hidden");
+      listaComerciosPublicos.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+  });
 })();
