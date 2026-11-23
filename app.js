@@ -20,60 +20,75 @@ function obtenerFechaHoyArg() {
   }).format(new Date());
 }
 
-async function registrarYLeerVistasVidriera(comercioId) {
-  if (!db || !comercioId) return { vistasHoy: 0, vistasTotales: 0 };
-
-  const ref = db.collection("comercios").doc(String(comercioId));
-  const hoy = obtenerFechaHoyArg();
-  const inc = firebase.firestore.FieldValue.increment(1);
-  const snap = await ref.get();
-
-  if (!snap.exists) {
-    await ref.set(
-      {
-        vistasTotales: 1,
-        vistasHoy: 1,
-        fechaUltimaVista: hoy
-      },
-      { merge: true }
-    );
-    return { vistasHoy: 1, vistasTotales: 1 };
+async function registrarYLeerVistasVidriera(comercio) {
+  const idComercio = typeof comercio === "string"
+    ? comercio
+    : (comercio && (comercio.id || comercio.uid || comercio.comercioId) || "");
+  if (!idComercio || typeof db === "undefined") {
+    return { vistasHoy: 0, vistasTotales: 0 };
   }
-  function renderContadorVisitas(metricas) {
-  const vistasHoy = metricas && metricas.vistasHoy ? metricas.vistasHoy : 0;
-  const vistasTotales = metricas && metricas.vistasTotales ? metricas.vistasTotales : 0;
 
-  const hoyEl = document.getElementById("visitasHoyNum");
-  const totalEl = document.getElementById("visitasTotalNum");
+  const hoyArg = typeof obtenerFechaHoyArg === "function" ? obtenerFechaHoyArg() : "";
+  const docRef = db.collection("comercios").doc(idComercio);
 
-  if (hoyEl) hoyEl.textContent = Number(vistasHoy).toLocaleString("es-AR");
-  if (totalEl) totalEl.textContent = Number(vistasTotales).toLocaleString("es-AR");
-}
+  const uidActual = (typeof auth !== "undefined" && auth.currentUser && auth.currentUser.uid)
+    ? auth.currentUser.uid
+    : null;
 
-  const data = snap.data() || {};
-  const totalActual = Number(data.vistasTotales || 0);
-  const hoyActual = Number(data.vistasHoy || 0);
+  const duenoIds = (typeof comercio === "object" && comercio)
+    ? [comercio.ownerId, comercio.uidComercio, comercio.duenoId, comercio.userId, comercio.creadoPor].filter(Boolean)
+    : [];
 
-  if (data.fechaUltimaVista === hoy) {
-    await ref.update({
-      vistasTotales: inc,
-      vistasHoy: inc
-    });
+  const esDueno = Boolean(uidActual && duenoIds.includes(uidActual));
+
+  // Si es el dueño o no está logueado, solo leemos el estado real sin sumar
+  if (!uidActual || esDueno) {
+    const snap = await docRef.get();
+    const data = snap.exists ? (snap.data() || {}) : {};
     return {
-      vistasHoy: hoyActual + 1,
-      vistasTotales: totalActual + 1
-    };
-  } else {
-    await ref.update({
-      vistasTotales: inc,
-      vistasHoy: 1,
-      fechaUltimaVista: hoy
-    });
-    return {
-      vistasHoy: 1,
-      vistasTotales: totalActual + 1
+      vistasHoy: data.fechaUltimaVista === hoyArg ? Number(data.vistasHoy || 0) : 0,
+      vistasTotales: Number(data.vistasTotales || 0)
     };
   }
+
+  const visitaRef = docRef.collection("vistasUnicas").doc(uidActual);
+
+  return db.runTransaction(async (tx) => {
+    const [comSnap, visSnap] = await Promise.all([tx.get(docRef), tx.get(visitaRef)]);
+    const comData = comSnap.exists ? (comSnap.data() || {}) : {};
+    const visData = visSnap.exists ? (visSnap.data() || {}) : {};
+
+    const vistasHoyActual = comData.fechaUltimaVista === hoyArg ? Number(comData.vistasHoy || 0) : 0;
+    const vistasTotalesActual = Number(comData.vistasTotales || 0);
+
+    // Ya contó hoy para este usuario: no inflar
+    if (visSnap.exists && visData.fecha === hoyArg) {
+      return {
+        vistasHoy: vistasHoyActual,
+        vistasTotales: vistasTotalesActual
+      };
+    }
+
+    const nuevasVistasHoy = vistasHoyActual + 1;
+    const nuevasVistasTotales = vistasTotalesActual + 1;
+
+    tx.set(visitaRef, {
+      uid: uidActual,
+      fecha: hoyArg,
+      ultimaVista: firebase.firestore.FieldValue.serverTimestamp()
+    }, { merge: true });
+
+    tx.set(docRef, {
+      vistasHoy: nuevasVistasHoy,
+      vistasTotales: nuevasVistasTotales,
+      fechaUltimaVista: hoyArg
+    }, { merge: true });
+
+    return {
+      vistasHoy: nuevasVistasHoy,
+      vistasTotales: nuevasVistasTotales
+    };
+  });
 }
 // 2. Referencias al DOM
 const estadoEl = document.getElementById("estado-app");
@@ -1207,13 +1222,16 @@ const idComercioActual = comercio.id || comercio.uid || comercio.comercioId || "
     renderContadorVisitas({ vistasHoy: 0, vistasTotales: 0 });
   }
   if (idComercioActual && typeof registrarYLeerVistasVidriera === "function") {
-    registrarYLeerVistasVidriera(idComercioActual).then((metricas) => {
-      if (typeof renderContadorVisitas === "function") {
-        renderContadorVisitas(metricas);
-      }
-    });
+    registrarYLeerVistasVidriera(comercio)
+      .then((metricas) => {
+        if (metricas && typeof renderContadorVisitas === "function") {
+          renderContadorVisitas(metricas);
+        }
+      })
+      .catch((err) => {
+        console.error("Error al registrar vista real:", err);
+      });
   }
-
   }
 function renderizarComerciosPublicos(lista) {
   inicializarMapaPrincipal();
