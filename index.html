@@ -1227,11 +1227,13 @@
     </div>
   </div>
 
-  <nav class="bottom-nav" style="position:relative; display:flex; align-items:flex-end; justify-content:space-around; gap:2px; padding:12px 4px 6px; background:#0f2e22 !important; border-top:none !important; color:#ecfdf5; overflow:visible; z-index:20;">
-      <!-- Curva ancha para celular: el verde arranca debajo del arco y la línea dorada rodea el hueco -->
-      <svg viewBox="0 0 360 56" preserveAspectRatio="none" style="position:absolute; top:0; left:0; width:100%; height:56px; pointer-events:none; z-index:1;" aria-hidden="true">
-        <path d="M 0 10 L 118 10 C 145 10 152 46 180 46 C 208 46 215 10 242 10 L 360 10 L 360 56 L 0 56 Z" fill="#0f2e22" />
-        <path d="M 0 10 L 118 10 C 145 10 152 46 180 46 C 208 46 215 10 242 10 L 360 10" fill="none" stroke="#c59b27" stroke-width="2.5" vector-effect="non-scaling-stroke" />
+  <nav class="bottom-nav" style="position:relative; display:flex; align-items:flex-end; justify-content:space-around; gap:2px; padding:12px 4px 6px; background:transparent !important; border-top:none !important; color:#ecfdf5; overflow:visible; z-index:20;">
+      <!-- Fondo verde arranca debajo de la curva para no rellenar arriba -->
+      <div style="position:absolute; top:28px; left:0; right:0; bottom:0; background:#0f2e22; pointer-events:none; z-index:1;"></div>
+
+      <!-- Solo el trazo dorado estirado para celular, sin relleno verde -->
+      <svg viewBox="0 0 360 56" preserveAspectRatio="none" style="position:absolute; top:0; left:0; width:100%; height:56px; pointer-events:none; z-index:2;" aria-hidden="true">
+        <path d="M 0 10 L 105 10 C 138 10 146 46 180 46 C 214 46 222 10 255 10 L 360 10" fill="none" stroke="#c59b27" stroke-width="2.5" vector-effect="non-scaling-stroke" />
       </svg>
 
       <button type="button" class="nav-item active" id="btnNavHome" style="position:relative; z-index:3; background:transparent; border:none; color:#ecfdf5; display:flex; flex-direction:column; align-items:center; justify-content:flex-end; gap:2px; padding:2px 2px; cursor:pointer; font-size:10.5px; min-width:46px;">
@@ -1265,7 +1267,7 @@
         <span>Mejorar</span>
       </button>
     </nav>
-
+    
       <button type="button" class="nav-item" id="btnAyudanosMejorarNav" style="background:transparent; border:none; color:#ecfdf5; display:flex; flex-direction:column; align-items:center; gap:2px; padding:4px 8px; cursor:pointer; font-size:12px;">
         <span style="font-size:18px;">💡</span>
         <span>Mejorar</span>
