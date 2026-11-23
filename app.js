@@ -1263,7 +1263,7 @@ const hoyArgCard = typeof obtenerFechaHoyArg === "function" ? obtenerFechaHoyArg
           <p class="subtexto">📍 ${escaparHTML(com.direccion || "")}</p>
           ${com.telefono ? `<p class="subtexto">📱 WhatsApp: <strong>${escaparHTML(com.telefono)}</strong></p>` : ""}
           <div class="comercio-badges">
-          <span class="badge-vea" style="background:#0f2e22; color:#c59b27; border:1px solid #c59b27;">👁 ${vistasHoyCard.toLocaleString("es-AR")} hoy · ${vistasTotalCard.toLocaleString("es-AR")} total</span>
+          <span style="display:inline-flex; align-items:center; gap:6px; background:#0f2e22; color:#f4f7f5; border:1px solid #c59b27; border-radius:999px; padding:4px 10px; font-size:12px; font-weight:700; line-height:1.2;"><span style="color:#c59b27;">👁</span><span>${vistasHoyCard.toLocaleString("es-AR")}</span><span style="color:#c59b27; font-weight:600;">hoy</span><span style="color:#c59b27;">·</span><span>${vistasTotalCard.toLocaleString("es-AR")}</span><span style="color:#c59b27; font-weight:600;">total</span></span>
             <span class="badge-vea">🎟️ ${cantCupones} cupón${cantCupones === 1 ? "" : "es"}</span>
             <span class="badge-vea">📰 ${cantPubs} pub${cantPubs === 1 ? "" : "s"}</span>
           </div>
