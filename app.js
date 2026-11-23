@@ -1248,7 +1248,9 @@ function renderizarComerciosPublicos(lista) {
     const cantCupones = Array.isArray(com.cupones) ? com.cupones.length : 0;
     const cantPubs = Array.isArray(com.publicaciones) ? com.publicaciones.length : 0;
     const waUrl = com.whatsappUrl || formatearWhatsAppUrl(com.telefono || "");
-
+const hoyArgCard = typeof obtenerFechaHoyArg === "function" ? obtenerFechaHoyArg() : "";
+  const vistasHoyCard = com.fechaUltimaVista === hoyArgCard ? Number(com.vistasHoy || 0) : 0;
+  const vistasTotalCard = Number(com.vistasTotales || 0);
     const card = document.createElement("article");
     card.className = "comercio-card";
     card.innerHTML = `
@@ -1261,6 +1263,7 @@ function renderizarComerciosPublicos(lista) {
           <p class="subtexto">📍 ${escaparHTML(com.direccion || "")}</p>
           ${com.telefono ? `<p class="subtexto">📱 WhatsApp: <strong>${escaparHTML(com.telefono)}</strong></p>` : ""}
           <div class="comercio-badges">
+          <span class="badge-vea" style="background:#0f2e22; color:#c59b27; border:1px solid #c59b27;">👁 ${vistasHoyCard.toLocaleString("es-AR")} hoy · ${vistasTotalCard.toLocaleString("es-AR")} total</span>
             <span class="badge-vea">🎟️ ${cantCupones} cupón${cantCupones === 1 ? "" : "es"}</span>
             <span class="badge-vea">📰 ${cantPubs} pub${cantPubs === 1 ? "" : "s"}</span>
           </div>
