@@ -2141,3 +2141,257 @@ inicializarMapaPrincipal();
     }
   });
 })();
+let estadoNotificacionesBarraVEA = [];
+
+function obtenerContenedorBarraInferiorVEA() {
+  const selectores = [
+    ".bottom-nav",
+    ".barra-inferior",
+    ".menu-inferior",
+    ".nav-inferior",
+    ".footer-nav",
+    "footer nav",
+    "nav.fixed-bottom",
+    "nav[data-barra='inferior']"
+  ];
+
+  for (const sel of selectores) {
+    const el = document.querySelector(sel);
+    if (el) return el;
+  }
+
+  // Respaldo si la barra inferior no tiene clase específica
+  const navs = Array.from(document.querySelectorAll("nav"));
+  const navInferior = navs.find((n) => {
+    const rect = n.getBoundingClientRect();
+    return rect.bottom >= window.innerHeight - 120 && rect.height <= 90;
+  });
+  if (navInferior) return navInferior;
+
+  let creada = document.querySelector("#barra-inferior-vea");
+  if (!creada) {
+    creada = document.createElement("nav");
+    creada.id = "barra-inferior-vea";
+    creada.style.cssText =
+      "position:fixed; bottom:0; left:0; right:0; height:58px; background:#0f2e22; border-top:1px solid #c59b27; display:flex; align-items:center; justify-content:space-around; z-index:9990;";
+    document.body.appendChild(creada);
+  }
+  return creada;
+}
+
+function insertarAlLadoDeInicioVEA(barra, itemNotif) {
+  const candidatos = Array.from(barra.querySelectorAll("a, button, .nav-item, [role='button']"));
+  const botonInicio = candidatos.find((el) => {
+    const texto = (el.textContent || "").trim().toLowerCase();
+    const idOCalse = `${el.id || ""} ${el.className || ""}`.toLowerCase();
+    return (
+      texto.includes("inicio") ||
+      texto.includes("home") ||
+      idOCalse.includes("inicio") ||
+      idOCalse.includes("home")
+    );
+  });
+
+  if (botonInicio && botonInicio.parentNode === barra) {
+    botonInicio.insertAdjacentElement("afterend", itemNotif);
+    return;
+  }
+
+  if (botonInicio && botonInicio.parentNode) {
+    botonInicio.parentNode.insertAdjacentElement("afterend", itemNotif);
+    return;
+  }
+
+  barra.appendChild(itemNotif);
+}
+
+function inicializarCampanitaBarraInferiorVEA() {
+  const barra = obtenerContenedorBarraInferiorVEA();
+  if (!barra) return;
+
+  let item = document.querySelector("#item-campanita-inferior-vea");
+  if (!item) {
+    item = document.createElement("div");
+    item.id = "item-campanita-inferior-vea";
+    item.style.cssText = "position:relative; display:none; align-items:center; justify-content:center;";
+
+    item.innerHTML = `
+      <button id="btn-campanita-inferior-vea" type="button" aria-label="Notificaciones"
+        style="position:relative; display:inline-flex; flex-direction:column; align-items:center; justify-content:center; gap:2px; background:transparent; border:none; color:#f4f7f5; cursor:pointer; padding:4px 10px; font-size:18px; line-height:1;">
+        <span style="position:relative; display:inline-flex; align-items:center; justify-content:center;">
+          <span>🔔</span>
+          <span id="badge-campanita-inferior-vea"
+            style="display:none; position:absolute; top:-5px; right:-8px; min-width:17px; height:17px; padding:0 4px; border-radius:999px; background:#dc2626; color:#ffffff; font-size:10px; font-weight:800; line-height:17px; text-align:center;">
+            0
+          </span>
+        </span>
+        <span style="font-size:10px; font-weight:600; color:#f4f7f5;">Avisos</span>
+      </button>
+      <div id="bandeja-campanita-inferior-vea"
+        style="display:none; position:fixed; bottom:66px; left:12px; right:12px; max-width:380px; margin-left:auto; max-height:320px; overflow-y:auto; background:#ffffff; color:#111827; border:1px solid #d1d5db; border-radius:12px; box-shadow:0 12px 28px rgba(0,0,0,0.25); padding:12px; z-index:10001;">
+        <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #e5e7eb; padding-bottom:8px; margin-bottom:8px;">
+          <strong style="font-size:13px; color:#0f2e22;">Notificaciones</strong>
+          <button id="btn-limpiar-no-leidas-vea" type="button"
+            style="background:none; border:none; color:#0f2e22; font-size:11px; font-weight:700; cursor:pointer; text-decoration:underline;">
+            Marcar leídas
+          </button>
+        </div>
+        <div id="lista-campanita-inferior-vea" style="display:flex; flex-direction:column; gap:8px; font-size:12px;">
+          <p style="margin:0; color:#6b7280;">No tenés notificaciones nuevas.</p>
+        </div>
+      </div>
+    `;
+
+    insertarAlLadoDeInicioVEA(barra, item);
+
+    const btn = item.querySelector("#btn-campanita-inferior-vea");
+    const bandeja = item.querySelector("#bandeja-campanita-inferior-vea");
+    const btnLeidas = item.querySelector("#btn-limpiar-no-leidas-vea");
+
+    btn.addEventListener("click", (e) => {
+      e.stopPropagation();
+      const usuarioLogueado = Boolean(typeof auth !== "undefined" && auth.currentUser);
+      if (!usuarioLogueado) {
+        bandeja.style.display = "none";
+        item.style.display = "none";
+        return;
+      }
+      bandeja.style.display = bandeja.style.display === "block" ? "none" : "block";
+    });
+
+    document.addEventListener("click", (e) => {
+      if (!item.contains(e.target)) {
+        bandeja.style.display = "none";
+      }
+    });
+
+    btnLeidas.addEventListener("click", async () => {
+      estadoNotificacionesBarraVEA = estadoNotificacionesBarraVEA.map((n) => ({ ...n, leida: true }));
+      actualizarBadgeYListaCampanitaVEA();
+
+      if (typeof db !== "undefined" && typeof auth !== "undefined" && auth.currentUser) {
+        const snap = await db
+          .collection("usuarios")
+          .doc(auth.currentUser.uid)
+          .collection("notificaciones")
+          .where("leida", "==", false)
+          .get();
+        if (!snap.empty) {
+          const batch = db.batch();
+          snap.forEach((doc) => batch.update(doc.ref, { leida: true }));
+          await batch.commit();
+        }
+      }
+    });
+  }
+
+  actualizarVisibilidadSesionCampanitaVEA();
+}
+
+function actualizarVisibilidadSesionCampanitaVEA(usuarioOverride = undefined) {
+  const item = document.querySelector("#item-campanita-inferior-vea");
+  const bandeja = document.querySelector("#bandeja-campanita-inferior-vea");
+  if (!item) return;
+
+  const usuario =
+    usuarioOverride !== undefined
+      ? usuarioOverride
+      : typeof auth !== "undefined" && auth.currentUser
+        ? auth.currentUser
+        : null;
+
+  if (!usuario) {
+    item.style.display = "none";
+    if (bandeja) bandeja.style.display = "none";
+    estadoNotificacionesBarraVEA = [];
+    actualizarBadgeYListaCampanitaVEA();
+    return;
+  }
+
+  item.style.display = "inline-flex";
+  cargarNotificacionesBarraVEA(usuario.uid);
+}
+
+function actualizarBadgeYListaCampanitaVEA(lista = estadoNotificacionesBarraVEA) {
+  estadoNotificacionesBarraVEA = Array.isArray(lista) ? lista : [];
+  const badge = document.querySelector("#badge-campanita-inferior-vea");
+  const listaEl = document.querySelector("#lista-campanita-inferior-vea");
+  if (!badge || !listaEl) return;
+
+  const sinLeer = estadoNotificacionesBarraVEA.filter((n) => !n.leida).length;
+  if (sinLeer > 0) {
+    badge.textContent = sinLeer > 99 ? "99+" : String(sinLeer);
+    badge.style.display = "inline-block";
+  } else {
+    badge.textContent = "0";
+    badge.style.display = "none";
+  }
+
+  if (!estadoNotificacionesBarraVEA.length) {
+    listaEl.innerHTML = `<p style="margin:0; color:#6b7280;">No tenés notificaciones nuevas.</p>`;
+    return;
+  }
+
+  listaEl.innerHTML = estadoNotificacionesBarraVEA
+    .map(
+      (n, i) => `
+      <div data-idx-notif="${i}"
+        style="padding:8px 10px; border-radius:8px; background:${n.leida ? "#f9fafb" : "#ecfdf5"}; border:1px solid ${n.leida ? "#e5e7eb" : "#10b981"}; cursor:pointer;">
+        <div style="font-weight:${n.leida ? "600" : "700"}; color:#0f2e22; margin-bottom:2px;">
+          ${n.titulo || "Aviso"} ${!n.leida ? '<span style="color:#dc2626;">●</span>' : ""}
+        </div>
+        <div style="color:#374151; font-size:12px; line-height:1.35;">${n.mensaje || ""}</div>
+      </div>`
+    )
+    .join("");
+
+  listaEl.querySelectorAll("[data-idx-notif]").forEach((card) => {
+    card.addEventListener("click", async () => {
+      const idx = Number(card.getAttribute("data-idx-notif"));
+      const notif = estadoNotificacionesBarraVEA[idx];
+      if (!notif) return;
+      notif.leida = true;
+      actualizarBadgeYListaCampanitaVEA();
+
+      if (notif.id && typeof db !== "undefined" && typeof auth !== "undefined" && auth.currentUser) {
+        await db
+          .collection("usuarios")
+          .doc(auth.currentUser.uid)
+          .collection("notificaciones")
+          .doc(notif.id)
+          .set({ leida: true }, { merge: true });
+      }
+    });
+  });
+}
+
+async function cargarNotificacionesBarraVEA(uid) {
+  if (!uid || typeof db === "undefined") {
+    actualizarBadgeYListaCampanitaVEA([]);
+    return;
+  }
+  try {
+    const snap = await db
+      .collection("usuarios")
+      .doc(uid)
+      .collection("notificaciones")
+      .orderBy("fechaCreacion", "desc")
+      .limit(20)
+      .get();
+
+    const docs = [];
+    snap.forEach((doc) => docs.push({ id: doc.id, ...doc.data() }));
+    actualizarBadgeYListaCampanitaVEA(docs);
+  } catch (err) {
+    console.error("Error cargando notificaciones de barra:", err);
+  }
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+  inicializarCampanitaBarraInferiorVEA();
+  if (typeof auth !== "undefined" && typeof auth.onAuthStateChanged === "function") {
+    auth.onAuthStateChanged((user) => {
+      actualizarVisibilidadSesionCampanitaVEA(user || null);
+    });
+  }
+});
