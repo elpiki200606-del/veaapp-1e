@@ -1212,71 +1212,137 @@ function renderizarComerciosPublicos(lista) {
   }
 }
 
-function obtenerPesoPlan(com) {
-  const plan = String((com && (com.plan || com.tipoPlan)) || "basico")
+function normalizarTextoVEA(texto) {
+  return String(texto || "")
     .toLowerCase()
     .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "");
-  if (plan.includes("premium")) return 3;
-  if (plan.includes("estandar") || plan.includes("standard")) return 2;
-  return 1;
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[^a-z0-9\s]/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function obtenerInfoPlanVEA(com) {
+  const raw = normalizarTextoVEA((com && (com.plan || com.tipoPlan)) || "basico");
+  if (raw.includes("premium")) {
+    return { peso: 3, etiqueta: "👑 PREMIUM", badgeBg: "#c59b27", badgeColor: "#0f2e22" };
+  }
+  if (raw.includes("estandar") || raw.includes("standard")) {
+    return { peso: 2, etiqueta: "ESTÁNDAR", badgeBg: "#15803d", badgeColor: "#ffffff" };
+  }
+  return { peso: 1, etiqueta: "BÁSICO", badgeBg: "#334155", badgeColor: "#f8fafc" };
+}
+
+function obtenerPesoPlan(com) {
+  return obtenerInfoPlanVEA(com).peso;
 }
 
 function actualizarBadgeResultados(cantidad, mostrar) {
   const badge = document.getElementById("badgeContadorRubro");
   if (!badge) return;
-  badge.textContent = String(cantidad);
-  badge.style.display = mostrar && cantidad > 0 ? "inline-block" : "none";
+  const total = Number(cantidad) || 0;
+  badge.textContent = String(total);
+  badge.style.display = mostrar && total > 0 ? "inline-block" : "none";
 }
 
-function filtrarComercios() {
-  const termino = (inputBuscarComercio ? inputBuscarComercio.value : "").trim().toLowerCase();
+function obtenerRubrosOficialesVEA() {
+  const setRubros = new Set();
+  if (typeof DICCCIONARIO_PALABRAS_RUBRO === "object" && DICCCIONARIO_PALABRAS_RUBRO) {
+    Object.keys(DICCCIONARIO_PALABRAS_RUBRO).forEach((r) => r && setRubros.add(String(r).trim()));
+  }
+  if (typeof DICCIONARIO_PALABRAS_RUBRO === "object" && DICCIONARIO_PALABRAS_RUBRO) {
+    Object.keys(DICCIONARIO_PALABRAS_RUBRO).forEach((r) => r && setRubros.add(String(r).trim()));
+  }
+  if (Array.isArray(comerciosCargados)) {
+    comerciosCargados.forEach((c) => {
+      if (c && c.rubro) setRubros.add(String(c.rubro).trim());
+    });
+  }
+  return Array.from(setRubros);
+}
+
+function resolverRubroSugeridoVEA(consultaRaw) {
+  const q = normalizarTextoVEA(consultaRaw);
+  if (!q) return null;
+
+  const rubros = obtenerRubrosOficialesVEA();
+  const qCompacta = q.replace(/(.)\1+/g, "$1");
+
+  for (const rubro of rubros) {
+    const rNorm = normalizarTextoVEA(rubro);
+    const rCompacta = rNorm.replace(/(.)\1+/g, "$1");
+    if (rNorm.startsWith(q) || rNorm.includes(q) || rCompacta.startsWith(qCompacta) || rCompacta.includes(qCompacta)) {
+      return rubro;
+    }
+  }
+
+  const dic = (typeof DICCCIONARIO_PALABRAS_RUBRO === "object" && DICCCIONARIO_PALABRAS_RUBRO)
+    ? DICCCIONARIO_PALABRAS_RUBRO
+    : ((typeof DICCIONARIO_PALABRAS_RUBRO === "object" && DICCIONARIO_PALABRAS_RUBRO) ? DICCIONARIO_PALABRAS_RUBRO : null);
+
+  if (dic) {
+    for (const [rubro, palabras] of Object.entries(dic)) {
+      if (!Array.isArray(palabras)) continue;
+      for (const p of palabras) {
+        const pNorm = normalizarTextoVEA(p);
+        const pCompacta = pNorm.replace(/(.)\1+/g, "$1");
+        if (pNorm.startsWith(q) || pNorm.includes(q) || pCompacta.startsWith(qCompacta)) {
+          return rubro;
+        }
+      }
+    }
+  }
+  return null;
+}
+
+function aplicarFiltroComerciosVEA(terminoRaw, opciones = {}) {
+  const { desdeRubro = false, mostrarBadge = true } = opciones;
+  const termino = normalizarTextoVEA(terminoRaw);
   const ordenadosBase = [...comerciosCargados].sort((a, b) => obtenerPesoPlan(b) - obtenerPesoPlan(a));
 
   if (!termino) {
-    actualizarBadgeResultados(0, false);
     window.__ultimosResultadosOrdenados = ordenadosBase;
+    window.__ultimoTerminoFiltroVEA = "";
+    actualizarBadgeResultados(0, false);
     renderizarComerciosPublicos(ordenadosBase);
-    return;
+    return ordenadosBase;
   }
+
+  const sugerencia = resolverRubroSugeridoVEA(termino);
+  const sugerenciaNorm = sugerencia ? normalizarTextoVEA(sugerencia) : "";
 
   const filtrados = ordenadosBase
     .filter((com) => {
+      const rubroNorm = normalizarTextoVEA(com.rubro || "");
+      if (desdeRubro) {
+        return rubroNorm.includes(termino) || (sugerenciaNorm && rubroNorm === sugerenciaNorm);
+      }
       const textoCupones = (com.cupones || []).map((c) => `${c.titulo || ""} ${c.codigo || ""}`).join(" ");
       const textoPubs = (com.publicaciones || []).map((p) => `${p.titulo || ""} ${p.descripcion || ""}`).join(" ");
-      const campoCompleto = `${com.nombreComercio || ""} ${com.rubro || ""} ${com.direccion || ""} ${com.telefono || ""} ${textoCupones} ${textoPubs}`.toLowerCase();
-      return campoCompleto.includes(termino);
+      const campoCompleto = normalizarTextoVEA(
+        `${com.nombreComercio || ""} ${com.rubro || ""} ${com.direccion || ""} ${com.telefono || ""} ${textoCupones} ${textoPubs}`
+      );
+      const campoCompacto = campoCompleto.replace(/(.)\1+/g, "$1");
+      const terminoCompacto = termino.replace(/(.)\1+/g, "$1");
+
+      return (
+        campoCompleto.includes(termino) ||
+        campoCompacto.includes(terminoCompacto) ||
+        (sugerenciaNorm && campoCompleto.includes(sugerenciaNorm))
+      );
     })
     .sort((a, b) => obtenerPesoPlan(b) - obtenerPesoPlan(a));
 
   window.__ultimosResultadosOrdenados = filtrados;
-  actualizarBadgeResultados(filtrados.length, true);
+  window.__ultimoTerminoFiltroVEA = sugerencia || terminoRaw.trim();
+  actualizarBadgeResultados(filtrados.length, mostrarBadge);
   renderizarComerciosPublicos(filtrados);
+  return filtrados;
 }
 
 function filtrarComercios() {
-  const termino = (inputBuscarComercio ? inputBuscarComercio.value : "").trim().toLowerCase();
-  const ordenadosBase = [...comerciosCargados].sort((a, b) => obtenerPesoPlan(b) - obtenerPesoPlan(a));
-
-  if (!termino) {
-    actualizarBadgeResultados(0, false);
-    window.__ultimosResultadosOrdenados = ordenadosBase;
-    renderizarComerciosPublicos(ordenadosBase);
-    return;
-  }
-
-  const filtrados = ordenadosBase
-    .filter((com) => {
-      const textoCupones = (com.cupones || []).map((c) => `${c.titulo || ""} ${c.codigo || ""}`).join(" ");
-      const textoPubs = (com.publicaciones || []).map((p) => `${p.titulo || ""} ${p.descripcion || ""}`).join(" ");
-      const campoCompleto = `${com.nombreComercio || ""} ${com.rubro || ""} ${com.direccion || ""} ${com.telefono || ""} ${textoCupones} ${textoPubs}`.toLowerCase();
-      return campoCompleto.includes(termino);
-    })
-    .sort((a, b) => obtenerPesoPlan(b) - obtenerPesoPlan(a));
-
-  window.__ultimosResultadosOrdenados = filtrados;
-  actualizarBadgeResultados(filtrados.length, true);
-  renderizarComerciosPublicos(filtrados);
+  const valor = (typeof inputBuscarComercio !== "undefined" && inputBuscarComercio) ? inputBuscarComercio.value : "";
+  aplicarFiltroComerciosVEA(valor, { desdeRubro: false, mostrarBadge: true });
 }
 
 if (inputBuscarComercio) {
@@ -1766,6 +1832,178 @@ inicializarMapaPrincipal();
     if (typeof listaComerciosPublicos !== "undefined" && listaComerciosPublicos) {
       listaComerciosPublicos.classList.remove("hidden");
       listaComerciosPublicos.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+  });
+})();
+(function initVistaListaYBuscadorVEA() {
+  const btnLista = document.getElementById("btnResultadosRubroNav");
+  if (!btnLista) return;
+
+  function asegurarPanelLista() {
+    let panel = document.getElementById("panel-lista-vea-opcion1");
+    if (panel) return panel;
+
+    panel = document.createElement("div");
+    panel.id = "panel-lista-vea-opcion1";
+    panel.style.cssText = [
+      "position:fixed",
+      "left:12px",
+      "right:12px",
+      "bottom:72px",
+      "max-height:66vh",
+      "overflow-y:auto",
+      "background:#0f2e22",
+      "color:#ecfdf5",
+      "border:1px solid #2d6a4f",
+      "border-radius:14px",
+      "box-shadow:0 14px 34px rgba(0,0,0,0.45)",
+      "padding:14px",
+      "z-index:9999",
+      "display:none"
+    ].join(";");
+
+    panel.innerHTML = `
+      <div style="display:flex; align-items:center; justify-content:space-between; gap:8px; border-bottom:1px solid #2d6a4f; padding-bottom:10px; margin-bottom:12px;">
+        <strong id="titulo-panel-lista-vea" style="font-size:15px; color:#facc15;">Lista de comercios</strong>
+        <button type="button" id="btn-cerrar-panel-lista-vea" style="cursor:pointer; padding:5px 12px; border-radius:8px; border:1px solid #c59b27; background:#1b4332; color:#ecfdf5; font-weight:600;">Cerrar</button>
+      </div>
+      <div id="cuerpo-panel-lista-vea"></div>
+    `;
+
+    document.body.appendChild(panel);
+    panel.querySelector("#btn-cerrar-panel-lista-vea").addEventListener("click", () => {
+      panel.style.display = "none";
+    });
+    return panel;
+  }
+
+  function renderizarPanelLista() {
+    const panel = asegurarPanelLista();
+    const cuerpo = panel.querySelector("#cuerpo-panel-lista-vea");
+    const titulo = panel.querySelector("#titulo-panel-lista-vea");
+
+    const fuente = Array.isArray(window.__ultimosResultadosOrdenados) && window.__ultimosResultadosOrdenados.length
+      ? window.__ultimosResultadosOrdenados
+      : (typeof comerciosCargados !== "undefined" && Array.isArray(comerciosCargados) ? comerciosCargados : []);
+
+    const listaOrdenada = [...fuente].sort((a, b) => obtenerInfoPlanVEA(b).peso - obtenerInfoPlanVEA(a).peso);
+    const etiquetaFiltro = window.__ultimoTerminoFiltroVEA || "";
+
+    titulo.textContent = etiquetaFiltro
+      ? `Lista de comercios · "${etiquetaFiltro}" (${listaOrdenada.length})`
+      : `Lista de comercios (${listaOrdenada.length})`;
+
+    if (!listaOrdenada.length) {
+      cuerpo.innerHTML = `<p style="margin:0; color:#a7f3d0;">No se encontraron comercios para mostrar.</p>`;
+      panel.style.display = "block";
+      return;
+    }
+
+    cuerpo.innerHTML = "";
+    listaOrdenada.forEach((com) => {
+      const plan = obtenerInfoPlanVEA(com);
+      const fila = document.createElement("div");
+      fila.style.cssText = [
+        "display:flex",
+        "align-items:center",
+        "justify-content:space-between",
+        "gap:10px",
+        "background:#162232",
+        "border:1px solid #2d6a4f",
+        "border-radius:12px",
+        "padding:10px",
+        "margin-bottom:10px",
+        "cursor:pointer"
+      ].join(";");
+
+      const mini = document.createElement("div");
+      mini.style.cssText = "width:46px; height:46px; border-radius:10px; background:#1b4332; border:1px solid #40916c; display:flex; align-items:center; justify-content:center; font-size:22px; flex-shrink:0;";
+      mini.textContent = "🏪";
+
+      const info = document.createElement("div");
+      info.style.cssText = "flex:1; min-width:0;";
+
+      const nombre = com.nombreComercio || com.nombre || "Comercio sin nombre";
+      const rubro = com.rubro || "Sin rubro";
+      const dir = com.direccion || "Sin dirección";
+
+      info.innerHTML = `
+        <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap; margin-bottom:3px;">
+          <span style="font-size:11px; font-weight:800; padding:2px 8px; border-radius:999px; background:${plan.badgeBg}; color:${plan.badgeColor};">${plan.etiqueta}</span>
+        </div>
+        <div style="font-weight:700; font-size:14px; color:#ffffff; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${nombre}</div>
+        <div style="font-size:12px; color:#86efac; margin-top:2px;">🏷️ ${rubro}</div>
+        <div style="font-size:12px; color:#cbd5e1; margin-top:2px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">📍 ${dir}</div>
+      `;
+
+      const flecha = document.createElement("span");
+      flecha.textContent = "›";
+      flecha.style.cssText = "font-size:22px; color:#facc15; font-weight:700; padding-left:4px;";
+
+      fila.appendChild(mini);
+      fila.appendChild(info);
+      fila.appendChild(flecha);
+
+      fila.addEventListener("click", () => {
+        panel.style.display = "none";
+        if (typeof abrirDetalleComercio === "function") {
+          abrirDetalleComercio(com);
+        }
+      });
+
+      cuerpo.appendChild(fila);
+    });
+
+    panel.style.display = "block";
+  }
+
+  btnLista.addEventListener("click", (e) => {
+    e.preventDefault();
+    renderizarPanelLista();
+  });
+
+  if (typeof inputBuscarComercio !== "undefined" && inputBuscarComercio) {
+    let cajaSug = document.getElementById("sugerencias-rubro-vea");
+    if (!cajaSug) {
+      cajaSug = document.createElement("div");
+      cajaSug.id = "sugerencias-rubro-vea";
+      cajaSug.style.cssText = "display:none; margin-top:6px; background:#0f2e22; border:1px solid #40916c; border-radius:10px; padding:6px 10px; color:#ecfdf5; font-size:13px;";
+      inputBuscarComercio.insertAdjacentElement("afterend", cajaSug);
+    }
+
+    const actualizarSugerencia = () => {
+      const actual = inputBuscarComercio.value.trim();
+      if (!actual) {
+        cajaSug.style.display = "none";
+        return;
+      }
+      const sug = resolverRubroSugeridoVEA(actual);
+      if (sug && normalizarTextoVEA(sug) !== normalizarTextoVEA(actual)) {
+        cajaSug.innerHTML = `¿Quisiste decir <button type="button" id="btn-aplicar-sugerencia-vea" style="background:#15803d; color:#fff; border:1px solid #86efac; border-radius:6px; padding:2px 8px; margin-left:4px; cursor:pointer; font-weight:700;">${sug}</button>?`;
+        cajaSug.style.display = "block";
+        const btnAplicar = document.getElementById("btn-aplicar-sugerencia-vea");
+        if (btnAplicar) {
+          btnAplicar.addEventListener("click", () => {
+            inputBuscarComercio.value = sug;
+            cajaSug.style.display = "none";
+            aplicarFiltroComerciosVEA(sug, { desdeRubro: true, mostrarBadge: true });
+          });
+        }
+      } else {
+        cajaSug.style.display = "none";
+      }
+    };
+
+    inputBuscarComercio.addEventListener("input", actualizarSugerencia);
+  }
+
+  document.addEventListener("click", (e) => {
+    const target = e.target.closest("[data-rubro], .chip-rubro, .item-rubro, .btn-rubro");
+    if (!target) return;
+    const rubroElegido = (target.dataset && target.dataset.rubro) || target.textContent || "";
+    const limpio = rubroElegido.trim();
+    if (limpio && limpio.toLowerCase() !== "rubros" && limpio.toLowerCase() !== "todos") {
+      aplicarFiltroComerciosVEA(limpio, { desdeRubro: true, mostrarBadge: true });
     }
   });
 })();

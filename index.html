@@ -1227,28 +1227,32 @@
     </div>
   </div>
 
-  <nav class="bottom-nav" style="display:flex; align-items:center; justify-content:space-around; gap:4px; padding:4px 8px;">
-      <button type="button" class="nav-item active" id="btnNavHome" style="display:flex; flex-direction:column; align-items:center; justify-content:center; min-width:56px;">
-        <span>🏠</span>
+  <nav class="bottom-nav" style="display:flex; align-items:center; justify-content:space-around; gap:4px; padding:6px 10px; background:#0f2e22; border-top:2px solid #c59b27; color:#ecfdf5;">
+      <button type="button" class="nav-item active" id="btnNavHome" style="background:transparent; border:none; color:#ecfdf5; display:flex; flex-direction:column; align-items:center; gap:2px; padding:4px 8px; cursor:pointer; font-size:12px;">
+        <span style="font-size:18px;">🏠</span>
         <span>Inicio</span>
       </button>
-      <button type="button" class="nav-item" id="btnResultadosRubroNav" style="position:relative; display:flex; flex-direction:column; align-items:center; justify-content:center; min-width:56px;">
-        <span>📋</span>
+
+      <button type="button" class="nav-item" id="btnResultadosRubroNav" style="position:relative; background:transparent; border:none; color:#ecfdf5; display:flex; flex-direction:column; align-items:center; gap:2px; padding:4px 8px; cursor:pointer; font-size:12px;">
+        <span style="font-size:18px;">📋</span>
         <span>Lista</span>
-        <span id="badgeContadorRubro" style="display:none; position:absolute; top:0; right:6px; background:#dc2626; color:#fff; border-radius:999px; padding:1px 6px; font-size:11px; font-weight:700; line-height:1.2;">0</span>
+        <span id="badgeContadorRubro" style="display:none; position:absolute; top:-2px; right:2px; background:#dc2626; color:#ffffff; border-radius:999px; padding:1px 6px; font-size:11px; font-weight:700; line-height:1.2; box-shadow:0 2px 6px rgba(0,0,0,0.35);">0</span>
       </button>
-      <button type="button" class="nav-floating-btn" id="btnCentrarMapaNav" title="Centrar mapa" aria-label="Centrar mapa" style="flex-shrink:0;">
-        <svg viewBox="0 0 100 100">
-          <path d="M50 15 C33 15 20 28 20 45 C20 68 50 88 50 88 C50 88 80 68 80 45 C80 28 67 15 50 15 Z" fill="#182333" />
-          <circle cx="50" cy="42" r="11" fill="#cda12f" />
+
+      <button type="button" class="nav-floating-btn" id="btnCentrarMapaNav" title="Centrar mapa" aria-label="Centrar mapa" style="width:46px; height:46px; border-radius:999px; background:#c59b27; border:3px solid #0f2e22; box-shadow:0 4px 12px rgba(0,0,0,0.35); display:flex; align-items:center; justify-content:center; cursor:pointer; flex-shrink:0;">
+        <svg viewBox="0 0 100 100" style="width:24px; height:24px;">
+          <path d="M50 14 C32 14 19 27 19 45 C19 69 50 89 50 89 C50 89 81 69 81 45 C81 27 68 14 50 14 Z" fill="#0f2e22" />
+          <circle cx="50" cy="42" r="12" fill="#facc15" />
         </svg>
       </button>
-      <button type="button" class="nav-item" id="btnCuponesNav" style="display:flex; flex-direction:column; align-items:center; justify-content:center; min-width:56px;">
-        <span>🎟️</span>
+
+      <button type="button" class="nav-item" id="btnCuponesNav" style="background:transparent; border:none; color:#ecfdf5; display:flex; flex-direction:column; align-items:center; gap:2px; padding:4px 8px; cursor:pointer; font-size:12px;">
+        <span style="font-size:18px;">🎟️</span>
         <span>Cupones</span>
       </button>
-      <button type="button" class="nav-item" id="btnAyudanosMejorarNav" style="display:flex; flex-direction:column; align-items:center; justify-content:center; min-width:56px;">
-        <span>💡</span>
+
+      <button type="button" class="nav-item" id="btnAyudanosMejorarNav" style="background:transparent; border:none; color:#ecfdf5; display:flex; flex-direction:column; align-items:center; gap:2px; padding:4px 8px; cursor:pointer; font-size:12px;">
+        <span style="font-size:18px;">💡</span>
         <span>Mejorar</span>
       </button>
     </nav>
