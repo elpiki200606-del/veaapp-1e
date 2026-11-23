@@ -19,7 +19,44 @@ function obtenerFechaHoyArg() {
     day: "2-digit"
   }).format(new Date());
 }
+function sumarDiasFechaISO(fechaBaseISO, dias) {
+  const baseStr = String(fechaBaseISO || "").slice(0, 10);
+  const [y, m, d] = baseStr.split("-").map(Number);
+  const dt = new Date(Date.UTC(y, m - 1, d));
+  dt.setUTCDate(dt.getUTCDate() + Number(dias || 0));
+  return dt.toISOString().slice(0, 10);
+}
 
+/**
+ * Calcula el nuevo vencimiento (30 días) al registrar un pago:
+ * - Si aún no venció (diasRestantes >= 0), suma 30 días desde `vencimientoActual` (fecha aniversario).
+ * - Si ya venció / se cortó (diasRestantes < 0), suma 30 días desde `fechaPago` (reactiva desde hoy).
+ */
+function calcularProximoVencimientoAlPagar({ vencimientoActual, fechaPago }) {
+  const hoyStr = fechaPago
+    ? String(fechaPago).slice(0, 10)
+    : (typeof obtenerFechaHoyArg === "function" ? obtenerFechaHoyArg() : new Date().toISOString().slice(0, 10));
+
+  if (!vencimientoActual) {
+    return sumarDiasFechaISO(hoyStr, 30);
+  }
+
+  const vencStr = String(vencimientoActual).slice(0, 10);
+  const [y1, m1, d1] = hoyStr.split("-").map(Number);
+  const [y2, m2, d2] = vencStr.split("-").map(Number);
+
+  const utcHoy = Date.UTC(y1, m1 - 1, d1);
+  const utcVenc = Date.UTC(y2, m2 - 1, d2);
+  const diasRestantes = Math.round((utcVenc - utcHoy) / (1000 * 60 * 60 * 24));
+
+  // Vigente o por vencer (aún no se cortó): respeta la fecha aniversario / vencimiento actual
+  if (diasRestantes >= 0) {
+    return sumarDiasFechaISO(vencStr, 30);
+  }
+
+  // Ya venció / se cortó (ej. pagó 15 días tarde): cuenta 30 días desde la fecha de pago
+  return sumarDiasFechaISO(hoyStr, 30);
+}
 async function registrarYLeerVistasVidriera(comercio) {
   const idComercio = typeof comercio === "string"
     ? comercio
@@ -50,6 +87,7 @@ async function registrarYLeerVistasVidriera(comercio) {
       vistasTotales: Number(data.vistasTotales || 0)
     };
   }
+
 
   const visitaRef = docRef.collection("vistasUnicas").doc(uidActual);
 
