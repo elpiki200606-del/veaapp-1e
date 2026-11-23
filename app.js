@@ -563,56 +563,131 @@ if (vidVideoInput) {
     const objectUrl = URL.createObjectURL(file);
     tempVideo.src = objectUrl;
 
-    tempVideo.onloadedmetadata = () => {
-      URL.revokeObjectURL(objectUrl);
-      const duracion = tempVideo.duration;
-      const ancho = tempVideo.videoWidth;
-      const alto = tempVideo.videoHeight;
+   tempVideo.onloadedmetadata = async () => {
+  URL.revokeObjectURL(objectUrl);
+  const duracion = tempVideo.duration;
+  const ancho = tempVideo.videoWidth;
+  const alto = tempVideo.videoHeight;
 
-      if (ancho >= alto) {
-        vidVideoInput.value = "";
-        if (vidVideoEstado) {
-          vidVideoEstado.textContent = `Rechazado: el video es horizontal (${ancho}x${alto}). Subí un video vertical.`;
-        }
-        return;
-      }
+  if (ancho >= alto) {
+    vidVideoInput.value = "";
+    if (vidVideoEstado) {
+      vidVideoEstado.textContent = `Rechazado: el video es horizontal (${ancho}x${alto}). Subí un video vertical.`;
+    }
+    return;
+  }
 
-      if (duracion > cfg.maxVideoSec) {
-        vidVideoInput.value = "";
-        if (vidVideoEstado) {
-          vidVideoEstado.textContent = `Rechazado: dura ${Math.round(duracion)}s y tu plan ${cfg.nombre} permite hasta ${cfg.maxVideoSec}s.`;
-        }
-        return;
-      }
+  if (duracion > cfg.maxVideoSec) {
+    vidVideoInput.value = "";
+    if (vidVideoEstado) {
+      vidVideoEstado.textContent = `Rechazado: dura ${Math.round(duracion)}s y tu plan ${cfg.nombre} permite hasta ${cfg.maxVideoSec}s.`;
+    }
+    return;
+  }
 
-      if (file.size > 700 * 1024) {
-        vidVideoInput.value = "";
-        if (vidVideoEstado) {
-          vidVideoEstado.textContent = "El video supera los 700 KB para guardarse directo en la nube de prueba. Comprimilo un poco más.";
-        }
-        return;
-      }
+  async function recomprimirVideoVertical(file, duracionSeg, anchoOrig, altoOrig) {
+    if (!window.MediaRecorder || typeof document.createElement("canvas").captureStream !== "function") {
+      return null;
+    }
 
-      const reader = new FileReader();
-      reader.onload = () => {
-        videoVerticalActual = reader.result;
-        renderizarPreviewVideo(videoVerticalActual);
-        if (vidVideoEstado) {
-          vidVideoEstado.textContent = `Video vertical válido (${ancho}x${alto}, ${Math.round(duracion)}s). Guardá la vidriera para aplicarlo.`;
-        }
-      };
-      reader.readAsDataURL(file);
+    const maxAncho = 480;
+    const escala = anchoOrig > maxAncho ? maxAncho / anchoOrig : 1;
+    const targetAncho = Math.max(240, Math.round(anchoOrig * escala));
+    const targetAlto = Math.max(320, Math.round(altoOrig * escala));
+
+    const canvas = document.createElement("canvas");
+    canvas.width = targetAncho;
+    canvas.height = targetAlto;
+    const ctx = canvas.getContext("2d");
+
+    const videoEl = document.createElement("video");
+    videoEl.muted = true;
+    videoEl.playsInline = true;
+    videoEl.src = URL.createObjectURL(file);
+
+    await new Promise((resolve, reject) => {
+      videoEl.onloadedmetadata = resolve;
+      videoEl.onerror = reject;
+    });
+
+    const mimeCandidatos = [
+      "video/webm;codecs=vp9",
+      "video/webm;codecs=vp8",
+      "video/webm",
+      "video/mp4"
+    ];
+    const mimeType = mimeCandidatos.find((t) => MediaRecorder.isTypeSupported(t)) || "";
+
+    const stream = canvas.captureStream(24);
+    const recorder = new MediaRecorder(stream, {
+      ...(mimeType ? { mimeType } : {}),
+      videoBitsPerSecond: 380000
+    });
+
+    const trozos = [];
+    recorder.ondataavailable = (ev) => {
+      if (ev.data && ev.data.size > 0) trozos.push(ev.data);
     };
-  });
-}
 
-if (btnQuitarVideo) {
-  btnQuitarVideo.addEventListener("click", () => {
-    videoVerticalActual = "";
-    if (vidVideoInput) vidVideoInput.value = "";
-    renderizarPreviewVideo("");
-    if (vidVideoEstado) vidVideoEstado.textContent = "Video quitado.";
-  });
+    const finalizado = new Promise((resolve) => {
+      recorder.onstop = resolve;
+    });
+
+    recorder.start();
+    await videoEl.play();
+
+    await new Promise((resolve) => {
+      const dibujarCuadro = () => {
+        if (videoEl.ended || videoEl.paused) {
+          resolve();
+          return;
+        }
+        ctx.drawImage(videoEl, 0, 0, targetAncho, targetAlto);
+        requestAnimationFrame(dibujarCuadro);
+      };
+      requestAnimationFrame(dibujarCuadro);
+    });
+
+    if (recorder.state !== "inactive") recorder.stop();
+    await finalizado;
+    URL.revokeObjectURL(videoEl.src);
+
+    const blobFinal = new Blob(trozos, { type: mimeType || "video/webm" });
+    return blobFinal.size > 0 ? blobFinal : null;
+  }
+
+  const limiteBytes = 700 * 1024;
+  let archivoParaLeer = file;
+
+  if (file.size > limiteBytes) {
+    if (vidVideoEstado) {
+      vidVideoEstado.textContent = "Ajustando video para que cargue más rápido...";
+    }
+    const recomprimido = await recomprimirVideoVertical(file, duracion, ancho, alto);
+    if (recomprimido && recomprimido.size < file.size) {
+      archivoParaLeer = recomprimido;
+    }
+  }
+
+  if (archivoParaLeer.size > limiteBytes) {
+    vidVideoInput.value = "";
+    if (vidVideoEstado) {
+      vidVideoEstado.textContent = "El video quedó muy pesado para guardarse ahora. Probá grabarlo más cortito o en baja calidad desde la cámara del celular.";
+    }
+    return;
+  }
+
+  const reader = new FileReader();
+  reader.onload = () => {
+    videoVerticalActual = reader.result;
+    renderizarPreviewVideo(videoVerticalActual);
+    if (vidVideoEstado) {
+      vidVideoEstado.textContent = `Video vertical válido (${ancho}x${alto}, ${Math.round(duracion)}s). Guardá la vidriera para aplicarlo.`;
+    }
+  };
+  reader.readAsDataURL(archivoParaLeer);
+};
+});
 }
 
 function renderizarCuponesVidriera() {
@@ -1410,6 +1485,94 @@ document.addEventListener("click", async (e) => {
   }
 }
 
+// Definí acá la fecha YYYY-MM-DD cuando fijen el lanzamiento oficial.
+// Mientras sea null, no corta la ventana de promo por fecha fija.
+const FECHA_LANZAMIENTO_OFICIAL = null;
+
+function promoPrimerMesDisponible(fechaReferencia = new Date()) {
+  if (!FECHA_LANZAMIENTO_OFICIAL) return true;
+
+  const inicio = new Date(`${FECHA_LANZAMIENTO_OFICIAL}T00:00:00`);
+  if (Number.isNaN(inicio.getTime())) return true;
+
+  const finVentanaPromo = new Date(inicio);
+  finVentanaPromo.setMonth(finVentanaPromo.getMonth() + 3);
+
+  return fechaReferencia >= inicio && fechaReferencia <= finVentanaPromo;
+}
+
+function calcularProximoVencimientoAnclado(diaCiclo, desdeFecha = new Date()) {
+  const base = new Date(desdeFecha.getTime());
+  const anio = base.getFullYear();
+  const mes = base.getMonth();
+
+  // Si el día de ciclo de este mes aún no pasó, vence en el día de ciclo de este mes;
+  // si ya pasó o es hoy, pasa al mes siguiente respetando el día de ciclo (ajustando fin de mes).
+  let targetAnio = anio;
+  let targetMes = mes;
+
+  const candidatoEsteMes = construirFechaConDia(anio, mes, diaCiclo, base);
+  if (candidatoEsteMes <= base) {
+    targetMes += 1;
+    if (targetMes > 11) {
+      targetMes = 0;
+      targetAnio += 1;
+    }
+  }
+
+  return construirFechaConDia(targetAnio, targetMes, diaCiclo, base);
+}
+
+function construirFechaConDia(anio, mes, diaDeseado, horaReferencia) {
+  const ultimoDiaDelMes = new Date(anio, mes + 1, 0).getDate();
+  const diaSeguro = Math.min(Math.max(Number(diaDeseado) || 1, 1), ultimoDiaDelMes);
+  return new Date(
+    anio,
+    mes,
+    diaSeguro,
+    horaReferencia.getHours(),
+    horaReferencia.getMinutes(),
+    horaReferencia.getSeconds()
+  );
+}
+
+function calcularDatosSuscripcion(datosActuales = {}, ahora = new Date()) {
+  const vencimientoActual = datosActuales.planVenceEn
+    ? new Date(datosActuales.planVenceEn)
+    : null;
+  const tieneVencimientoValido = vencimientoActual && !Number.isNaN(vencimientoActual.getTime());
+
+  const estaVencidoPorFecha = tieneVencimientoValido ? ahora > vencimientoActual : false;
+  const estaVencidoPorEstado = datosActuales.estadoSuscripcion === "vencida";
+  const huboCorteReal = estaVencidoPorFecha || estaVencidoPorEstado;
+
+  // Caso 1: Hubo corte real -> arranca ciclo nuevo de 30 días desde la fecha de pago/reactivación
+  if (huboCorteReal || !datosActuales.diaCiclo) {
+    const nuevoDiaCiclo = ahora.getDate();
+    const nuevoVencimiento = new Date(ahora.getTime() + 30 * 24 * 60 * 60 * 1000);
+    return {
+      diaCiclo: nuevoDiaCiclo,
+      planVenceEn: nuevoVencimiento.toISOString(),
+      estadoSuscripcion: "activa",
+      modoCiclo: huboCorteReal ? "reactivacion_30_dias" : "alta_inicial_30_dias"
+    };
+  }
+
+  // Caso 2: Está vigente o dentro de su ciclo -> mantiene día de ciclo y calcula el próximo corte anclado
+  const diaCicloAnclado = Number(datosActuales.diaCiclo);
+  const baseCalculo = tieneVencimientoValido && vencimientoActual > ahora
+    ? vencimientoActual
+    : ahora;
+  const proximoVencimiento = calcularProximoVencimientoAnclado(diaCicloAnclado, baseCalculo);
+
+  return {
+    diaCiclo: diaCicloAnclado,
+    planVenceEn: proximoVencimiento.toISOString(),
+    estadoSuscripcion: "activa",
+    modoCiclo: "aniversario_anclado"
+  };
+}
+
 async function aplicarPlanActivadoEnApp(plan, paymentId) {
   const planNormalizado = String(plan || "").toLowerCase();
   const dbRef = (typeof db !== "undefined") ? db : firebase.firestore();
@@ -1421,33 +1584,45 @@ async function aplicarPlanActivadoEnApp(plan, paymentId) {
   }
 
   try {
-    // 1. Intenta actualizar el documento con el mismo ID del uid del usuario
+    let docRef = null;
+    let datosActuales = {};
+
     const docDirecto = dbRef.collection("comercios").doc(usuario.uid);
     const snapDirecto = await docDirecto.get();
 
     if (snapDirecto.exists) {
-      await docDirecto.update({
-        plan: planNormalizado,
-        ultimoPagoId: paymentId,
-        actualizadoEn: new Date().toISOString()
-      });
+      docRef = docDirecto;
+      datosActuales = snapDirecto.data() || {};
     } else if (usuario.email) {
-      // 2. Si el ID del documento es distinto al uid, busca el comercio por email
       const querySnap = await dbRef.collection("comercios")
         .where("email", "==", usuario.email)
         .limit(1)
         .get();
 
       if (!querySnap.empty) {
-        await querySnap.docs[0].ref.update({
-          plan: planNormalizado,
-          ultimoPagoId: paymentId,
-          actualizadoEn: new Date().toISOString()
-        });
+        docRef = querySnap.docs[0].ref;
+        datosActuales = querySnap.docs[0].data() || {};
       }
     }
 
-    alert(`¡Listo! Tu plan ${planNormalizado.toUpperCase()} quedó guardado en tu comercio.`);
+    if (!docRef) {
+      alert("El pago se aprobó, pero no se encontró un comercio asociado a tu usuario.");
+      return;
+    }
+
+    const ahora = new Date();
+    const calculo = calcularDatosSuscripcion(datosActuales, ahora);
+
+    await docRef.update({
+      plan: planNormalizado,
+      planVenceEn: calculo.planVenceEn,
+      diaCiclo: calculo.diaCiclo,
+      estadoSuscripcion: calculo.estadoSuscripcion,
+      ultimoPagoId: paymentId,
+      actualizadoEn: ahora.toISOString()
+    });
+
+    alert(`¡Listo! Tu plan ${planNormalizado.toUpperCase()} quedó activo hasta el ${new Date(calculo.planVenceEn).toLocaleDateString("es-AR")}.`);
   } catch (err) {
     console.error("Error guardando el plan en Firestore:", err);
     alert("El pago se aprobó, pero hubo un problema al guardar el plan en la base.");
@@ -1463,3 +1638,68 @@ document.addEventListener("DOMContentLoaded", verificarRetornoMercadoPago);
   }
 });
 inicializarMapaPrincipal();
+(function initAyudanosMejorar() {
+  const btnAbrir = document.getElementById("btnAyudanosMejorarNav");
+  const modal = document.getElementById("modal-ayudanos-mejorar");
+  const btnCerrar = document.getElementById("btnCerrarModalMejora");
+  const btnEnviar = document.getElementById("btnEnviarSugerenciaMejora");
+  const txtSugerencia = document.getElementById("txtSugerenciaMejora");
+  const estadoSugerencia = document.getElementById("estadoSugerenciaMejora");
+
+  if (!btnAbrir || !modal) return;
+
+  const cerrarModal = () => {
+    modal.classList.add("hidden");
+    if (estadoSugerencia) estadoSugerencia.textContent = "";
+  };
+
+  btnAbrir.addEventListener("click", () => {
+    if (estadoSugerencia) estadoSugerencia.textContent = "";
+    modal.classList.remove("hidden");
+    if (txtSugerencia) txtSugerencia.focus();
+  });
+
+  if (btnCerrar) btnCerrar.addEventListener("click", cerrarModal);
+
+  modal.addEventListener("click", (e) => {
+    if (e.target === modal) cerrarModal();
+  });
+
+  if (btnEnviar) {
+    btnEnviar.addEventListener("click", async () => {
+      const comentario = (txtSugerencia ? txtSugerencia.value : "").trim();
+      if (!comentario) {
+        if (estadoSugerencia) estadoSugerencia.textContent = "Escribí un comentario antes de enviar.";
+        return;
+      }
+
+      if (typeof db === "undefined" || !db) {
+        if (estadoSugerencia) estadoSugerencia.textContent = "No hay conexión con la base de datos.";
+        return;
+      }
+
+      btnEnviar.disabled = true;
+      if (estadoSugerencia) estadoSugerencia.textContent = "Enviando...";
+
+      try {
+        const currentUser = (typeof auth !== "undefined" && auth && auth.currentUser) ? auth.currentUser : null;
+        await db.collection("sugerencias_mejora").add({
+          comentario,
+          privado: true,
+          uid: currentUser ? currentUser.uid : null,
+          email: currentUser ? currentUser.email : null,
+          creadoEn: new Date().toISOString()
+        });
+
+        if (txtSugerencia) txtSugerencia.value = "";
+        if (estadoSugerencia) estadoSugerencia.textContent = "¡Gracias! Tu comentario se guardó de forma privada.";
+        setTimeout(cerrarModal, 900);
+      } catch (err) {
+        console.error("Error guardando sugerencia:", err);
+        if (estadoSugerencia) estadoSugerencia.textContent = "No se pudo enviar. Intentá de nuevo.";
+      } finally {
+        btnEnviar.disabled = false;
+      }
+    });
+  }
+})();

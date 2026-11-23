@@ -1228,16 +1228,33 @@
   </div>
 
   <nav class="bottom-nav">
-    <button type="button" class="nav-item active" id="btnNavHome"><span>🏠</span><span>Inicio</span></button>
-    <button type="button" class="nav-floating-btn" id="btnCentrarMapaNav" title="Centrar mapa" aria-label="Centrar mapa">
-      <svg viewBox="0 0 100 100">
-        <path d="M50 15 C33 15 20 28 20 45 C20 68 50 88 50 88 C50 88 80 68 80 45 C80 28 67 15 50 15 Z" fill="#182333" />
-        <circle cx="50" cy="42" r="11" fill="#cda12f" />
-      </svg>
-    </button>
-    <button type="button" class="nav-item" id="btnCuponesNav"><span>🎟️</span><span>Cupones</span></button>
-  </nav>
-
+      <button type="button" class="nav-item active" id="btnNavHome"><span>🏠</span><span>Inicio</span></button>
+      <button type="button" class="nav-item" id="btnResultadosRubroNav">
+        <span>📋</span>
+        <span>Rubro</span>
+        <span id="badgeContadorRubro" style="display:none; background:#dc2626; color:#fff; border-radius:999px; padding:1px 6px; font-size:11px; font-weight:700; margin-left:4px;">0</span>
+      </button>
+      <button type="button" class="nav-floating-btn" id="btnCentrarMapaNav" title="Centrar mapa" aria-label="Centrar mapa">
+        <svg viewBox="0 0 100 100">
+          <path d="M50 15 C33 15 20 28 20 45 C20 68 50 88 50 88 C50 88 80 68 80 45 C80 28 67 15 50 15 Z" fill="#182333" />
+          <circle cx="50" cy="42" r="11" fill="#cda12f" />
+        </svg>
+      </button>
+      <button type="button" class="nav-item" id="btnCuponesNav"><span>🎟️</span><span>Cupones</span></button>
+      <button type="button" class="nav-item" id="btnAyudanosMejorarNav"><span>💡</span><span>Mejorar</span></button>
+    </nav>
+<div id="modal-ayudanos-mejorar" class="modal-pub-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="titulo-ayudanos-mejorar">
+      <div class="modal-pub-caja" style="max-width:440px; padding:18px; border-radius:12px; background:#fff;">
+        <h3 id="titulo-ayudanos-mejorar" style="margin-top:0;">Ayúdanos a mejorar nuestra aplicación</h3>
+        <p style="margin:8px 0 12px;">Coméntanos por acá qué te parece, qué le falta, qué te parece que le sobra</p>
+        <textarea id="txtSugerenciaMejora" rows="4" placeholder="Escribí acá tu comentario..." style="width:100%; box-sizing:border-box; padding:8px; border-radius:8px; border:1px solid #cbd5e1;"></textarea>
+        <p id="estadoSugerenciaMejora" style="min-height:18px; margin:8px 0 0; font-size:13px;"></p>
+        <div style="display:flex; justify-content:flex-end; gap:8px; margin-top:12px;">
+          <button type="button" id="btnCerrarModalMejora">Cerrar</button>
+          <button type="button" id="btnEnviarSugerenciaMejora">Enviar</button>
+        </div>
+      </div>
+    </div>
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
