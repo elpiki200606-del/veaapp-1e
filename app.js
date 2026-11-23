@@ -11,7 +11,70 @@ const firebaseConfig = {
 firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore();
 const auth = firebase.auth();
+function obtenerFechaHoyArg() {
+  return new Intl.DateTimeFormat("en-CA", {
+    timeZone: "America/Argentina/Buenos_Aires",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit"
+  }).format(new Date());
+}
 
+async function registrarYLeerVistasVidriera(comercioId) {
+  if (!db || !comercioId) return { vistasHoy: 0, vistasTotales: 0 };
+
+  const ref = db.collection("comercios").doc(String(comercioId));
+  const hoy = obtenerFechaHoyArg();
+  const inc = firebase.firestore.FieldValue.increment(1);
+  const snap = await ref.get();
+
+  if (!snap.exists) {
+    await ref.set(
+      {
+        vistasTotales: 1,
+        vistasHoy: 1,
+        fechaUltimaVista: hoy
+      },
+      { merge: true }
+    );
+    return { vistasHoy: 1, vistasTotales: 1 };
+  }
+  function renderContadorVisitas(metricas) {
+  const vistasHoy = metricas && metricas.vistasHoy ? metricas.vistasHoy : 0;
+  const vistasTotales = metricas && metricas.vistasTotales ? metricas.vistasTotales : 0;
+
+  const hoyEl = document.getElementById("visitasHoyNum");
+  const totalEl = document.getElementById("visitasTotalNum");
+
+  if (hoyEl) hoyEl.textContent = Number(vistasHoy).toLocaleString("es-AR");
+  if (totalEl) totalEl.textContent = Number(vistasTotales).toLocaleString("es-AR");
+}
+
+  const data = snap.data() || {};
+  const totalActual = Number(data.vistasTotales || 0);
+  const hoyActual = Number(data.vistasHoy || 0);
+
+  if (data.fechaUltimaVista === hoy) {
+    await ref.update({
+      vistasTotales: inc,
+      vistasHoy: inc
+    });
+    return {
+      vistasHoy: hoyActual + 1,
+      vistasTotales: totalActual + 1
+    };
+  } else {
+    await ref.update({
+      vistasTotales: inc,
+      vistasHoy: 1,
+      fechaUltimaVista: hoy
+    });
+    return {
+      vistasHoy: 1,
+      vistasTotales: totalActual + 1
+    };
+  }
+}
 // 2. Referencias al DOM
 const estadoEl = document.getElementById("estado-app");
 const detalleEl = document.getElementById("detalle-conexion");
@@ -1130,7 +1193,7 @@ function construirHtmlVidrieraPublica(datos) {
   `;
 }
 
-function abrirDetalleComercio(comercio) {
+  function abrirDetalleComercio(comercio) {
   if (!detalleComercioPublico || !contenidoDetalleComercio || !comercio) return;
   contenidoDetalleComercio.innerHTML = construirHtmlVidrieraPublica(comercio);
   detalleComercioPublico.classList.remove("hidden");
@@ -1138,8 +1201,20 @@ function abrirDetalleComercio(comercio) {
     mapaPrincipal.setView([comercio.lat, comercio.lng], 16);
   }
   detalleComercioPublico.scrollIntoView({ behavior: "smooth", block: "nearest" });
-}
 
+const idComercioActual = comercio.id || comercio.uid || comercio.comercioId || "";
+  if (typeof renderContadorVisitas === "function") {
+    renderContadorVisitas({ vistasHoy: 0, vistasTotales: 0 });
+  }
+  if (idComercioActual && typeof registrarYLeerVistasVidriera === "function") {
+    registrarYLeerVistasVidriera(idComercioActual).then((metricas) => {
+      if (typeof renderContadorVisitas === "function") {
+        renderContadorVisitas(metricas);
+      }
+    });
+  }
+
+  }
 function renderizarComerciosPublicos(lista) {
   inicializarMapaPrincipal();
   if (capaMarcadoresPrincipal) {
