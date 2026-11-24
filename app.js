@@ -2180,6 +2180,23 @@ function obtenerContenedorBarraInferiorVEA() {
 }
 
 function insertarAlLadoDeInicioVEA(barra, itemNotif) {
+  if (!itemNotif) return;
+
+  if (barra && typeof barra.querySelectorAll === "function") {
+    const previos = barra.querySelectorAll("#item-campanita-inferior-vea");
+    previos.forEach((el) => {
+      if (el !== itemNotif) el.remove();
+    });
+  }
+
+  document.querySelectorAll("#item-campanita-inferior-vea").forEach((el) => {
+    if (el !== itemNotif) el.remove();
+  });
+
+  if (!itemNotif.isConnected && document.body) {
+    document.body.appendChild(itemNotif);
+  }
+}
   const candidatos = Array.from(barra.querySelectorAll("a, button, .nav-item, [role='button']"));
   const botonInicio = candidatos.find((el) => {
     const texto = (el.textContent || "").trim().toLowerCase();
@@ -2203,7 +2220,7 @@ function insertarAlLadoDeInicioVEA(barra, itemNotif) {
   }
 
   barra.appendChild(itemNotif);
-}
+
 
 function inicializarCampanitaBarraInferiorVEA() {
   let item = document.querySelector("#item-campanita-inferior-vea");
