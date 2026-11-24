@@ -2472,40 +2472,29 @@ document.addEventListener("DOMContentLoaded", () => {
     return modal;
   }
 
-  function buscarElementoCercaTuyo() {
-    const nodos = Array.from(document.querySelectorAll("h1,h2,h3,h4,h5,p,div,span,label,strong"));
-    for (let i = 0; i < nodos.length; i++) {
-      const el = nodos[i];
-      const texto = (el.textContent || "").replace(/\s+/g, " ").trim();
-      if (texto === "Vidriera cerca tuyo") {
-        const tieneHijoIgual = Array.from(el.children || []).some(function (h) {
-          return (h.textContent || "").replace(/\s+/g, " ").trim() === "Vidriera cerca tuyo";
-        });
-        if (!tieneHijoIgual && el.parentNode) return el;
-      }
-    }
-    return null;
-  }
-
   function insertarBotonInstructivo() {
     if (document.getElementById("btn-instructivo-vea")) return;
 
-    const objetivo = buscarElementoCercaTuyo();
-    if (!objetivo || !objetivo.parentNode) return;
+    const barraInferior = document.getElementById("barra-inferior-vea");
+    if (!document.body) return;
 
     const btn = document.createElement("button");
     btn.id = "btn-instructivo-vea";
     btn.type = "button";
     btn.textContent = "Instrucciones de uso";
     btn.style.cssText =
-      "display:inline-flex;align-items:center;justify-content:center;margin:6px 0 4px 8px;padding:4px 10px;font-size:12px;font-weight:700;color:#f3d56b;background:#062e22;border:1.5px solid #d4af37;border-radius:999px;cursor:pointer;vertical-align:middle;";
+      "display:inline-flex;align-items:center;justify-content:center;margin:8px 12px;padding:5px 12px;font-size:12px;font-weight:700;color:#f3d56b;background:#062e22;border:1.5px solid #d4af37;border-radius:999px;cursor:pointer;z-index:500;";
 
     btn.addEventListener("click", function () {
       const modal = crearModalSiNoExiste();
       modal.style.display = "flex";
     });
 
-    objetivo.insertAdjacentElement("afterend", btn);
+    if (barraInferior && barraInferior.parentNode === document.body) {
+      document.body.insertBefore(btn, barraInferior);
+    } else {
+      document.body.appendChild(btn);
+    }
   }
 
   function run() {
