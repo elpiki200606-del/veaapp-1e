@@ -8,9 +8,14 @@
   --vea-texto: #13221c;
   --vea-subtexto: #4d635a;
   --vea-borde: #c9dad2;
+  --verde: var(--vea-verde-oscuro);
+  --dorado: var(--vea-dorado);
+  --borde: var(--vea-borde);
 }
 
-* {
+*,
+*::before,
+*::after {
   box-sizing: border-box;
   font-family: system-ui, -apple-system, sans-serif;
 }
@@ -261,6 +266,60 @@ li {
   margin: 4px 0;
 }
 
+.lista-busqueda-jerarquia {
+  position: relative;
+  z-index: 800;
+  background: #fff;
+  border-bottom: 2px solid var(--dorado);
+  box-shadow: 0 6px 16px rgba(6, 46, 34, 0.16);
+  max-height: 180px;
+  overflow-y: auto;
+  padding: 6px 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.lista-busqueda-cabecera {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.7rem;
+  font-weight: 800;
+  color: var(--verde);
+  padding-bottom: 3px;
+  border-bottom: 1px solid var(--borde);
+}
+
+.btn-cerrar-lista-busqueda {
+  background: var(--verde);
+  color: var(--dorado);
+  border: 0;
+  border-radius: 5px;
+  padding: 2px 7px;
+  font-size: 0.66rem;
+  font-weight: 800;
+}
+
+.item-busqueda-jerarquia {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 8px;
+  border: 1px solid var(--borde);
+  border-radius: 7px;
+  background: #f9fbfa;
+  text-align: left;
+  width: 100%;
+}
+
+.item-busqueda-jerarquia:hover {
+  border-color: var(--dorado);
+  background: #fefce8;
+}
+
 .dropdown-salir {
   color: #b91c1c;
 }
@@ -275,9 +334,9 @@ li {
   background: linear-gradient(120deg, var(--vea-verde-oscuro) 0%, var(--vea-verde-medio) 100%);
   color: #ffffff;
   border-radius: 10px;
-  padding: 16px;
+  padding: 18px;
   border-left: 5px solid var(--vea-dorado);
-  margin-bottom: 14px;
+  margin-bottom: 12px;
 }
 
 .principal-banner h2 {
@@ -294,7 +353,7 @@ li {
   height: 270px;
   border-radius: 10px;
   border: 2px solid rgba(212, 175, 55, 0.55);
-  margin: 12px 0 16px;
+  margin: 10px 0 16px;
   z-index: 1;
 }
 
@@ -359,4 +418,78 @@ li {
   display: flex;
   gap: 8px;
   flex-wrap: wrap;
+}
+
+.barra-social-comercio {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 8px;
+  background: #ffffff;
+  border: 1px solid var(--dorado, #d4af37);
+  border-radius: 8px;
+  padding: 8px 10px;
+}
+
+.seguidores-info {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.84rem;
+  font-weight: 800;
+  color: var(--verde, #062e22);
+}
+
+.btn-seguir-comercio {
+  background: var(--verde, #062e22);
+  color: var(--dorado, #d4af37);
+  border: 1.5px solid var(--dorado, #d4af37);
+  border-radius: 999px;
+  padding: 5px 14px;
+  font-size: 0.78rem;
+  font-weight: 800;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.btn-seguir-comercio.siguiendo {
+  background: #ecfdf5;
+  color: var(--verde, #062e22);
+  border-color: var(--verde, #062e22);
+}
+
+/* Barra inferior y botón central */
+.bottom-nav {
+  position: relative;
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-around;
+  overflow: visible !important;
+}
+
+.bottom-nav > * {
+  position: relative;
+  z-index: 2;
+}
+
+.bottom-nav #btnCentrarMapaNav.nav-floating-btn {
+  flex: 0 0 74px !important;
+  width: 74px !important;
+}
+
+/* Evitar que la campanita oculta o vacía ocupe espacio o desplace el eje */
+.bottom-nav #item-campanita-inferior-vea[style*="display: none"],
+.bottom-nav #item-campanita-inferior-vea:empty {
+  display: none !important;
+  width: 0 !important;
+  min-width: 0 !important;
+  padding: 0 !important;
+  margin: 0 !important;
+}
+
+html,
+body,
+body.vea-sin-filtro {
+  background-color: #e6f7f2 !important;
 }
