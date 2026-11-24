@@ -2435,67 +2435,35 @@ document.addEventListener("DOMContentLoaded", () => {
 
     modal = document.createElement("div");
     modal.id = "modal-instructivo-vea";
-    modal.style.cssText = `
-      display: none;
-      position: fixed;
-      inset: 0;
-      background: rgba(0, 0, 0, 0.65);
-      z-index: 99999;
-      align-items: center;
-      justify-content: center;
-      padding: 16px;
-    `;
+    modal.style.cssText =
+      "display:none;position:fixed;inset:0;background:rgba(0,0,0,0.68);z-index:99999;align-items:center;justify-content:center;padding:16px;";
 
-    modal.innerHTML = `
-      <div style="
-        width: 100%;
-        max-width: 520px;
-        max-height: 85vh;
-        overflow-y: auto;
-        background: #0b2b20;
-        color: #f4f7f5;
-        border: 1.5px solid #d4af37;
-        border-radius: 14px;
-        padding: 18px;
-        box-shadow: 0 12px 32px rgba(0, 0, 0, 0.45);
-        font-family: inherit;
-      ">
-        <div style="display:flex; justify-content:space-between; align-items:center; gap:10px; border-bottom:1px solid rgba(212,175,55,0.35); padding-bottom:10px; margin-bottom:14px;">
-          <h2 style="margin:0; font-size:19px; color:#f3d56b;">Instrucciones de uso — V.E.A.</h2>
-          <button id="cerrar-instructivo-x-vea" type="button" aria-label="Cerrar"
-            style="background:transparent; border:1px solid rgba(212,175,55,0.5); color:#f3d56b; border-radius:8px; padding:4px 10px; font-size:15px; font-weight:700; cursor:pointer;">✕</button>
-        </div>
-
-        <div style="display:flex; flex-direction:column; gap:12px; font-size:15px; line-height:1.45;">
-          <p style="margin:0;"><strong style="color:#f3d56b;">1. Buscar y ver comercios:</strong> Escribí lo que buscás o tocá <strong>Rubros</strong> para filtrar por categoría. Mové el mapa o tocá <strong>Centrar mapa</strong> para ver lo que tenés cerca, y usá <strong>Lista</strong> o <strong>Cupones</strong> en la barra inferior.</p>
-
-          <p style="margin:0;"><strong style="color:#f3d56b;">2. Tocar un banner o una vidriera:</strong> Si tocás un banner destacado o un comercio en el mapa, se abre su <strong>vidriera</strong> con información, productos o promos y sus cupones disponibles.</p>
-
-          <p style="margin:0;"><strong style="color:#f3d56b;">3. Registrarse e iniciar sesión:</strong> Tocá <strong>Iniciar sesión</strong> para entrar con tu cuenta o crear una nueva. Con sesión iniciada podés gestionar tu vidriera y recibir <strong>Avisos</strong>.</p>
-
-          <p style="margin:0;"><strong style="color:#f3d56b;">4. Cambiar y actualizar tu vidriera:</strong> Si administrás más de una vidriera, elegí cuál usar desde tu menú o panel. Ahí podés editar datos, promos, productos o info para mantenerla al día.</p>
-
-          <p style="margin:0;"><strong style="color:#f3d56b;">5. Planes, mes gratis y cobros:</strong> Los planes arrancan desde opciones accesibles (con promo de <strong>1er mes gratis</strong> cuando corresponda al plan). Los cobros se gestionan desde <strong>Suscripciones</strong> o <strong>Mejorar</strong> con los medios de pago habilitados.</p>
-
-          <p style="margin:0;"><strong style="color:#f3d56b;">6. Reactivar una vidriera:</strong> Si tu vidriera quedó pausada, vencida o sin plan activo, entrá a <strong>Suscripciones</strong> o a tu panel, elegí o renová el plan y confirmá el pago para volver a activarla.</p>
-        </div>
-
-        <div style="margin-top:16px; display:flex; justify-content:flex-end;">
-          <button id="btn-entendido-instructivo-vea" type="button"
-            style="background:#d4af37; color:#06241a; border:none; border-radius:999px; padding:10px 20px; font-size:15px; font-weight:700; cursor:pointer;">
-            Entendido
-          </button>
-        </div>
-      </div>
-    `;
+    modal.innerHTML =
+      '<div style="width:100%;max-width:520px;max-height:85vh;overflow-y:auto;background:#0b2b20;color:#f4f7f5;border:1.5px solid #d4af37;border-radius:14px;padding:18px;box-shadow:0 12px 32px rgba(0,0,0,0.45);">' +
+        '<div style="display:flex;justify-content:space-between;align-items:center;gap:10px;border-bottom:1px solid rgba(212,175,55,0.35);padding-bottom:10px;margin-bottom:14px;">' +
+          '<h2 style="margin:0;font-size:19px;color:#f3d56b;">Instrucciones de uso — V.E.A.</h2>' +
+          '<button id="cerrar-instructivo-x-vea" type="button" aria-label="Cerrar" style="background:transparent;border:1px solid rgba(212,175,55,0.5);color:#f3d56b;border-radius:8px;padding:4px 10px;font-size:15px;font-weight:700;cursor:pointer;">✕</button>' +
+        '</div>' +
+        '<div style="display:flex;flex-direction:column;gap:12px;font-size:15px;line-height:1.45;">' +
+          '<p style="margin:0;"><strong style="color:#f3d56b;">1. Buscar y ver comercios:</strong> Escribí lo que buscás o tocá <strong>Rubros</strong> para filtrar por categoría. Mové el mapa o tocá <strong>Centrar mapa</strong> para ver lo que tenés cerca, y usá <strong>Lista</strong> o <strong>Cupones</strong> en la barra inferior.</p>' +
+          '<p style="margin:0;"><strong style="color:#f3d56b;">2. Tocar un banner o una vidriera:</strong> Si tocás un banner destacado o un comercio en el mapa, se abre su <strong>vidriera</strong> con información, productos o promos y sus cupones disponibles.</p>' +
+          '<p style="margin:0;"><strong style="color:#f3d56b;">3. Registrarse e iniciar sesión:</strong> Tocá <strong>Iniciar sesión</strong> para entrar con tu cuenta o crear una nueva. Con sesión iniciada podés gestionar tu vidriera y recibir <strong>Avisos</strong>.</p>' +
+          '<p style="margin:0;"><strong style="color:#f3d56b;">4. Cambiar y actualizar tu vidriera:</strong> Si administrás más de una vidriera, elegí cuál usar desde tu menú o panel. Ahí podés editar datos, promos, productos o info para mantenerla al día.</p>' +
+          '<p style="margin:0;"><strong style="color:#f3d56b;">5. Planes, mes gratis y cobros:</strong> Los planes arrancan desde opciones accesibles (con promo de <strong>1er mes gratis</strong> cuando corresponda al plan). Los cobros se gestionan desde <strong>Suscripciones</strong> o <strong>Mejorar</strong> con los medios de pago habilitados.</p>' +
+          '<p style="margin:0;"><strong style="color:#f3d56b;">6. Reactivar una vidriera:</strong> Si tu vidriera quedó pausada, vencida o sin plan activo, entrá a <strong>Suscripciones</strong> o a tu panel, elegí o renová el plan y confirmá el pago para volver a activarla.</p>' +
+        '</div>' +
+        '<div style="margin-top:16px;display:flex;justify-content:flex-end;">' +
+          '<button id="btn-entendido-instructivo-vea" type="button" style="background:#d4af37;color:#06241a;border:none;border-radius:999px;padding:10px 20px;font-size:15px;font-weight:700;cursor:pointer;">Entendido</button>' +
+        '</div>' +
+      '</div>';
 
     document.body.appendChild(modal);
 
-    const cerrar = () => {
+    const cerrar = function () {
       modal.style.display = "none";
     };
 
-    modal.addEventListener("click", (e) => {
+    modal.addEventListener("click", function (e) {
       if (e.target === modal) cerrar();
     });
     modal.querySelector("#cerrar-instructivo-x-vea").addEventListener("click", cerrar);
@@ -2504,46 +2472,40 @@ document.addEventListener("DOMContentLoaded", () => {
     return modal;
   }
 
+  function buscarElementoCercaTuyo() {
+    const nodos = Array.from(document.querySelectorAll("h1,h2,h3,h4,h5,p,div,span,label,strong"));
+    for (let i = 0; i < nodos.length; i++) {
+      const el = nodos[i];
+      const texto = (el.textContent || "").replace(/\s+/g, " ").trim();
+      if (texto === "Vidriera cerca tuyo") {
+        const tieneHijoIgual = Array.from(el.children || []).some(function (h) {
+          return (h.textContent || "").replace(/\s+/g, " ").trim() === "Vidriera cerca tuyo";
+        });
+        if (!tieneHijoIgual && el.parentNode) return el;
+      }
+    }
+    return null;
+  }
+
   function insertarBotonInstructivo() {
     if (document.getElementById("btn-instructivo-vea")) return;
 
-    const candidatos = Array.from(
-      document.querySelectorAll("h1, h2, h3, h4, div, span, p")
-    );
-    const tituloCercaTuyo = candidatos.find((el) => {
-      const txt = (el.textContent || "").trim();
-      return txt === "Vidriera cerca tuyo" && el.children.length <= 2;
-    });
-
-    if (!tituloCercaTuyo || !tituloCercaTuyo.parentNode) return;
+    const objetivo = buscarElementoCercaTuyo();
+    if (!objetivo || !objetivo.parentNode) return;
 
     const btn = document.createElement("button");
     btn.id = "btn-instructivo-vea";
     btn.type = "button";
     btn.textContent = "Instrucciones de uso";
-    btn.style.cssText = `
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      margin-left: 8px;
-      margin-top: 4px;
-      padding: 4px 10px;
-      font-size: 12px;
-      font-weight: 700;
-      color: #f3d56b;
-      background: #062e22;
-      border: 1.5px solid #d4af37;
-      border-radius: 999px;
-      cursor: pointer;
-      vertical-align: middle;
-    `;
+    btn.style.cssText =
+      "display:inline-flex;align-items:center;justify-content:center;margin:6px 0 4px 8px;padding:4px 10px;font-size:12px;font-weight:700;color:#f3d56b;background:#062e22;border:1.5px solid #d4af37;border-radius:999px;cursor:pointer;vertical-align:middle;";
 
-    btn.addEventListener("click", () => {
+    btn.addEventListener("click", function () {
       const modal = crearModalSiNoExiste();
       modal.style.display = "flex";
     });
 
-    tituloCercaTuyo.insertAdjacentElement("afterend", btn);
+    objetivo.insertAdjacentElement("afterend", btn);
   }
 
   function run() {
@@ -2557,10 +2519,5 @@ document.addEventListener("DOMContentLoaded", () => {
     run();
   }
 
-  const obs = new MutationObserver(() => {
-    insertarBotonInstructivo();
-  });
-  if (document.body) {
-    obs.observe(document.body, { childList: true, subtree: true });
-  }
+  setInterval(insertarBotonInstructivo, 1000);
 })();
