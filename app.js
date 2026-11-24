@@ -2510,3 +2510,39 @@ document.addEventListener("DOMContentLoaded", () => {
 
   setInterval(insertarBotonInstructivo, 1000);
 })();
+(function ajustarBannerRubrosMobileVEA() {
+  if (window.__veaBannerRubrosAjustado) return;
+  window.__veaBannerRubrosAjustado = true;
+
+  function aplicarAjuste() {
+    if (window.innerWidth > 768) return;
+
+    const btnRubros = Array.from(document.querySelectorAll("button, a, div, span")).find(
+      (el) => (el.textContent || "").trim() === "Rubros"
+    );
+    if (!btnRubros || !btnRubros.parentElement) return;
+
+    const fila = btnRubros.parentElement;
+    const candidatos = Array.from(fila.children).filter((el) => el !== btnRubros);
+    const bannerRubros = candidatos[0];
+    if (!bannerRubros) return;
+
+    const altoActual = bannerRubros.getBoundingClientRect().height;
+    if (altoActual > 0) {
+      bannerRubros.style.minHeight = `${Math.round(altoActual + 2)}px`;
+    }
+    bannerRubros.style.marginBottom = "2px";
+
+    const mapa = document.getElementById("mapa-principal");
+    if (mapa) {
+      mapa.style.marginTop = "8px"; // bajado 2px respecto a los 10px de style.css
+    }
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", aplicarAjuste);
+  } else {
+    aplicarAjuste();
+  }
+  window.addEventListener("resize", aplicarAjuste);
+})();
