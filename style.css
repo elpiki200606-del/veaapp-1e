@@ -493,3 +493,16 @@ body,
 body.vea-sin-filtro {
   background-color: #e6f7f2 !important;
 }
+@media (max-width: 768px) {
+  #banner-premium-rotativo.banner-premium-slot {
+    min-height: calc(100% + 2px);
+    padding-top: 2px;
+    padding-bottom: 2px;
+    margin-bottom: 2px;
+  }
+
+  .mapa-canvas-wrap,
+  #mapa-principal {
+    margin-top: 8px;
+  }
+}
