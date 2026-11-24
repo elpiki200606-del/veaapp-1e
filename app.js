@@ -2183,8 +2183,7 @@ function insertarAlLadoDeInicioVEA(barra, itemNotif) {
   if (!itemNotif) return;
 
   if (barra && typeof barra.querySelectorAll === "function") {
-    const previos = barra.querySelectorAll("#item-campanita-inferior-vea");
-    previos.forEach((el) => {
+    barra.querySelectorAll("#item-campanita-inferior-vea").forEach((el) => {
       if (el !== itemNotif) el.remove();
     });
   }
@@ -2193,9 +2192,34 @@ function insertarAlLadoDeInicioVEA(barra, itemNotif) {
     if (el !== itemNotif) el.remove();
   });
 
-  if (!itemNotif.isConnected && document.body) {
-    document.body.appendChild(itemNotif);
+  const btnSuscripciones = Array.from(
+    document.querySelectorAll("a, button, .btn, [role='button']")
+  ).find((el) => (el.textContent || "").toLowerCase().includes("suscripciones"));
+
+  const chipUsuario = document.querySelector(
+    ".usuario-trigger, .menu-usuario-wrap, [id*='usuario'], [class*='usuario']"
+  );
+
+  if (btnSuscripciones && btnSuscripciones.parentNode) {
+    btnSuscripciones.parentNode.insertBefore(itemNotif, btnSuscripciones);
+    itemNotif.style.position = "static";
+    itemNotif.style.top = "auto";
+    itemNotif.style.right = "auto";
+    itemNotif.style.marginRight = "6px";
+    return;
   }
+
+  if (chipUsuario && chipUsuario.parentNode) {
+    chipUsuario.insertAdjacentElement("afterend", itemNotif);
+    itemNotif.style.position = "static";
+    itemNotif.style.top = "auto";
+    itemNotif.style.right = "auto";
+    itemNotif.style.marginLeft = "6px";
+    return;
+  }
+
+  const header = document.querySelector("header") || document.body;
+  header.appendChild(itemNotif);
 }
 
 function inicializarCampanitaBarraInferiorVEA() {
@@ -2206,32 +2230,30 @@ function inicializarCampanitaBarraInferiorVEA() {
   }
 
   item.style.cssText = `
-    position: fixed;
-    top: 14px;
-    right: 14px;
-    z-index: 1300;
     display: none;
     align-items: center;
     justify-content: center;
-    background: #062e22;
-    border: 1px solid rgba(212, 175, 55, 0.65);
+    background: linear-gradient(135deg, #062e22 0%, #0b4634 100%);
+    border: 1.5px solid #d4af37;
     border-radius: 999px;
-    padding: 6px 10px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.28);
+    padding: 4px 10px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25), inset 0 0 0 1px rgba(243, 213, 107, 0.25);
+    flex-shrink: 0;
+    z-index: 1250;
   `;
 
   item.innerHTML = `
     <button id="btn-campanita-inferior-vea" type="button" aria-label="Notificaciones"
-      style="position:relative; display:inline-flex; flex-direction:row; align-items:center; justify-content:center; gap:5px; background:transparent; border:none; padding:0; cursor:pointer; color:#f4f7f5;">
-      <span style="position:relative; display:inline-flex; align-items:center; justify-content:center; font-size:16px; line-height:1;">
+      style="position:relative; display:inline-flex; flex-direction:row; align-items:center; justify-content:center; gap:5px; background:transparent; border:none; padding:0; cursor:pointer; color:#f3d56b;">
+      <span style="position:relative; display:inline-flex; align-items:center; justify-content:center; font-size:15px; line-height:1;">
         <span>🔔</span>
         <span id="badge-campanita-inferior-vea"
           style="display:none; position:absolute; top:-6px; right:-8px; min-width:17px; height:17px; padding:0 4px; border-radius:999px; background:#dc2626; color:#ffffff; font-size:10px; font-weight:700; line-height:17px; text-align:center; box-shadow:0 2px 6px rgba(0,0,0,0.4);">0</span>
       </span>
-      <span style="font-size:11px; font-weight:600; color:#f4f7f5; line-height:1;">Avisos</span>
+      <span style="font-size:11px; font-weight:700; color:#f3d56b; line-height:1;">Avisos</span>
     </button>
     <div id="bandeja-campanita-inferior-vea"
-      style="display:none; position:fixed; top:56px; right:14px; left:auto; width:min(360px, calc(100vw - 28px)); max-height:320px; overflow-y:auto; background:#ffffff; border:1px solid #d4af37; border-radius:10px; padding:10px; box-shadow:0 8px 24px rgba(0,0,0,0.25); z-index:1301;">
+      style="display:none; position:fixed; top:64px; right:14px; left:auto; width:min(360px, calc(100vw - 28px)); max-height:320px; overflow-y:auto; background:#ffffff; border:1.5px solid #d4af37; border-radius:10px; padding:10px; box-shadow:0 8px 24px rgba(0,0,0,0.25); z-index:1301;">
       <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #e5e7eb; padding-bottom:8px; margin-bottom:8px;">
         <strong style="font-size:13px; color:#0f2e22;">Notificaciones</strong>
         <button id="btn-limpiar-no-leidas-vea" type="button"
@@ -2244,6 +2266,7 @@ function inicializarCampanitaBarraInferiorVEA() {
       </div>
     </div>
   `;
+
 
   insertarAlLadoDeInicioVEA(null, item);
 
