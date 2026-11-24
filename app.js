@@ -2197,30 +2197,6 @@ function insertarAlLadoDeInicioVEA(barra, itemNotif) {
     document.body.appendChild(itemNotif);
   }
 }
-  const candidatos = Array.from(barra.querySelectorAll("a, button, .nav-item, [role='button']"));
-  const botonInicio = candidatos.find((el) => {
-    const texto = (el.textContent || "").trim().toLowerCase();
-    const idOCalse = `${el.id || ""} ${el.className || ""}`.toLowerCase();
-    return (
-      texto.includes("inicio") ||
-      texto.includes("home") ||
-      idOCalse.includes("inicio") ||
-      idOCalse.includes("home")
-    );
-  });
-
-  if (botonInicio && botonInicio.parentNode === barra) {
-    botonInicio.insertAdjacentElement("afterend", itemNotif);
-    return;
-  }
-
-  if (botonInicio && botonInicio.parentNode) {
-    botonInicio.parentNode.insertAdjacentElement("afterend", itemNotif);
-    return;
-  }
-
-  barra.appendChild(itemNotif);
-
 
 function inicializarCampanitaBarraInferiorVEA() {
   let item = document.querySelector("#item-campanita-inferior-vea");
