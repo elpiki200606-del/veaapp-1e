@@ -2206,43 +2206,54 @@ function insertarAlLadoDeInicioVEA(barra, itemNotif) {
 }
 
 function inicializarCampanitaBarraInferiorVEA() {
-  const barra = obtenerContenedorBarraInferiorVEA();
-  if (!barra) return;
-
   let item = document.querySelector("#item-campanita-inferior-vea");
   if (!item) {
     item = document.createElement("div");
     item.id = "item-campanita-inferior-vea";
-    item.style.cssText = "position:relative; display:none; align-items:center; justify-content:center;";
+  }
 
-    item.innerHTML = `
-      <button id="btn-campanita-inferior-vea" type="button" aria-label="Notificaciones"
-        style="position:relative; display:inline-flex; flex-direction:column; align-items:center; justify-content:center; gap:2px; background:transparent; border:none; color:#f4f7f5; cursor:pointer; padding:4px 10px; font-size:18px; line-height:1;">
-        <span style="position:relative; display:inline-flex; align-items:center; justify-content:center;">
-          <span>🔔</span>
-          <span id="badge-campanita-inferior-vea"
-            style="display:none; position:absolute; top:-5px; right:-8px; min-width:17px; height:17px; padding:0 4px; border-radius:999px; background:#dc2626; color:#ffffff; font-size:10px; font-weight:800; line-height:17px; text-align:center;">
-            0
-          </span>
-        </span>
-        <span style="font-size:10px; font-weight:600; color:#f4f7f5;">Avisos</span>
-      </button>
-      <div id="bandeja-campanita-inferior-vea"
-        style="display:none; position:fixed; bottom:66px; left:12px; right:12px; max-width:380px; margin-left:auto; max-height:320px; overflow-y:auto; background:#ffffff; color:#111827; border:1px solid #d1d5db; border-radius:12px; box-shadow:0 12px 28px rgba(0,0,0,0.25); padding:12px; z-index:10001;">
-        <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #e5e7eb; padding-bottom:8px; margin-bottom:8px;">
-          <strong style="font-size:13px; color:#0f2e22;">Notificaciones</strong>
-          <button id="btn-limpiar-no-leidas-vea" type="button"
-            style="background:none; border:none; color:#0f2e22; font-size:11px; font-weight:700; cursor:pointer; text-decoration:underline;">
-            Marcar leídas
-          </button>
-        </div>
-        <div id="lista-campanita-inferior-vea" style="display:flex; flex-direction:column; gap:8px; font-size:12px;">
-          <p style="margin:0; color:#6b7280;">No tenés notificaciones nuevas.</p>
-        </div>
+  item.style.cssText = `
+    position: fixed;
+    top: 14px;
+    right: 14px;
+    z-index: 1300;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    background: #062e22;
+    border: 1px solid rgba(212, 175, 55, 0.65);
+    border-radius: 999px;
+    padding: 6px 10px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.28);
+  `;
+
+  item.innerHTML = `
+    <button id="btn-campanita-inferior-vea" type="button" aria-label="Notificaciones"
+      style="position:relative; display:inline-flex; flex-direction:row; align-items:center; justify-content:center; gap:5px; background:transparent; border:none; padding:0; cursor:pointer; color:#f4f7f5;">
+      <span style="position:relative; display:inline-flex; align-items:center; justify-content:center; font-size:16px; line-height:1;">
+        <span>🔔</span>
+        <span id="badge-campanita-inferior-vea"
+          style="display:none; position:absolute; top:-6px; right:-8px; min-width:17px; height:17px; padding:0 4px; border-radius:999px; background:#dc2626; color:#ffffff; font-size:10px; font-weight:700; line-height:17px; text-align:center; box-shadow:0 2px 6px rgba(0,0,0,0.4);">0</span>
+      </span>
+      <span style="font-size:11px; font-weight:600; color:#f4f7f5; line-height:1;">Avisos</span>
+    </button>
+    <div id="bandeja-campanita-inferior-vea"
+      style="display:none; position:fixed; top:56px; right:14px; left:auto; width:min(360px, calc(100vw - 28px)); max-height:320px; overflow-y:auto; background:#ffffff; border:1px solid #d4af37; border-radius:10px; padding:10px; box-shadow:0 8px 24px rgba(0,0,0,0.25); z-index:1301;">
+      <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #e5e7eb; padding-bottom:8px; margin-bottom:8px;">
+        <strong style="font-size:13px; color:#0f2e22;">Notificaciones</strong>
+        <button id="btn-limpiar-no-leidas-vea" type="button"
+          style="background:none; border:none; color:#0f2e22; font-size:11px; font-weight:700; cursor:pointer; text-decoration:underline;">
+          Marcar leídas
+        </button>
       </div>
-    `;
+      <div id="lista-campanita-inferior-vea" style="display:flex; flex-direction:column; gap:8px; font-size:12px;">
+        <p style="margin:0; color:#6b7280;">No tenés notificaciones nuevas.</p>
+      </div>
+    </div>
+  `;
 
-    insertarAlLadoDeInicioVEA(barra, item);
+  insertarAlLadoDeInicioVEA(null, item);
+
 
     const btn = item.querySelector("#btn-campanita-inferior-vea");
     const bandeja = item.querySelector("#bandeja-campanita-inferior-vea");
@@ -2286,7 +2297,7 @@ function inicializarCampanitaBarraInferiorVEA() {
   }
 
   actualizarVisibilidadSesionCampanitaVEA();
-}
+
 
 function actualizarVisibilidadSesionCampanitaVEA(usuarioOverride = undefined) {
   const item = document.querySelector("#item-campanita-inferior-vea");
