@@ -2200,20 +2200,23 @@ function insertarAlLadoDeInicioVEA(barra, itemNotif) {
     ".usuario-trigger, .menu-usuario-wrap, [id*='usuario'], [class*='usuario']"
   );
 
+  itemNotif.style.position = "static";
+  itemNotif.style.top = "auto";
+  itemNotif.style.right = "auto";
+  itemNotif.style.bottom = "auto";
+  itemNotif.style.left = "auto";
+  itemNotif.style.border = "1.5px solid #d4af37";
+  itemNotif.style.borderRadius = "999px";
+  itemNotif.style.boxShadow = "0 0 0 1px rgba(212, 175, 55, 0.35)";
+
   if (btnSuscripciones && btnSuscripciones.parentNode) {
     btnSuscripciones.parentNode.insertBefore(itemNotif, btnSuscripciones);
-    itemNotif.style.position = "static";
-    itemNotif.style.top = "auto";
-    itemNotif.style.right = "auto";
     itemNotif.style.marginRight = "6px";
     return;
   }
 
   if (chipUsuario && chipUsuario.parentNode) {
     chipUsuario.insertAdjacentElement("afterend", itemNotif);
-    itemNotif.style.position = "static";
-    itemNotif.style.top = "auto";
-    itemNotif.style.right = "auto";
     itemNotif.style.marginLeft = "6px";
     return;
   }
