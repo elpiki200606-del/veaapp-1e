@@ -495,9 +495,9 @@ body.vea-sin-filtro {
 }
 @media (max-width: 768px) {
   #banner-premium-rotativo.banner-premium-slot {
-    min-height: calc(100% + 2px);
-    padding-top: 2px;
-    padding-bottom: 2px;
+    
+    padding-top: 4px;
+    padding-bottom: 4px;
     margin-bottom: 2px;
   }
 
