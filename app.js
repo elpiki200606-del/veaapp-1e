@@ -339,7 +339,7 @@ const vidrieraReflejoContenido = document.getElementById("vidriera-reflejo-conte
 const PLANES_VEA = {
   basico: { nombre: "BÁSICO", maxPubs: 10, maxVideoSec: 10 },
   estandar: { nombre: "ESTÁNDAR", maxPubs: 20, maxVideoSec: 20 },
-  premium: { nombre: "PREMIUM", maxPubs: 40, maxVideoSec: 60 }
+  premium: { nombre: "PREMIUM", maxPubs: 40, maxVideoSec: 30 }
 };
 
 let fotoPerfilActual = "";
@@ -2895,16 +2895,9 @@ document.addEventListener("DOMContentLoaded", () => {
         }
 
         let archivoParaSubir = file;
-        if (file.size > 1.2 * 1024 * 1024) {
-          if (vidEstado) {
-            vidEstado.textContent = "Comprimiendo video con audio para que cargue más rápido...";
-          }
-          const recomprimido = await recomprimirConAudioLigero(file, ancho, alto);
-          if (recomprimido && recomprimido.size > 0 && recomprimido.size < file.size) {
-            archivoParaSubir = recomprimido;
-          }
-        }
-
+       
+          
+       
         archivoVideoPendiente = archivoParaSubir;
         const previewUrl = URL.createObjectURL(archivoParaSubir);
         if (vidPrev) {
@@ -2924,8 +2917,17 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   btnQuitarVid?.addEventListener("click", () => {
-    archivoVideoPendiente = null;
-  });
+  archivoVideoPendiente = null;
+  if (vidInput) vidInput.value = "";
+  if (vidPrev) {
+    vidPrev.pause?.();
+    vidPrev.removeAttribute("src");
+    vidPrev.load?.();
+    vidPrev.classList.add("hidden");
+  }
+  if (vidEstado) vidEstado.textContent = "";
+  btnQuitarVid.classList.add("hidden");
+});
 
   const formVid = document.getElementById("form-vidriera");
   formVid?.addEventListener("submit", async () => {
