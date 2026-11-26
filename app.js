@@ -702,75 +702,95 @@ if (vidVideoInput) {
   }
 
   async function recomprimirVideoVertical(file, duracionSeg, anchoOrig, altoOrig) {
-    if (!window.MediaRecorder || typeof document.createElement("canvas").captureStream !== "function") {
-      return null;
-    }
-
-    const maxAncho = 480;
-    const escala = anchoOrig > maxAncho ? maxAncho / anchoOrig : 1;
-    const targetAncho = Math.max(240, Math.round(anchoOrig * escala));
-    const targetAlto = Math.max(320, Math.round(altoOrig * escala));
-
-    const canvas = document.createElement("canvas");
-    canvas.width = targetAncho;
-    canvas.height = targetAlto;
-    const ctx = canvas.getContext("2d");
-
-    const videoEl = document.createElement("video");
-    videoEl.muted = true;
-    videoEl.playsInline = true;
-    videoEl.src = URL.createObjectURL(file);
-
-    await new Promise((resolve, reject) => {
-      videoEl.onloadedmetadata = resolve;
-      videoEl.onerror = reject;
-    });
-
-    const mimeCandidatos = [
-      "video/webm;codecs=vp9",
-      "video/webm;codecs=vp8",
-      "video/webm",
-      "video/mp4"
-    ];
-    const mimeType = mimeCandidatos.find((t) => MediaRecorder.isTypeSupported(t)) || "";
-
-    const stream = canvas.captureStream(24);
-    const recorder = new MediaRecorder(stream, {
-      ...(mimeType ? { mimeType } : {}),
-      videoBitsPerSecond: 380000
-    });
-
-    const trozos = [];
-    recorder.ondataavailable = (ev) => {
-      if (ev.data && ev.data.size > 0) trozos.push(ev.data);
-    };
-
-    const finalizado = new Promise((resolve) => {
-      recorder.onstop = resolve;
-    });
-
-    recorder.start();
-    await videoEl.play();
-
-    await new Promise((resolve) => {
-      const dibujarCuadro = () => {
-        if (videoEl.ended || videoEl.paused) {
-          resolve();
-          return;
-        }
-        ctx.drawImage(videoEl, 0, 0, targetAncho, targetAlto);
-        requestAnimationFrame(dibujarCuadro);
-      };
-      requestAnimationFrame(dibujarCuadro);
-    });
-
-    if (recorder.state !== "inactive") recorder.stop();
-    await finalizado;
-    URL.revokeObjectURL(videoEl.src);
-
-    const blobFinal = new Blob(trozos, { type: mimeType || "video/webm" });
-    return blobFinal.size > 0 ? blobFinal : null;
+  if (!window.MediaRecorder || typeof document.createElement("canvas").captureStream !== "function") {
+    return null;
   }
+
+  const maxAncho = 480;
+  const escala = anchoOrig > maxAncho ? maxAncho / anchoOrig : 1;
+  const targetAncho = Math.max(240, Math.round(anchoOrig * escala));
+  const targetAlto = Math.max(320, Math.round(altoOrig * escala));
+
+  const canvas = document.createElement("canvas");
+  canvas.width = targetAncho;
+  canvas.height = targetAlto;
+  const ctx = canvas.getContext("2d");
+
+  const videoEl = document.createElement("video");
+  videoEl.muted = true;
+  videoEl.playsInline = true;
+  videoEl.src = URL.createObjectURL(file);
+
+  await new Promise((resolve, reject) => {
+    videoEl.onloadedmetadata = resolve;
+    videoEl.onerror = reject;
+  });
+
+  let ctxAudio = null;
+  const videoTracks = canvas.captureStream(24).getVideoTracks();
+  const audioTracks = [];
+
+  try {
+    const AudioCtx = window.AudioContext || window.webkitAudioContext;
+    if (AudioCtx) {
+      ctxAudio = new AudioCtx();
+      if (ctxAudio.state === "suspended") {
+        await ctxAudio.resume();
+      }
+      const fuenteAudio = ctxAudio.createMediaElementSource(videoEl);
+      const destinoAudio = ctxAudio.createMediaStreamDestination();
+      fuenteAudio.connect(destinoAudio);
+      audioTracks.push(...destinoAudio.stream.getAudioTracks());
+    }
+  } catch (_e) {}
+
+  const stream = new MediaStream([...videoTracks, ...audioTracks]);
+
+  const mimeCandidatos = audioTracks.length
+    ? ["video/webm;codecs=vp9,opus", "video/webm;codecs=vp8,opus", "video/webm", "video/mp4"]
+    : ["video/webm;codecs=vp9", "video/webm;codecs=vp8", "video/webm", "video/mp4"];
+  const mimeType = mimeCandidatos.find((t) => MediaRecorder.isTypeSupported(t)) || "";
+
+  const recorder = new MediaRecorder(stream, {
+    ...(mimeType ? { mimeType } : {}),
+    videoBitsPerSecond: 380000
+  });
+
+  const trozos = [];
+  recorder.ondataavailable = (ev) => {
+    if (ev.data && ev.data.size > 0) trozos.push(ev.data);
+  };
+
+  const finalizado = new Promise((resolve) => {
+    recorder.onstop = resolve;
+  });
+
+  videoEl.muted = false;
+  recorder.start();
+  await videoEl.play();
+
+  await new Promise((resolve) => {
+    const dibujarCuadro = () => {
+      if (videoEl.ended || videoEl.paused) {
+        resolve();
+        return;
+      }
+      ctx.drawImage(videoEl, 0, 0, targetAncho, targetAlto);
+      requestAnimationFrame(dibujarCuadro);
+    };
+    requestAnimationFrame(dibujarCuadro);
+  });
+
+  if (recorder.state !== "inactive") recorder.stop();
+  await finalizado;
+  URL.revokeObjectURL(videoEl.src);
+  if (ctxAudio) {
+    ctxAudio.close().catch(() => {});
+  }
+
+  const blobFinal = new Blob(trozos, { type: mimeType || "video/webm" });
+  return blobFinal.size > 0 ? blobFinal : null;
+}
 
   const limiteBytes = 700 * 1024;
   let archivoParaLeer = file;
