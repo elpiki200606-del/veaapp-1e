@@ -2546,3 +2546,69 @@ document.addEventListener("DOMContentLoaded", () => {
   }
   window.addEventListener("resize", aplicarAjuste);
 })();
+(() => {
+  const regRutEl = document.getElementById("reg-rut");
+  const regMayoristaCheckEl = document.getElementById("reg-mayorista-check");
+  const regSubrubroWrapEl = document.getElementById("reg-subrubro-wrap");
+  const regSubrubroEl = document.getElementById("reg-subrubro");
+
+  const vidRubroEl = document.getElementById("vid-rubro");
+  const vidSubrubroWrapEl = document.getElementById("vid-subrubro-wrap");
+  const vidSubrubroEl = document.getElementById("vid-subrubro");
+
+  function toggleRegSubrubro() {
+    const activo = Boolean(regMayoristaCheckEl && regMayoristaCheckEl.checked);
+    if (regSubrubroWrapEl) regSubrubroWrapEl.classList.toggle("hidden", !activo);
+    if (!activo && regSubrubroEl) regSubrubroEl.value = "";
+  }
+
+  function toggleVidSubrubro() {
+    const esMay = (vidRubroEl?.value || "").trim().toLowerCase() === "mayorista / distribuidora";
+    if (vidSubrubroWrapEl) vidSubrubroWrapEl.classList.toggle("hidden", !esMay);
+    if (!esMay && vidSubrubroEl) vidSubrubroEl.value = "";
+  }
+
+  regMayoristaCheckEl?.addEventListener("change", toggleRegSubrubro);
+  vidRubroEl?.addEventListener("change", toggleVidSubrubro);
+
+  const formRegEl = document.getElementById("form-registro");
+  formRegEl?.addEventListener("submit", () => {
+    const rut = (regRutEl?.value || "").trim();
+    const esMayorista = Boolean(regMayoristaCheckEl?.checked);
+    const subrubro = esMayorista ? (regSubrubroEl?.value || "").trim() : "";
+
+    if (typeof auth !== "undefined" && auth && typeof auth.onAuthStateChanged === "function") {
+      const unsub = auth.onAuthStateChanged((u) => {
+        if (!u || !u.uid || typeof db === "undefined" || !db) return;
+        unsub();
+        db.collection("usuarios").doc(u.uid).set({
+          rut,
+          esMayoristaDistribuidora: esMayorista,
+          subrubro
+        }, { merge: true }).catch((e) => console.error("Error guardando RUT/subrubro:", e));
+
+        if (esMayorista && vidRubroEl && vidSubrubroEl) {
+          vidRubroEl.value = "Mayorista / Distribuidora";
+          toggleVidSubrubro();
+          vidSubrubroEl.value = subrubro;
+        }
+      });
+    }
+  });
+
+  const formVidEl = document.getElementById("form-vidriera");
+  formVidEl?.addEventListener("submit", () => {
+    const uid = (typeof auth !== "undefined" && auth?.currentUser?.uid) ? auth.currentUser.uid : "";
+    if (!uid || typeof db === "undefined" || !db) return;
+    const rubro = (vidRubroEl?.value || "").trim();
+    const subrubro = rubro.toLowerCase() === "mayorista / distribuidora"
+      ? (vidSubrubroEl?.value || "").trim()
+      : "";
+
+    db.collection("comercios").doc(uid).set({
+      rubro,
+      subrubro,
+      esMayoristaDistribuidora: rubro.toLowerCase() === "mayorista / distribuidora"
+    }, { merge: true }).catch((e) => console.error("Error guardando rubro/subrubro en comercio:", e));
+  });
+})();

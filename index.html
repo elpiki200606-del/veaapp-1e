@@ -1014,7 +1014,32 @@
           <label for="reg-telefono">Teléfono</label>
           <input type="tel" id="reg-telefono" placeholder="Ej. 11 5555-5555" required>
         </div>
+<div class="campo">
+          <label for="reg-rut">RUT</label>
+          <input type="text" id="reg-rut" placeholder="Ej. 20-12345678-9">
+        </div>
 
+        <div class="campo">
+          <label style="display:inline-flex; align-items:center; gap:8px; cursor:pointer;">
+            <input type="checkbox" id="reg-mayorista-check" style="width:auto;">
+            <span>Mayorista / Distribuidora</span>
+          </label>
+        </div>
+
+        <div class="campo hidden" id="reg-subrubro-wrap">
+          <label for="reg-subrubro">¿De qué es la distribuidora / mayorista?</label>
+          <select id="reg-subrubro">
+            <option value="">Seleccioná el subrubro...</option>
+            <option value="Alimentos y bebidas">Alimentos y bebidas</option>
+            <option value="Pañales y perfumería">Pañales y perfumería</option>
+            <option value="Artículos de limpieza">Artículos de limpieza</option>
+            <option value="Librería y papelería">Librería y papelería</option>
+            <option value="Ferretería y construcción">Ferretería y construcción</option>
+            <option value="Indumentaria y calzado">Indumentaria y calzado</option>
+            <option value="Electrónica e insumos">Electrónica e insumos</option>
+            <option value="Otro rubro mayorista">Otro rubro mayorista</option>
+          </select>
+        </div>
         <div class="campo">
           <label for="reg-email">Correo electrónico</label>
           <input type="email" id="reg-email" placeholder="correo@ejemplo.com" required>
@@ -1106,7 +1131,20 @@
             <option value="">Seleccioná el rubro de tu local...</option>
           </select>
         </div>
-
+<div class="campo hidden" id="vid-subrubro-wrap">
+          <label for="vid-subrubro">Subrubro Mayorista / Distribuidora</label>
+          <select id="vid-subrubro">
+            <option value="">Seleccioná el subrubro...</option>
+            <option value="Alimentos y bebidas">Alimentos y bebidas</option>
+            <option value="Pañales y perfumería">Pañales y perfumería</option>
+            <option value="Artículos de limpieza">Artículos de limpieza</option>
+            <option value="Librería y papelería">Librería y papelería</option>
+            <option value="Ferretería y construcción">Ferretería y construcción</option>
+            <option value="Indumentaria y calzado">Indumentaria y calzado</option>
+            <option value="Electrónica e insumos">Electrónica e insumos</option>
+            <option value="Otro rubro mayorista">Otro rubro mayorista</option>
+          </select>
+        </div>
         <div class="campo" style="position:relative;">
           <label for="vid-direccion">Dirección real en Argentina (calle, altura y localidad)</label>
           <input type="text" id="vid-direccion" placeholder="Ej. Pueyrredón 867, Ramos Mejía" autocomplete="off" required>
@@ -1340,7 +1378,15 @@
       "Farmacia": ["farmacia", "remedio", "remedios", "medicamento", "medicamentos", "perfumeria"],
       "Kiosco": ["kiosco", "golosina", "alfajor", "cigarrillo", "gaseosa", "agua"],
       "Maxikiosco": ["maxikiosco", "kiosco", "golosina", "bebida", "snack"],
-      "Almacén": ["almacen", "almacén", "yerba", "azucar", "azúcar", "fideos", "aceite", "arroz"]
+      "Almacén": ["almacen", "almacén", "yerba", "azucar", "azúcar", "fideos", "aceite", "arroz"],
+      "Hoteles": ["hotel", "hoteles", "alojamiento", "habitacion", "habitación", "hospedaje", "posada"],
+      "Mayorista / Distribuidora": [
+        "mayorista", "distribuidora", "distribuidor", "por mayor",
+        "alimentos", "bebidas", "panales", "pañales", "perfumeria", "perfumería",
+        "limpieza", "libreria", "librería", "papeleria", "papelería",
+        "ferreteria", "ferretería", "construccion", "construcción",
+        "indumentaria", "calzado", "electronica", "electrónica", "insumos"
+      ],
     };
 
     const RUBROS_INDIVIDUALES = [
