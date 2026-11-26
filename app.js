@@ -2733,3 +2733,275 @@ document.addEventListener("DOMContentLoaded", () => {
     }, { merge: true }).catch((e) => console.error("Error guardando rubro/subrubro en comercio:", e));
   });
 })();
+(() => {
+  if (typeof PLANES_VEA === "object" && PLANES_VEA) {
+    PLANES_VEA.basico = { ...(PLANES_VEA.basico || {}), nombre: "BÁSICO", maxPubs: 10, maxVideoSec: 10 };
+    PLANES_VEA.estandar = { ...(PLANES_VEA.estandar || {}), nombre: "ESTÁNDAR", maxPubs: 20, maxVideoSec: 20 };
+    PLANES_VEA.premium = { ...(PLANES_VEA.premium || {}), nombre: "PREMIUM", maxPubs: 40, maxVideoSec: 30 };
+  }
+
+  if (typeof actualizarUIPlanVidriera === "function") {
+    const originalActualizarUI = actualizarUIPlanVidriera;
+    window.actualizarUIPlanVidriera = function wrappedActualizarUIPlanVidriera() {
+      originalActualizarUI();
+      const cfg = typeof obtenerConfigPlan === "function"
+        ? obtenerConfigPlan()
+        : { nombre: "BÁSICO", maxPubs: 10, maxVideoSec: 10 };
+      const elEstado = document.getElementById("estado-plan-detalle");
+      const elLabelVid = document.getElementById("label-video-vidriera");
+      const elLabelPub = document.getElementById("label-publicaciones-vidriera");
+      if (elEstado) {
+        elEstado.textContent = `Límites de tu plan: hasta ${cfg.maxPubs} publicaciones y video vertical de hasta ${cfg.maxVideoSec}s.`;
+      }
+      if (elLabelVid) {
+        elLabelVid.textContent = `Video promocional vertical (máximo ${cfg.maxVideoSec}s según tu plan)`;
+      }
+      if (elLabelPub && typeof publicacionesVidriera !== "undefined") {
+        elLabelPub.textContent = `Publicaciones (${publicacionesVidriera.length} / ${cfg.maxPubs} máx.)`;
+      }
+    };
+    window.actualizarUIPlanVidriera();
+  }
+
+  const storageInstance = (typeof firebase !== "undefined" && typeof firebase.storage === "function")
+    ? firebase.storage()
+    : null;
+
+  let archivoVideoPendiente = null;
+
+  async function recomprimirConAudioLigero(file, anchoOrig, altoOrig) {
+    if (!window.MediaRecorder || typeof document.createElement("canvas").captureStream !== "function") {
+      return null;
+    }
+
+    const maxAncho = 480;
+    const escala = anchoOrig > maxAncho ? maxAncho / anchoOrig : 1;
+    const targetAncho = Math.max(240, Math.round(anchoOrig * escala));
+    const targetAlto = Math.max(320, Math.round(altoOrig * escala));
+
+    const canvas = document.createElement("canvas");
+    canvas.width = targetAncho;
+    canvas.height = targetAlto;
+    const ctx = canvas.getContext("2d");
+
+    const videoEl = document.createElement("video");
+    videoEl.muted = true;
+    videoEl.playsInline = true;
+    videoEl.src = URL.createObjectURL(file);
+
+    await new Promise((resolve, reject) => {
+      videoEl.onloadedmetadata = resolve;
+      videoEl.onerror = reject;
+    });
+
+    let ctxAudio = null;
+    const videoTracks = canvas.captureStream(24).getVideoTracks();
+    const audioTracks = [];
+
+    try {
+      const AudioCtx = window.AudioContext || window.webkitAudioContext;
+      if (AudioCtx) {
+        ctxAudio = new AudioCtx();
+        if (ctxAudio.state === "suspended") {
+          await ctxAudio.resume();
+        }
+        const fuenteAudio = ctxAudio.createMediaElementSource(videoEl);
+        const destinoAudio = ctxAudio.createMediaStreamDestination();
+        fuenteAudio.connect(destinoAudio);
+        audioTracks.push(...destinoAudio.stream.getAudioTracks());
+      }
+    } catch (_e) {}
+
+    const stream = new MediaStream([...videoTracks, ...audioTracks]);
+    const mimeCandidatos = audioTracks.length
+      ? ["video/webm;codecs=vp9,opus", "video/webm;codecs=vp8,opus", "video/webm", "video/mp4"]
+      : ["video/webm;codecs=vp9", "video/webm;codecs=vp8", "video/webm", "video/mp4"];
+    const mimeType = mimeCandidatos.find((t) => MediaRecorder.isTypeSupported(t)) || "";
+
+    const recorder = new MediaRecorder(stream, {
+      ...(mimeType ? { mimeType } : {}),
+      videoBitsPerSecond: 260000,
+      audioBitsPerSecond: 64000
+    });
+
+    const trozos = [];
+    recorder.ondataavailable = (ev) => {
+      if (ev.data && ev.data.size > 0) trozos.push(ev.data);
+    };
+
+    const finalizado = new Promise((resolve) => {
+      recorder.onstop = resolve;
+    });
+
+    videoEl.muted = false;
+    recorder.start();
+    await videoEl.play();
+
+    await new Promise((resolve) => {
+      const dibujarCuadro = () => {
+        if (videoEl.ended || videoEl.paused) {
+          resolve();
+          return;
+        }
+        ctx.drawImage(videoEl, 0, 0, targetAncho, targetAlto);
+        requestAnimationFrame(dibujarCuadro);
+      };
+      requestAnimationFrame(dibujarCuadro);
+    });
+
+    if (recorder.state !== "inactive") recorder.stop();
+    await finalizado;
+    URL.revokeObjectURL(videoEl.src);
+    if (ctxAudio) {
+      ctxAudio.close().catch(() => {});
+    }
+
+    const blobFinal = new Blob(trozos, { type: mimeType || "video/webm" });
+    return blobFinal.size > 0 ? blobFinal : null;
+  }
+
+  const vidInput = document.getElementById("vid-video-input");
+  const vidEstado = document.getElementById("vid-video-estado");
+  const vidPrev = document.getElementById("vid-preview-video");
+  const btnQuitarVid = document.getElementById("btn-quitar-video");
+
+  if (vidInput) {
+    vidInput.addEventListener("change", async (e) => {
+      const file = e.target.files && e.target.files[0];
+      if (!file) return;
+
+      const cfg = typeof obtenerConfigPlan === "function"
+        ? obtenerConfigPlan()
+        : { nombre: "BÁSICO", maxPubs: 10, maxVideoSec: 10 };
+
+      const tempVideo = document.createElement("video");
+      tempVideo.preload = "metadata";
+      const objUrl = URL.createObjectURL(file);
+      tempVideo.src = objUrl;
+
+      tempVideo.onloadedmetadata = async () => {
+        URL.revokeObjectURL(objUrl);
+        const duracion = Number(tempVideo.duration || 0);
+        const ancho = Number(tempVideo.videoWidth || 0);
+        const alto = Number(tempVideo.videoHeight || 0);
+
+        if (ancho >= alto) {
+          vidInput.value = "";
+          archivoVideoPendiente = null;
+          if (vidEstado) {
+            vidEstado.textContent = `Rechazado: el video es horizontal (${ancho}x${alto}). Grabá en vertical.`;
+          }
+          return;
+        }
+
+        if (duracion > cfg.maxVideoSec) {
+          vidInput.value = "";
+          archivoVideoPendiente = null;
+          if (vidEstado) {
+            vidEstado.textContent = `Rechazado: dura ${Math.round(duracion)}s y tu plan ${cfg.nombre} permite hasta ${cfg.maxVideoSec}s.`;
+          }
+          return;
+        }
+
+        let archivoParaSubir = file;
+        if (file.size > 1.2 * 1024 * 1024) {
+          if (vidEstado) {
+            vidEstado.textContent = "Comprimiendo video con audio para que cargue más rápido...";
+          }
+          const recomprimido = await recomprimirConAudioLigero(file, ancho, alto);
+          if (recomprimido && recomprimido.size > 0 && recomprimido.size < file.size) {
+            archivoParaSubir = recomprimido;
+          }
+        }
+
+        archivoVideoPendiente = archivoParaSubir;
+        const previewUrl = URL.createObjectURL(archivoParaSubir);
+        if (vidPrev) {
+          vidPrev.src = previewUrl;
+          vidPrev.classList.remove("hidden");
+        }
+        if (btnQuitarVid) {
+          btnQuitarVid.classList.remove("hidden");
+        }
+        if (typeof videoVerticalActual !== "undefined") {
+          videoVerticalActual = archivoParaSubir.size <= 750 * 1024 ? await new Promise((res) => {
+            const r = new FileReader();
+            r.onload = () => res(r.result);
+            r.readAsDataURL(archivoParaSubir);
+          }) : "";
+        }
+        if (vidEstado) {
+          const mb = (archivoParaSubir.size / (1024 * 1024)).toFixed(2);
+          vidEstado.textContent = `Video vertical listo (${Math.round(duracion)}s, ${mb} MB). Guardá la vidriera para subirlo.`;
+        }
+      };
+    }, true);
+  }
+
+  btnQuitarVid?.addEventListener("click", () => {
+    archivoVideoPendiente = null;
+  });
+
+  const formVid = document.getElementById("form-vidriera");
+  formVid?.addEventListener("submit", async () => {
+    const uid = (typeof auth !== "undefined" && auth?.currentUser?.uid) ? auth.currentUser.uid : "";
+    if (!uid || typeof db === "undefined" || !db || !archivoVideoPendiente) return;
+
+    const archivo = archivoVideoPendiente;
+    archivoVideoPendiente = null;
+
+    if (storageInstance) {
+      try {
+        if (vidEstado) vidEstado.textContent = "Subiendo video a la nube...";
+        const ref = storageInstance.ref(`comercios/${uid}/video_vertical`);
+        const snap = await ref.put(archivo);
+        const urlDescarga = await snap.ref.getDownloadURL();
+        await db.collection("comercios").doc(uid).set({
+          videoUrl: urlDescarga,
+          videoVertical: ""
+        }, { merge: true });
+        if (vidPrev) {
+          vidPrev.src = urlDescarga;
+          vidPrev.classList.remove("hidden");
+        }
+        if (vidEstado) vidEstado.textContent = "Video guardado con audio en la nube.";
+        return;
+      } catch (_errStorage) {}
+    }
+
+    if (archivo.size <= 750 * 1024) {
+      const dataUrl = await new Promise((res) => {
+        const r = new FileReader();
+        r.onload = () => res(r.result);
+        r.readAsDataURL(archivo);
+      });
+      await db.collection("comercios").doc(uid).set({
+        videoVertical: dataUrl
+      }, { merge: true });
+    }
+  });
+
+  const obsDetalleVideo = new MutationObserver(() => {
+    const detalleBox = document.getElementById("contenido-detalle-comercio");
+    if (!detalleBox || typeof comerciosCargados === "undefined") return;
+    const texto = (detalleBox.textContent || "").toLowerCase();
+    const com = comerciosCargados.find((c) => {
+      const nom = String(c.nombreComercio || c.nombre || "").trim().toLowerCase();
+      return nom && texto.includes(nom);
+    });
+    const srcVideo = com && (com.videoUrl || com.videoVertical);
+    if (srcVideo && !detalleBox.querySelector("video")) {
+      const vid = document.createElement("video");
+      vid.controls = true;
+      vid.playsInline = true;
+      vid.src = srcVideo;
+      vid.style.cssText = "width:150px; max-height:260px; border-radius:8px; background:#000; display:block; margin:10px 0;";
+      detalleBox.appendChild(vid);
+    }
+  });
+
+  const contDetalle = document.getElementById("contenido-detalle-comercio");
+  if (contDetalle) {
+    obsDetalleVideo.observe(contDetalle, { childList: true, subtree: true });
+  }
+})();

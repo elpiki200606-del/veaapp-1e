@@ -1117,7 +1117,7 @@
         </div>
       </div>
 
-      <p id="estado-plan-detalle" class="subtexto">Promo lanzamiento: Plan Premium activo (hasta 40 publicaciones y video vertical hasta 60s).</p>
+      <p id="estado-plan-detalle" class="subtexto">Promo lanzamiento: Plan Premium activo (hasta 40 publicaciones y video vertical hasta 30s).</p>
 
       <form id="form-vidriera" class="form-grid" novalidate>
         <div class="campo">
@@ -1174,7 +1174,7 @@
         <div class="campo">
           <label for="vid-video-input" id="label-video-vidriera">Video promocional (formato vertical obligatorio)</label>
           <input type="file" id="vid-video-input" accept="video/*">
-          <small id="vid-video-estado" class="subtexto">Solo formato vertical (alto mayor que ancho). Máximo según tu plan.</small>
+          <small id="vid-video-estado" class="subtexto">Solo formato vertical (alto mayor que ancho). Grabá un video corto en baja/media calidad para que cargue rápido. Máximo 10s / 20s / 30s según tu plan.</small>
           <video id="vid-preview-video" controls playsinline class="hidden" style="width:140px; max-height:240px; border-radius:8px; background:#000; margin-top:6px;"></video>
           <button type="button" id="btn-quitar-video" class="btn hidden" style="margin-top:4px;">Quitar video</button>
         </div>
@@ -1234,7 +1234,7 @@
               <span class="badge-plan">PREMIUM</span>
               <h4 style="margin-top:6px;">Plan Premium</h4>
               <div class="plan-precio">USD 15</div>
-              <p class="subtexto">1er mes gratis · Hasta 40 publicaciones · Video hasta 60s</p>
+              <p class="subtexto">1er mes gratis · Hasta 40 publicaciones · Video hasta 30s</p>
             </div>
             <button type="button" class="btn btn-suscripcion" data-plan="premium">Suscribirse Premium</button>
           </div>
@@ -1338,6 +1338,7 @@
   <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
   <script src="app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-storage-compat.js"></script>
   <script>
     const PROMO_PRIMER_MES_GRATIS_ACTIVA = true;
 
@@ -1545,7 +1546,7 @@
       }
       const estadoPlanEl = document.getElementById("estado-plan-detalle");
       if (estadoPlanEl) {
-        estadoPlanEl.textContent = "Promo lanzamiento: Plan Premium activo (hasta 40 publicaciones y video vertical hasta 60s).";
+        estadoPlanEl.textContent = "Promo lanzamiento: Plan Premium activo (hasta 40 publicaciones y video vertical hasta 30s).";
       }
       const labelPubEl = document.getElementById("label-publicaciones-vidriera");
       if (labelPubEl && labelPubEl.textContent) {
