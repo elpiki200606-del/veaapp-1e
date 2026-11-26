@@ -2935,28 +2935,10 @@ document.addEventListener("DOMContentLoaded", () => {
     const archivo = archivoVideoPendiente;
     archivoVideoPendiente = null;
 
-    if (storageInstance) {
-      try {
-        if (vidEstado) vidEstado.textContent = "Subiendo video a la nube...";
-        const ref = storageInstance.ref(`comercios/${uid}/video_vertical`);
-        const snap = await ref.put(archivo);
-        const urlDescarga = await snap.ref.getDownloadURL();
-        await db.collection("comercios").doc(uid).set({
-          videoUrl: urlDescarga,
-          videoVertical: ""
-        }, { merge: true });
-        if (vidPrev) {
-          vidPrev.src = urlDescarga;
-          vidPrev.classList.remove("hidden");
-        }
-        if (vidEstado) vidEstado.textContent = "Video guardado con audio en la nube.";
-        return;
-      } catch (_errStorage) {}
-    }
-
+    
     if (archivo) {
   const videoUrl = await subirArchivoACloudinary(archivo);
-  await db.collection("comercios").doc(uid).set({ videoVertical: videoUrl }, { merge: true });
+  await db.collection("comercios").doc(uid).set({ videoVertical: videoUrl, videoUrl: videoUrl }, { merge: true });
 }
 
   const obsDetalleVideo = new MutationObserver(() => {
