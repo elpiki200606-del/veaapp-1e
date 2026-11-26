@@ -2916,7 +2916,8 @@ document.addEventListener("DOMContentLoaded", () => {
     }, true);
   }
 
-  btnQuitarVid?.addEventListener("click", () => {
+  btnQuitarVid?.addEventListener("click", (e) => {
+  e.preventDefault();
   archivoVideoPendiente = null;
   if (vidInput) vidInput.value = "";
   if (vidPrev) {
