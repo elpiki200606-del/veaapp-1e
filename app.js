@@ -792,7 +792,7 @@ if (vidVideoInput) {
   return blobFinal.size > 0 ? blobFinal : null;
 }
 
-  const limiteBytes = 700 * 1024;
+ const limiteBytes = 5 * 1024 * 1024; // 5 MB por video
   let archivoParaLeer = file;
 
   if (file.size > limiteBytes) {
