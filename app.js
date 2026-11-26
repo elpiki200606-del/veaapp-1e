@@ -813,19 +813,10 @@ if (vidVideoInput) {
     return;
   }
 
-  const reader = 
-  reader.onload = () => {
-    videoVerticalActual = reader.result;
-    renderizarPreviewVideo(videoVerticalActual);
-    if (vidVideoEstado) {
-      vidVideoEstado.textContent = `Video vertical válido (${ancho}x${alto}, ${Math.round(duracion)}s). Guardá la vidriera para aplicarlo.`;
-    }
-  };
-  reader.readAsDataURL(archivoParaLeer);
-};
+  
+}
 });
 }
-
 function renderizarCuponesVidriera() {
   if (!vidListaCupones) return;
   vidListaCupones.innerHTML = "";
