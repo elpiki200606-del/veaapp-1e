@@ -2934,14 +2934,13 @@ document.addEventListener("DOMContentLoaded", () => {
     const uid = (typeof auth !== "undefined" && auth?.currentUser?.uid) ? auth.currentUser.uid : "";
     if (!uid || typeof db === "undefined" || !db || !archivoVideoPendiente) return;
 
-    const archivo = archivoVideoPendiente;
-    archivoVideoPendiente = null;
+   const archivo = archivoVideoPendiente;
+  archivoVideoPendiente = null;
 
-    
-    if (archivo) {
-  const videoUrl = await subirArchivoACloudinary(archivo);
-  await db.collection("comercios").doc(uid).set({ videoVertical: videoUrl, videoUrl: videoUrl }, { merge: true });
-}
+  if (archivo) {
+    const videoUrl = await subirArchivoACloudinary(archivo);
+    await db.collection("comercios").doc(uid).set({ videoVertical: videoUrl, videoUrl: videoUrl }, { merge: true });
+  }
 
   const obsDetalleVideo = new MutationObserver(() => {
     const detalleBox = document.getElementById("contenido-detalle-comercio");
