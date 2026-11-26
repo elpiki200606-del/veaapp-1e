@@ -425,7 +425,7 @@ function renderizarPreviewFoto(fotoBase64) {
 
 function comprimirImagen(file, maxSize = 240, quality = 0.78) {
   return new Promise((resolve, reject) => {
-    const reader = new FileReader();
+    const reader = new comprimirImagenParaCelular();
     reader.onerror = () => reject(new Error("No se pudo leer el archivo."));
     reader.onload = () => {
       const img = new Image();
@@ -813,7 +813,7 @@ if (vidVideoInput) {
     return;
   }
 
-  const reader = new FileReader();
+  const reader = 
   reader.onload = () => {
     videoVerticalActual = reader.result;
     renderizarPreviewVideo(videoVerticalActual);
@@ -2923,13 +2923,7 @@ document.addEventListener("DOMContentLoaded", () => {
         if (btnQuitarVid) {
           btnQuitarVid.classList.remove("hidden");
         }
-        if (typeof videoVerticalActual !== "undefined") {
-          videoVerticalActual = archivoParaSubir.size <= 750 * 1024 ? await new Promise((res) => {
-            const r = new FileReader();
-            r.onload = () => res(r.result);
-            r.readAsDataURL(archivoParaSubir);
-          }) : "";
-        }
+      
         if (vidEstado) {
           const mb = (archivoParaSubir.size / (1024 * 1024)).toFixed(2);
           vidEstado.textContent = `Video vertical listo (${Math.round(duracion)}s, ${mb} MB). Guardá la vidriera para subirlo.`;
@@ -2969,17 +2963,10 @@ document.addEventListener("DOMContentLoaded", () => {
       } catch (_errStorage) {}
     }
 
-    if (archivo.size <= 750 * 1024) {
-      const dataUrl = await new Promise((res) => {
-        const r = new FileReader();
-        r.onload = () => res(r.result);
-        r.readAsDataURL(archivo);
-      });
-      await db.collection("comercios").doc(uid).set({
-        videoVertical: dataUrl
-      }, { merge: true });
-    }
-  });
+    if (archivo) {
+  const videoUrl = await subirArchivoACloudinary(archivo);
+  await db.collection("comercios").doc(uid).set({ videoVertical: videoUrl }, { merge: true });
+}
 
   const obsDetalleVideo = new MutationObserver(() => {
     const detalleBox = document.getElementById("contenido-detalle-comercio");
@@ -3004,4 +2991,4 @@ document.addEventListener("DOMContentLoaded", () => {
   if (contDetalle) {
     obsDetalleVideo.observe(contDetalle, { childList: true, subtree: true });
   }
-})();
+})();});
