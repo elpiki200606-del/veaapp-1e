@@ -2627,9 +2627,10 @@ document.addEventListener("DOMContentLoaded", () => {
     const uid = (typeof auth !== "undefined" && auth?.currentUser?.uid) ? auth.currentUser.uid : "";
     if (!uid || typeof db === "undefined" || !db) return;
     const rubro = (vidRubroEl?.value || "").trim();
-    const subrubro = rubro.toLowerCase() === "mayorista / distribuidora"
-      ? (vidSubrubroEl?.value || "").trim()
-      : "";
+if (!rubro) return;
+const rLower = rubro.toLowerCase();
+const esMay = rLower === "distribuidora / mayorista" || rLower === "mayorista / distribuidora";
+const subrubro = esMay ? (vidSubrubroEl?.value || "").trim() : "";
 
     db.collection("comercios").doc(uid).set({
       rubro,
@@ -2638,107 +2639,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }, { merge: true }).catch((e) => console.error("Error guardando rubro/subrubro en comercio:", e));
   });
 })();
-(() => {
-  // 1. Mover la caja de sugerencias fuera de .header-search para que nunca tape el input
-  const inpBuscador = document.getElementById("buscar-comercio");
-  const cajaSug = document.getElementById("sugerencias-rubro-vea");
-  const headerEl = document.querySelector("header.app-header");
-  if (cajaSug && headerEl) {
-    headerEl.insertAdjacentElement("afterend", cajaSug);
-    cajaSug.style.cssText =
-      "display:none; position:relative; z-index:1500; margin:4px 8px 0; background:#0f2e22; border:1.5px solid #d4af37; border-radius:8px; padding:6px 10px; color:#ecfdf5; font-size:12.5px;";
-  }
 
-  // 2. Evitar re-render agresivo en cada tecla que mueva el cursor al escribir
-  let timerBusquedaSuave = null;
-  if (inpBuscador && typeof window.filtrarComercios === "function") {
-    const filtrarSuave = () => {
-      clearTimeout(timerBusquedaSuave);
-      timerBusquedaSuave = setTimeout(() => {
-        if (document.activeElement === inpBuscador) {
-          const posInicio = inpBuscador.selectionStart;
-          const posFin = inpBuscador.selectionEnd;
-          window.filtrarComercios();
-          try {
-            if (typeof posInicio === "number" && typeof posFin === "number") {
-              inpBuscador.setSelectionRange(posInicio, posFin);
-            }
-          } catch (_e) {}
-        } else {
-          window.filtrarComercios();
-        }
-      }, 160);
-    };
-    inpBuscador.addEventListener("input", filtrarSuave, true);
-  }
-
-  // 3. CUIL + Distribuidora / Mayorista + Subrubro en registro y vidriera
-  const regCuilEl = document.getElementById("reg-cuil");
-  const regMayoristaCheckEl = document.getElementById("reg-mayorista-check");
-  const regSubrubroWrapEl = document.getElementById("reg-subrubro-wrap");
-  const regSubrubroEl = document.getElementById("reg-subrubro");
-
-  const vidRubroEl = document.getElementById("vid-rubro");
-  const vidSubrubroWrapEl = document.getElementById("vid-subrubro-wrap");
-  const vidSubrubroEl = document.getElementById("vid-subrubro");
-
-  function toggleRegSubrubro() {
-    const activo = Boolean(regMayoristaCheckEl && regMayoristaCheckEl.checked);
-    if (regSubrubroWrapEl) regSubrubroWrapEl.classList.toggle("hidden", !activo);
-    if (!activo && regSubrubroEl) regSubrubroEl.value = "";
-  }
-
-  function toggleVidSubrubro() {
-    const val = (vidRubroEl?.value || "").trim().toLowerCase();
-    const esMay = val === "distribuidora / mayorista" || val === "mayorista / distribuidora";
-    if (vidSubrubroWrapEl) vidSubrubroWrapEl.classList.toggle("hidden", !esMay);
-    if (!esMay && vidSubrubroEl) vidSubrubroEl.value = "";
-  }
-
-  regMayoristaCheckEl?.addEventListener("change", toggleRegSubrubro);
-  vidRubroEl?.addEventListener("change", toggleVidSubrubro);
-
-  const formRegEl = document.getElementById("form-registro");
-  formRegEl?.addEventListener("submit", () => {
-    const cuil = (regCuilEl?.value || "").trim();
-    const esMayorista = Boolean(regMayoristaCheckEl?.checked);
-    const subrubro = esMayorista ? (regSubrubroEl?.value || "").trim() : "";
-
-    if (typeof auth !== "undefined" && auth && typeof auth.onAuthStateChanged === "function") {
-      const unsub = auth.onAuthStateChanged((u) => {
-        if (!u || !u.uid || typeof db === "undefined" || !db) return;
-        unsub();
-        db.collection("usuarios").doc(u.uid).set({
-          cuil,
-          esDistribuidoraMayorista: esMayorista,
-          subrubro
-        }, { merge: true }).catch((e) => console.error("Error guardando CUIL/subrubro:", e));
-
-        if (esMayorista && vidRubroEl && vidSubrubroEl) {
-          vidRubroEl.value = "Distribuidora / Mayorista";
-          toggleVidSubrubro();
-          vidSubrubroEl.value = subrubro;
-        }
-      });
-    }
-  });
-
-  const formVidEl = document.getElementById("form-vidriera");
-  formVidEl?.addEventListener("submit", () => {
-    const uid = (typeof auth !== "undefined" && auth?.currentUser?.uid) ? auth.currentUser.uid : "";
-    if (!uid || typeof db === "undefined" || !db) return;
-    const rubro = (vidRubroEl?.value || "").trim();
-    const rLower = rubro.toLowerCase();
-    const esMay = rLower === "distribuidora / mayorista" || rLower === "mayorista / distribuidora";
-    const subrubro = esMay ? (vidSubrubroEl?.value || "").trim() : "";
-
-    db.collection("comercios").doc(uid).set({
-      rubro,
-      subrubro,
-      esDistribuidoraMayorista: esMay
-    }, { merge: true }).catch((e) => console.error("Error guardando rubro/subrubro en comercio:", e));
-  });
-})();
 (() => {
   if (typeof PLANES_VEA === "object" && PLANES_VEA) {
     PLANES_VEA.basico = { ...(PLANES_VEA.basico || {}), nombre: "BÁSICO", maxPubs: 10, maxVideoSec: 10 };
