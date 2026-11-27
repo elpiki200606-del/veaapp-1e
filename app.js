@@ -2916,8 +2916,8 @@ document.addEventListener("DOMContentLoaded", () => {
     }, true);
   }
 
-  btnQuitarVid?.addEventListener("click", (e) => {
-  e.preventDefault();
+  btnQuitarVid?.addEventListener("click", (ev) => {
+  ev.preventDefault();
   archivoVideoPendiente = null;
   if (vidInput) vidInput.value = "";
   if (vidPrev) {
@@ -2929,19 +2929,35 @@ document.addEventListener("DOMContentLoaded", () => {
   if (vidEstado) vidEstado.textContent = "";
   btnQuitarVid.classList.add("hidden");
 });
-
   const formVid = document.getElementById("form-vidriera");
-  formVid?.addEventListener("submit", async () => {
-    const uid = (typeof auth !== "undefined" && auth?.currentUser?.uid) ? auth.currentUser.uid : "";
-    if (!uid || typeof db === "undefined" || !db || !archivoVideoPendiente) return;
-
-   const archivo = archivoVideoPendiente;
-  archivoVideoPendiente = null;
-
-  if (archivo) {
-    const videoUrl = await subirArchivoACloudinary(archivo);
-    await db.collection("comercios").doc(uid).set({ videoVertical: videoUrl, videoUrl: videoUrl }, { merge: true });
+  formVid?.addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const uid = (typeof auth !== "undefined" && auth?.currentUser?.uid) ? auth.currentUser.uid : "";
+  if (!uid) {
+    if (vidEstado) vidEstado.textContent = "Iniciá sesión para subir el video.";
+    return;
   }
+  if (typeof db === "undefined" || !db || !archivoVideoPendiente) return;
+
+  const archivo = archivoVideoPendiente;
+  try {
+    const videoUrl = await subirArchivoACloudinary(archivo);
+    if (!videoUrl) {
+      if (vidEstado) vidEstado.textContent = "Cloudinary no devolvió URL del video.";
+      return;
+    }
+    archivoVideoPendiente = null;
+    await db.collection("comercios").doc(uid).set(
+      { videoVertical: videoUrl, videoUrl: videoUrl },
+      { merge: true }
+    );
+    if (vidEstado) vidEstado.textContent = "Video subido y guardado.";
+    btnQuitarVid?.classList.add("hidden");
+  } catch (err) {
+    console.error("Error subiendo video:", err);
+    if (vidEstado) vidEstado.textContent = "Error al subir el video a Cloudinary.";
+  }
+});
 
   const obsDetalleVideo = new MutationObserver(() => {
     const detalleBox = document.getElementById("contenido-detalle-comercio");
@@ -2966,4 +2982,4 @@ document.addEventListener("DOMContentLoaded", () => {
   if (contDetalle) {
     obsDetalleVideo.observe(contDetalle, { childList: true, subtree: true });
   }
-})();});
+})();
