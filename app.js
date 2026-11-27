@@ -422,10 +422,12 @@ function renderizarPreviewFoto(fotoBase64) {
     previewFotoPerfil.classList.add("hidden");
   }
 }
-
+async function comprimirImagenParaCelular(archivo) {
+  return archivo;
+}
 function comprimirImagen(file, maxSize = 240, quality = 0.78) {
   return new Promise((resolve, reject) => {
-    const reader = new comprimirImagenParaCelular();
+    const reader = new FileReader();
     reader.onerror = () => reject(new Error("No se pudo leer el archivo."));
     reader.onload = () => {
       const img = new Image();
@@ -2937,25 +2939,37 @@ document.addEventListener("DOMContentLoaded", () => {
     if (vidEstado) vidEstado.textContent = "Iniciá sesión para subir el video.";
     return;
   }
-  if (typeof db === "undefined" || !db || !archivoVideoPendiente) return;
+  if (typeof db === "undefined" || !db) return;
 
-  const archivo = archivoVideoPendiente;
+  const archivo = archivoVideoPendiente || (vidInput && vidInput.files && vidInput.files[0]) || null;
+  if (!archivo) return;
+
   try {
-    const videoUrl = await subirArchivoACloudinary(archivo);
-    if (!videoUrl) {
-      if (vidEstado) vidEstado.textContent = "Cloudinary no devolvió URL del video.";
-      return;
+    if (vidEstado) vidEstado.textContent = "Subiendo video a Cloudinary...";
+    const formData = new FormData();
+    formData.append("file", archivo);
+    formData.append("upload_preset", "APPVEA2");
+
+    const resp = await fetch("https://api.cloudinary.com/v1_1/kwp9jptr/video/upload", {
+      method: "POST",
+      body: formData
+    });
+    const data = await resp.json();
+    if (!resp.ok || !data.secure_url) {
+      throw new Error(data.error?.message || "Error al subir a Cloudinary");
     }
+
     archivoVideoPendiente = null;
+    if (vidInput) vidInput.value = "";
     await db.collection("comercios").doc(uid).set(
-      { videoVertical: videoUrl, videoUrl: videoUrl },
+      { videoVertical: data.secure_url, videoUrl: data.secure_url },
       { merge: true }
     );
     if (vidEstado) vidEstado.textContent = "Video subido y guardado.";
     btnQuitarVid?.classList.add("hidden");
   } catch (err) {
     console.error("Error subiendo video:", err);
-    if (vidEstado) vidEstado.textContent = "Error al subir el video a Cloudinary.";
+    if (vidEstado) vidEstado.textContent = "Error al subir el video: " + (err.message || err);
   }
 });
 
