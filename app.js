@@ -1145,6 +1145,18 @@ auth.onAuthStateChanged((user) => {
         if (vidNombreComercio) vidNombreComercio.value = com.nombreComercio || "";
         if (vidDireccion) vidDireccion.value = com.direccion || "";
         if (vidTelefono) vidTelefono.value = com.telefono || telefonoUsuarioActual || "";
+        const elRubroCarga = document.getElementById("vid-rubro");
+const elSubrubroWrapCarga = document.getElementById("vid-subrubro-wrap");
+const elSubrubroCarga = document.getElementById("vid-subrubro");
+if (elRubroCarga) {
+  elRubroCarga.value = com.rubro || "";
+  const rLowerCarga = (elRubroCarga.value || "").trim().toLowerCase();
+  const esMayCarga = rLowerCarga === "distribuidora / mayorista" || rLowerCarga === "mayorista / distribuidora";
+  if (elSubrubroWrapCarga) elSubrubroWrapCarga.classList.toggle("hidden", !esMayCarga);
+  if (elSubrubroCarga) {
+    elSubrubroCarga.value = esMayCarga ? (com.subrubro || "") : "";
+  }
+}
         latVidriera = Number.isFinite(com.lat) ? com.lat : -34.6434;
         lngVidriera = Number.isFinite(com.lng) ? com.lng : -58.6231;
         fotoFachadaActual = com.fotoFachada || "";
@@ -1187,6 +1199,8 @@ auth.onAuthStateChanged((user) => {
     if (perfilDireccion) perfilDireccion.value = "";
     if (perfilTelefono) perfilTelefono.value = "";
     if (vidTelefono) vidTelefono.value = "";
+    const elRubroReset = document.getElementById("vid-rubro");
+if (elRubroReset) elRubroReset.value = "";
     if (datosPerfilNube) {
       datosPerfilNube.textContent = "Iniciá sesión para ver tu perfil guardado en la nube.";
     }
