@@ -904,21 +904,34 @@ if (btnAgregarPublicacion) {
       return;
     }
 
-    let fotoData = "";
-    if (file) {
-      try {
-        fotoData = await comprimirImagen(file, 480, 0.72);
-      } catch (err) {
-        if (mensajeVidriera) mensajeVidriera.textContent = "Error en foto de publicación: " + err.message;
-        return;
-      }
-    }
+    let fotoUrl = "";
+if (file) {
+  try {
+    if (mensajeVidriera) mensajeVidriera.textContent = "Subiendo foto de publicación a Cloudinary...";
+    const formData = new FormData();
+    formData.append("file", file);
+    formData.append("upload_preset", "APPVEA2");
 
-    publicacionesVidriera.push({
-      titulo: titulo,
-      descripcion: descripcion,
-      foto: fotoData
+    const resp = await fetch("https://api.cloudinary.com/v1_1/kwp9jptr/image/upload", {
+      method: "POST",
+      body: formData
     });
+    const data = await resp.json();
+    if (!resp.ok || !data.secure_url) {
+      throw new Error(data.error?.message || "No se pudo subir la foto a Cloudinary");
+    }
+    fotoUrl = data.secure_url;
+  } catch (err) {
+    if (mensajeVidriera) mensajeVidriera.textContent = "Error en foto de publicación: " + err.message;
+    return;
+  }
+}
+
+publicacionesVidriera.push({
+  titulo: titulo,
+  descripcion: descripcion,
+  foto: fotoUrl
+});
 
     if (vidPubTitulo) vidPubTitulo.value = "";
     if (vidPubDescripcion) vidPubDescripcion.value = "";
